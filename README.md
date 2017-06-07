@@ -13,4 +13,6 @@ The package includes tutorials describing the functionality and usage of SCENIC:
 - [Running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_runningStep1nWrapper.html)
 
 Advanced tutorials:
-- [Step1 Part 2: CoexpressionModules](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step1.2_CoexpressionModules.html)
+- [Step1 - Part 2: CoexpressionModules](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step1.2_CoexpressionModules.html)
+
+(remaining steps coming soon)
