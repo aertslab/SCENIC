@@ -1,0 +1,26 @@
+Package: SCENIC
+Type: Package
+Title: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
+Version: 0.1.1
+Date: 2017-06-02
+Author: Sara Aibar, Carmen Bravo, Stein Aerts. Laboratory of Computational Biology, KU Leuven Center for Human Genetics. Leuven, Belgium.
+Maintainer: Sara Aibar <sara.aibar@kuleuven.vib.be>
+Description: SCENIC workflow
+URL: http://scenic.aertslab.org
+Imports:
+    data.table, mixtools, GENIE3, RcisTarget, AUCell
+Enhances: doMC, doRNG
+Suggests:
+    GEOquery,
+    DT,
+    NMF,
+    plotly,
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat
+License: file LICENSE
+biocViews: SingleCell
+LazyData: TRUE
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1

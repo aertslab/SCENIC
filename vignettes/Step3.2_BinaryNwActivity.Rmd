@@ -1,0 +1,269 @@
+---
+title: "SCENIC step 3 (part 2): Binary network activity"
+abstract: "The third step of SCENIC workflow analyzes the network activity in each individual cell with AUCell. This second part of the analysis converts the regulon activity in each cell into ON/OFF"
+output: 
+  BiocStyle::html_document:
+    number_sections: no
+    toc: yes
+  html_notebook:
+    toc: yes
+  pdf_document:
+    toc: yes
+package: '`r pkg_ver("SCENIC")`'
+vignette: >
+  %\VignetteIndexEntry{SCENIC step 3 (part 2): Binary network activity}
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Suppress loading messages when building the HTML
+suppressPackageStartupMessages({
+  library(data.table)
+  library(Biobase)
+  library(AUCell)
+  suppressWarnings(library(NMF, verbose=FALSE, warn.conflicts=FALSE, quietly=TRUE))
+})
+
+# Do not convert strings to factors
+options(stringsAsFactors=FALSE)
+
+# To build a personalized report, update this working directory:
+knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
+```
+
+> The code from this file is included in the `runSCENIC()` function. It is not required to run it separatelly. This tutorial assumes you have read the introduction to SCENIC and run the previous steps: `vignette(package="SCENIC")`.
+
+
+# Step 3 - Part2: Create the binary activity matrix
+
+## Binary activity
+
+After running AUCell (Step 3.1) we already have relevant information about the activity of the network. However, it is often useful to binarize the activity into on/off. The active regulons will represent the network that is active for a given cell, and can help unraveling important information and estable cellular states (e.g. overcome biases and technical effects...).
+
+To determine in which cells each regulon is active, we will use an AUC threshold. By default, AUCell calculates some possible thresholds (and selects the highest to avoid false positives). However, this option is normally too conservative. We recommend to check the resulting histograms (pdf) and manually adjusts the thresholds. This can be a iterative process, where the thresholds can be re-adjusted after an initial exploration. Once the final thresholds are selected, the cell-regulon activity will be summarized into a *binary activity matrix* in which the columns represent the cells and the rows the regulons. 
+
+## Modify the regulon activity thresholds (OPTIONAL)
+
+> `runSCENIC()` function does not provide the option to manually adjust the thresholds. However, you can adjust the thresholds following this tutorial, and resume the automatic workflow using `runSCENIC(..., stepsToRun="4")`.
+
+To edit the thresholds, we propose to go through the plots on the pdf (*3.4_histograms_AUCell_tSNE.pdf*), and change the thresholds value in the following text file (edit field *threshold*). 
+
+In the next steps we will read the file and set the threshols according to the value on the column *threshold*:
+- To set a manual value: Write the new numeric value
+- To select one of the thresholds calculanted by AUCell: Write the name of the threshold (Global_k1, L_k2, R_k3 or minimumDens)
+    - Grey: Global_k1
+    - Red: L_k2
+    - Pink: R_k3    
+    - Blue: minimumDens
+- To select one of the inflection points of the density curve: Write "Bimodal" (To avoid false positives, AUCell ignores the inflection points when the second distribution is higher, but we can re-calculate it).
+- Keep current threshold: Do not edit the field
+
+The file also contains some other columns (to reorder the regulons or to write down your own comments). Those columns are ignored in the followig steps.
+
+Create file to edit:
+```{r thresholds2edit}
+load("int/3.4_cells_AUCellThresholds.RData")
+
+# Get cells assigned to each regulon
+regulonsCells <- lapply(cells_AUCellThresholds, function(x) x$assignment)
+
+### Save threshold info as text (e.g. to edit/modify...)
+trhAssignment <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$selected))
+commentsThresholds <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$comment))
+
+table2edit <- cbind(regulon=names(trhAssignment), 
+                    threshold=trhAssignment, 
+                    nCellsAssigned=lengths(regulonsCells)[names(trhAssignment)],
+                    AUCellComment=commentsThresholds, 
+                    nGenes=gsub("[\\(g\\)]", "", regmatches(names(cells_AUCellThresholds), gregexpr("\\(.*?\\)", names(cells_AUCellThresholds)))),
+                    clusteringOrder=1:length(trhAssignment), 
+                    clusterGroup=regulonClusters[names(trhAssignment)], 
+                    onlyNonDirectExtended=(names(trhAssignment) %in% onlyNonDirectExtended(names(trhAssignment))),
+                    personalNotes="")
+write.table(table2edit, file="int/3.5_1_AUCellThresholds.txt", row.names=F, quote=F, sep="\t")
+```
+
+Read the new thresholds to set:
+```{r manualThresholds}
+manualThresholds <- read.table("int/3.5_2_AUCellThresholds_toEDIT.txt", sep="\t", header=T)
+newThresholds <- setNames(manualThresholds[,"threshold"], manualThresholds[,"regulon"])
+length(newThresholds)
+```
+
+Get the pre-calculated thresholds (optional):
+```{r precalcThresholds, eval=TRUE}
+load("int/3.4_AUCellThresholds.RData")
+convert <- newThresholds[which(newThresholds %in% c("Global_k1", "L_k2", "R_k3", "minimumDens"))]
+newThresholds[names(convert)] <- sapply(names(convert), function(reg) cells_AUCellThresholds[[reg]]$aucThr$thresholds[convert[reg],"threshold"])
+cbind(newThresholds[names(convert)])
+```
+
+Calculate the threshold based on the inflection point of the density curve (optional):
+
+Please theck this code calculates it correctly (you might need to modify the *adjust* parameter for some regulons)
+
+```{r bimodalThresholds, eval=TRUE, fig.height=7, fig.width=10}
+load("int/3.2_regulonAUC.RData")
+secondHigherRegs <- manualThresholds[grep("Bimodal", manualThresholds[,"threshold"]), "regulon"]
+
+par(mfrow=c(3,5)) # adjust according to the number of regulons...
+for(modName in secondHigherRegs)
+{
+  # Select a new threshold (in this case: inflection point of the density)
+  densCurve <- density(regulonAUC[modName,], adjust=1)
+  inflPoints <- diff(sign(diff(densCurve$y)))
+  minimumDens <- densCurve$x[which(inflPoints==2)]
+  minimumDens <- minimumDens[1]
+  
+  # plot
+  AUC.plot(regulonAUC[modName,], gSetName=paste(modName, "module")); abline(v=minimumDens, col="darkorange", lwd=2, lty=2)
+  lines(densCurve, col="blue")
+  
+  newThresholds[modName] <- minimumDens
+}
+```
+
+```{r saveNewThresholds}
+any(is.na(as.numeric(newThresholds)))
+newThresholds  <- setNames(as.numeric(newThresholds), names(newThresholds))
+save(newThresholds, file="int/3.5_3_newThresholds.RData")
+```
+
+
+### Get the cells that have each regulon active with the new thresholds
+
+Once the thresholds are chosen, assign cells according to the new thresholds:
+```{r cellActivity}
+load("data/esetmouseBrain.RData"); exprMat <- exprs(esetMouseBrain)
+load("int/3.5_3_newThresholds.RData")
+load("int/3.3_tsneRegulonAUC_PCA.RData"); tSNE <- tsneAUC$Y
+load("int/3.2_regulonAUC.RData")
+
+Cairo::CairoPDF("output/Step3_RegulonActivity_AUCtSNE_newThresholds.pdf", width=20, height=5)
+par(mfrow=c(1,4))
+newAssignment <- plot_aucTsne(exprMat, regulonAUC=regulonAUC, tSNE=tSNE, thresholds=newThresholds)
+dev.off()
+save(newAssignment, file="int/3.5_4_newAssignment.RData")
+```
+
+## Binary regulon activity matrix (Active regulons per cell)
+
+### Create matrix
+We can now transform this assignment into a binary matrix (`binaryRegulonActivity`). The columns of this matrix represent the samples (cells) and the rows the regulons. The coordinates of the matrix that correspond to active regulons in a given cell will contain a "1" value, and "0"" all the others. 
+
+
+*If you have **NOT** modified the thresholds:*
+```{r loadAssignmentB}
+load("int/3.4_AUCellThresholds.RData")
+```
+
+*If you have modified the thresholds:*
+```{r loadAssignmentA, eval=FALSE}
+load("int/3.5_4_newAssignment.RData")
+cells_AUCellThresholds <- newAssignment
+rm(newAssignment)
+```
+
+```{r createBinaryMatrix}
+# Get cells assigned to each regulon
+regulonsCells <- lapply(cells_AUCellThresholds, function(x) x$assignment)
+length(regulonsCells)
+
+# Conver to matrix (regulons with zero assigned cells are lost)
+regulonActivity <- reshape2::melt(regulonsCells)
+binaryRegulonActivity <- t(table(regulonActivity[,1], regulonActivity[,2]))
+class(binaryRegulonActivity) <- "matrix"
+save(binaryRegulonActivity, file="int/3.6_BinaryRegulonActivity.RData")
+
+dim(binaryRegulonActivity)
+binaryRegulonActivity[1:10,1:3]
+```
+
+This matrix contains some duplicated regulons (e.g. for some TFs, there is a regulon based on direct annotation, and also the extended version).
+Lets save a filtered version, containing only "extended" regulons if there is not a regulon based on direct annotation.
+
+```{r}
+binaryRegulonActivity_nonDupl <- binaryRegulonActivity[which(rownames(binaryRegulonActivity) %in% onlyNonDirectExtended(rownames(binaryRegulonActivity))),]
+save(binaryRegulonActivity_nonDupl, file="int/3.7_binaryRegulonActivity_nonDupl.RData")
+```
+
+### Matrix overview
+
+`r sum(rowSums(binaryRegulonActivity)>5)` modules have been assigned at least 5 cells (`sum(rowSums(binaryRegulonActivity)>5)`).
+
+How many cells have each regulon active:
+```{r}
+cbind(nCellsOn=sort(rowSums(binaryRegulonActivity), decreasing=TRUE)[1:15])
+# summary(rowSums(binaryRegulonActivity))
+```
+
+As boxplot:
+```{r boxplots, fig.height=4, fig.width=8}
+par(mfrow=c(1,2))
+boxplot(rowSums(binaryRegulonActivity_nonDupl), main="nCells per regulon", 
+        sub='number of cells \nthat have the regulon active',
+        col="darkolivegreen1", border="#001100", lwd=2, frame=FALSE)
+boxplot(colSums(binaryRegulonActivity_nonDupl), main="nRegulons per Cell", 
+        sub='number of regulons \nactive per cell',
+        col="darkolivegreen1", border="#001100", lwd=2, frame=FALSE)
+```
+
+### Heatmap
+
+To visualize the binary matrix, we will plot it as heatmap. 
+
+In this version of the heatmap we will show the regulons that present an absolute correlation with any other module over 0.3:
+```{r regulonCorrelation}
+load("int/3.6_binaryRegulonActivity.RData")
+load("int/3.7_binaryRegulonActivity_nonDupl.RData")
+
+regulonSelection <- list()
+
+# All regulons.
+regulonSelection[["All regulons \n (including duplicated regulons)"]] <- rownames(binaryRegulonActivity)
+
+# Active in > 1% cells
+regMinCells <- names(which(rowSums(binaryRegulonActivity_nonDupl) > minCells))
+regulonSelection[["Regulons active in more than 1% of cells"]] <- regMinCells
+
+# Correlation across regulons (based on binary cell activity)
+reguCor <- cor(t(binaryRegulonActivity_nonDupl[regMinCells,]))
+diag(reguCor) <- 0
+
+# Regulons that co-ocurr in similar cells. If a regulon is relevant by itself it will not be shown, also check the regulons ignored.
+corrRegs <- names(which(rowSums(abs(reguCor) > 0.30) > 0))
+regulonSelection[["Regulons with any other regulon correlated\n with abs(cor)>0.30 \n(and active in at least 1% of cells)"]]  <- corrRegs
+
+missingRegs <- rownames(binaryRegulonActivity_nonDupl)[which(!rownames(binaryRegulonActivity_nonDupl) %in% corrRegs)]
+regulonSelection[["Regulons no other regulons correlated\n with abs(cor)>0.30 \n or active in fewer than 1% of cells"]]  <- missingRegs
+
+save(regulonSelection,file="int/3.8_regulonSelections.RData")
+```
+
+Load cell info & variable colors:
+```{r loadColors}
+load("data/colVars.RData")
+load("data/esetMouseBrain.RData")
+cellInfo <- pData(esetMouseBrain)[,names(colVars), drop=F]
+```
+
+Plot heatmaps (4 versions):
+```{r heatmapPlot, eval=TRUE}
+for(i in seq_len(length(regulonSelection)))
+{
+  selRegs <- names(regulonSelection)[i]
+  binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+  NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+                annCol=cellInfo[colnames(binaryMat),, drop=FALSE], 
+                annColor=colVars,
+                color = c("white", "black"), 
+                filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+}
+```
+
+# SessionInfo
+```{r sessionInfo}
+date()
+sessionInfo()
+```

@@ -1,0 +1,377 @@
+---
+title: "SCENIC step 2: Regulons (direct TF targets)"
+abstract: "Second step of SCENIC workflow: How to identify regulons (direct TF targets) based on DNA motif enrichment with RcisTarget"
+output: 
+  BiocStyle::html_document:
+    number_sections: no
+    toc: yes
+  html_notebook:
+    toc: yes
+  pdf_document:
+    toc: yes
+package: '`r pkg_ver("SCENIC")`'
+vignette: >
+  %\VignetteIndexEntry{SCENIC step 2: Creating regulons (DNA motif analysis with RcisTarget)} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Suppress loading messages when building the HTML
+suppressPackageStartupMessages({
+  library(data.table)
+  library(RcisTarget)
+})
+
+# Do not convert strings to factors
+options(stringsAsFactors=FALSE)
+
+# To build a personalized report, update this working directory:
+knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
+```
+
+> The code from this file is included in the `runSCENIC()` function. It is not required to run it separatelly. This tutorial assumes you have read the introduction to SCENIC and run the previous steps: `vignette(package="SCENIC")`.
+
+# Step 2. Identifying regulons (direct TF targets) based on DNA motif enrichment 
+
+The TF co-expression modules provide a first draft of the regulatory network. However, since these targets are only based on co-expression, they may include numerous indirect targets (i.e. downstream effects). To identify the subset of the co-expressed genes which are most likely direct targets (regulons), we perform cis-regulatory motif analysis on each of the TF regulons with RcisTarget.
+
+## Load gene-sets
+
+We will start by loading the TF co-expression modules and select the ones that have a positive correlation (potential activation associations) and adding the TF to its module (the TF could be auto-regulatory, but GENIE3 cannot detect these). Then we will select the modules with at least 20 target genes (too small gene-sets might not be reliable for the 'enrichment' analysis). 
+
+> To detect repression, in principle it should be possible to do follow the same approach with the negative-correlated TF modules. However, in the datasets we analyzed, these modules were less numerous and showed very low motif enrichment, suggesting that these were less reliable or lower quality modules. 
+
+```{r loadTFmodules, eval=TRUE}
+load("int/1.8_tfModules_withCorr.RData")
+
+# Remove genes missing from RcisTarget databases
+#  (In case the input matrix wasn't already filtered)
+tfModules_withCorr <- tfModules_withCorr[which(as.character(tfModules_withCorr$TF) %in% allTFs),]
+geneInDb <- tfModules_withCorr$Target %in% motifRankings[["500bp"]]@rankings$rn
+# Genes in co-expression modules not available in RcisTargetDatabases:
+missingGenes <- sort(unique(tfModules_withCorr[which(!geneInDb),"Target"]))
+missingGenes
+tfModules_withCorr <- tfModules_withCorr[which(geneInDb),]
+    
+# Targets with positive correlation
+tfModules_Selected <- tfModules_withCorr[which(tfModules_withCorr$corr==1),]
+
+# Add a column with the geneSet name (TF_method)
+tfModules_Selected <- cbind(tfModules_Selected, geneSetName=paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_"))
+head(tfModules_Selected)
+
+# Split into tfModules (TF-modules, with several methods)
+tfModules <- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
+
+# Keep gene sets with at least 20 genes
+tfModules <- tfModules[which(lengths(tfModules)>=20)]
+
+# Add TF to the gene set (used in the following steps, careful if editing)
+tfModules <- setNames(lapply(names(tfModules), function(gsn) {
+    tf <- strsplit(gsn, "_")[[1]][1]
+    unique(c(tf, tfModules[[gsn]]))
+    }), names(tfModules))
+save(tfModules, file="int/2.1_tfModules_forMotifEnrichmet.RData")
+```
+
+Summary of the gene sets (potential TF-modules) included:
+```{r statsTFmodules}
+load("int/2.1_tfModules_forMotifEnrichmet.RData")
+tfModulesSummary <- t(sapply(strsplit(names(tfModules), "_"), function(x) x[1:2]))
+sort(table(tfModulesSummary[,2]))
+```
+
+
+## Motif enrichment analysis & identifying direct targets
+
+The analysis with RcisTarget includes two mayor steps. **First**, for each of the gene-sets (in this case, the TF co-expression modules), it identifies enriched transcription factor binding motifs (TFBS). Since we are only interested in direct binding targets, we only keep those motifs that are enriched, and associated to the TF of the module (according to the direct motif-TF annotation databases). In this way, we have identified which transcription factor modules ???as a whole??? present enrichment of the binding motif of the same factor (i.e. the motif of the TF is over-represented in the search space around the TSS of genes in the module, in comparison to all the other genes in the genome). However, not all the genes in the gene-set will have the same enrichment of the motif. Using the **second** step of RcisTarget, we prune the regulons to keep only those genes which are highly ranked (have a high score) for the given motif. 
+
+### How does RcisTarget work?
+
+This section provides the explanation of how RcisTarget works (i.e. for a better understanding of the process, and in case you need some more background to modify parameters or databases).
+The code in the *Run RcisTarget* section runs these steps sequentially. For more details on how to use RcisTarget see the package tutorial `vignette("RcisTarget")`.
+
+#### 1. Motif enrichment
+
+The first step of the analysis with RcisTarget is to identify transcription factor binding motifs that are over-represented in the input gene-set.  
+
+For this step, SCENIC uses a database that contains the scores (rankings) of each motif around the TSS of the genes in the organism. The score of the motif for each gene depends on the search space around the TSS. For this analysis we will use two databases: the database that scores the motifs in the **500bp upstream** the transcription start site (TSS), and the database scoring **10kbp around the TSS** (i.e. upstream and intronic space). Those motifs that obtain a Normalized Enrichment Score (NES) > 3.0 are considered to be significantly enriched in the TF module. 
+** 1.1 Calculate AUC **
+
+To calculate the enrichment of the motifs in each gene-set, RcisTarget uses the Area Under the cumulative recovery Curve (AUC). To reduce running time, instead of calculating the AUC on the full rankings, it only uses the top (`aucMaxRank`) of the each ranking.
+
+** 1.2 Annotate motifs to TFs **
+
+The AUC values are normalized into a Normalized Enrichment Score (NES). A high NES score indicates a motif that recovers a large proportion of the input genes within the top of its ranking. To consider a motif significantly enriched, we set a default cutoff of 3.0, which corresponds to a False Discovery Rate (FDR) between 3% and 9%. 
+The significant motifs are then linked back to transcription factors using the annotation databases for *Homo Sapiens*. 
+
+For each organism, there are two databases available. The `_direct_motifAnnotation` contains the TFs that are directly annotated to the motif by the source database of the motif. The `_inferred_motifAnnotation` contains extra TFs annotated based on motif similarity.
+
+We perform these steps running `addMotifAnnotation()` to the AUCs calculated for both databases (search space around TSS).
+(The column `motifEnrichment$TFinDB` contains two asterisks (**) if the motif is annotated to the input TF).
+
+** 1.3 Select motifs of the given TF **
+
+From the motif enrichment table, we can now select the motifs that are annotated to the corresponding TF (`motifEnrichment$TFinDB`).
+
+#### 2. Prune targets 
+
+These `r nrow(motifEnrichment_selfMotifs)` motifs are over-represented -as a whole- in the input TF-module (in comparison to all the other genes in the genome). In order to build the regulon, we now need to determine which of the genes in the TF-module have good scores for the motif. To identify these genes, RcisTarget uses a GSEA-like approach which will select the top-ranked genes for each motif.
+
+For this task, RcisTarget provides the function `addSignificantGenes`. We will apply it to each of the selected motifs, using the appropriate databases.
+
+### Motif databases
+
+RcisTarget relies on pre-built databases. Since this dataset is on mouse samples, we use the databases in the package `RcisTarget.mm9.motifDatabases`.
+
+Adapt these databases if you are analyzing data from a diferent organism: mouse ("mm9") or human ("hg19").
+
+```{r selectOrg}
+org <- "mm9"
+```
+
+Load the corresponding databases:
+```{r LoadDbs, eval=TRUE}
+if(org=="hg19")
+{
+    library(RcisTarget.hg19.motifDatabases.20k)
+    
+    # Motif rankings (genes x motifs)
+    data(hg19_500bpUpstream_motifRanking)
+    data(hg19_10kbpAroundTss_motifRanking)
+    motifRankings <- list()
+    motifRankings[["500bp"]] <- hg19_500bpUpstream_motifRanking
+    motifRankings[["10kbp"]] <- hg19_10kbpAroundTss_motifRanking
+    
+    # Motif annotation (TFs)
+    data(hg19_direct_motifAnnotation)
+    direct_motifAnnotation <- hg19_direct_motifAnnotation
+    data(hg19_inferred_motifAnnotation) # optional
+    inferred_motifAnnotation <- hg19_inferred_motifAnnotation
+}
+
+if(org=="mm9")
+{
+    library(RcisTarget.mm9.motifDatabases.20k)
+    
+    # Motif rankings (genes x motifs)
+    data(mm9_500bpUpstream_motifRanking)
+    data(mm9_10kbpAroundTss_motifRanking)
+    motifRankings <- list()
+    motifRankings[["500bp"]] <- mm9_500bpUpstream_motifRanking
+    motifRankings[["10kbp"]] <- mm9_10kbpAroundTss_motifRanking
+    
+    # Motif annotation (TFs)
+    data(mm9_direct_motifAnnotation)
+    direct_motifAnnotation <- mm9_direct_motifAnnotation
+    data(mm9_inferred_motifAnnotation) # optional
+    inferred_motifAnnotation <- mm9_inferred_motifAnnotation
+}
+```
+
+
+### Run RcisTarget
+
+> *Expected running time:* This step will likely take a few hours to run (you might want to run it on a separate console...). The running time of this step depends on the number and size of the rankings to evaluate (in this case, 2 rankings with `r ncol(motifRankings[[1]])` motifs), and the number of gene-sets (`r length(tfModules)`) (i.e. not on the number of cells).
+
+```{r RcisTarget, eval=TRUE}
+library(RcisTarget)
+################################################################
+# 1. Calculate motif enrichment for each TF-module
+
+### 1.1 Calculate enrichment
+motifs_AUC <- lapply(motifRankings, function(ranking) calcAUC(tfModules, ranking, aucMaxRank=0.01*nrow(ranking@rankings), nCores=4, verbose=FALSE))
+save(motifs_AUC, file="int/2.2_motifs_AUC_500bp_10kbp.RData")
+
+### 1.2 Conver to table, filter by NES & add the TFs to which the motif is annotated
+# (For each database...)
+motifEnrichment <- lapply(motifs_AUC, function(aucOutput)
+{
+  # Extract the TF of the gene-set name (i.e. MITF_w001):
+  tf <- sapply(setNames(strsplit(rownames(aucOutput), "_"), rownames(aucOutput)), function(x) x[[1]])
+  
+  # Calculate NES and add motif annotation (provide tf in 'highlightTFs'):
+  addMotifAnnotation(aucOutput, highlightTFs=tf, nesThreshold=3.0, digits=3,
+                  motifAnnot_direct=direct_motifAnnotation,
+                  motifAnnot_inferred=inferred_motifAnnotation)
+})
+
+# Merge both tables, adding a column that contains the 'motifDb' 
+motifEnrichment <- do.call(rbind, lapply(names(motifEnrichment), function(dbName){
+  cbind(motifDb=dbName, motifEnrichment[[dbName]])
+}))
+save(motifEnrichment, file="int/2.3_motifEnrichment.RData")
+cat("Number of motifs in the initial enrichment: ", nrow(motifEnrichment))
+
+### 1.3 Keep only the motifs annotated to the initial TF
+motifEnrichment_selfMotifs <- motifEnrichment[which(motifEnrichment$TFinDB != ""),, drop=FALSE]
+save(motifEnrichment_selfMotifs, file="int/2.4_motifEnrichment_selfMotifs.RData")
+cat("Number of motifs annotated to the initial TF: ", nrow(motifEnrichment_selfMotifs))
+rm(motifEnrichment)
+
+################################################################
+# 2. Prune targets
+
+motifEnrichment_selfMotifs_wGenes <- lapply(names(motifRankings), function(motifDbName){
+  addSignificantGenes(resultsTable=motifEnrichment_selfMotifs[motifDb==motifDbName],
+                      geneSets=tfModules,
+                      rankings=motifRankings[[motifDbName]],
+                      maxRank=5000, method="aprox", nCores=4)
+  })
+
+library(data.table)
+motifEnrichment_selfMotifs_wGenes <- rbindlist(motifEnrichment_selfMotifs_wGenes)
+save(motifEnrichment_selfMotifs_wGenes, file="int/2.5_motifEnrichment_selfMotifs_wGenes.RData")
+
+# Save as text:
+write.table(motifEnrichment_selfMotifs_wGenes, file="output/Step2_MotifEnrichment.tsv", 
+            sep="\t", quote=FALSE, row.names=FALSE)
+```
+
+The output of this step is a table containing the information about the motifs significantly enriched, and high-confidence genes. This table can be explored now, or saved to trace-back the information about relevant regulons that are revealed in the upcoming steps.
+
+```{r showSelfMotifs}
+load("int/2.5_motifEnrichment_selfMotifs_wGenes.RData")
+dim(motifEnrichment_selfMotifs_wGenes)
+motifEnrichment_selfMotifs_wGenes[order(NES,decreasing=TRUE)][1:5,-"enrichedGenes", with=F]
+```
+
+## Format regulons
+
+In order to build the regulons, we merge the genes from any of the enriched motifs for the same TF. 
+Note that we combine the gene-sets for a TF independently of the method used for generating the gene-sets after GENIE3.
+
+**Option A**: Create a table keeping the information of the motif linking the TF with the targets (then, split into regulons).
+*This version is the one used in `runSCENIC()`.*
+```{r regulonTargetsInfo, eval=TRUE}
+library(data.table)
+motifEnrichment.asIncidList <- apply(motifEnrichment_selfMotifs_wGenes, 1, function(oneMotifRow) {
+  genes <- strsplit(oneMotifRow["enrichedGenes"], ";")[[1]]
+  oneMotifRow <- data.frame(rbind(oneMotifRow), stringsAsFactors=FALSE)
+  data.frame(oneMotifRow[rep(1, length(genes)),c("NES", "motif", "highlightedTFs", "TFinDB")], genes, stringsAsFactors = FALSE)
+})
+motifEnrichment.asIncidList <- rbindlist(motifEnrichment.asIncidList)
+colnames(motifEnrichment.asIncidList) <- c("NES", "motif", "TF", "annot", "gene")
+motifEnrichment.asIncidList <- data.frame(motifEnrichment.asIncidList, stringsAsFactors = FALSE)
+
+# Get targets for each TF, but keep info about best motif/enrichment 
+# (directly annotated motifs are considered better)
+regulonTargetsInfo <- lapply(split(motifEnrichment.asIncidList, motifEnrichment.asIncidList$TF), function(tfTargets){
+  # print(unique(tfTargets$TF))
+  tfTable <- as.data.frame(do.call(rbind, lapply(split(tfTargets, tfTargets$gene), function(enrOneGene){
+    directAnnot <- "**" %in% enrOneGene$annot
+    enrOneGeneByAnnot <- enrOneGene
+    if(directAnnot) enrOneGeneByAnnot <- enrOneGeneByAnnot[which(enrOneGene$annot == "**"),]
+    bestMotif <- which.max(enrOneGeneByAnnot$NES)
+    
+    cbind(TF=unique(enrOneGene$TF), gene=unique(enrOneGene$gene), nMotifs=nrow(enrOneGene), 
+          bestMotif=as.character(enrOneGeneByAnnot[bestMotif,"motif"]), NES=as.numeric(enrOneGeneByAnnot[bestMotif,"NES"]), 
+          directAnnot=directAnnot)
+  })), stringsAsFactors=FALSE)
+  tfTable[order(tfTable$NES, decreasing = TRUE),]
+})
+regulonTargetsInfo <- rbindlist(regulonTargetsInfo)
+colnames(regulonTargetsInfo) <- c("TF", "gene", "nMotifs", "bestMotif", "NES", "directAnnot")
+
+# Optional: Add Genie3 score
+load("int/1.4_GENIE3_linkList.RData")
+linkList <- linkList[which(linkList$weight>=0.001),]
+rownames(linkList) <- paste(linkList$TF, linkList$Target,sep="__")
+regulonTargetsInfo <- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep="__"),"weight"])
+
+save(regulonTargetsInfo, file="int/2.6_regulonTargetsInfo.RData")
+write.table(regulonTargetsInfo, file="output/Step2_regulonTargetsInfo.txt", sep="\t", col.names=TRUE, row.names=FALSE, quote=FALSE)
+```
+
+Split into regulons... (output: list TF --> targets)
+```{r tfRegulons, eval=TRUE}
+regulonTargetsInfo_splitByAnnot <- split(regulonTargetsInfo, regulonTargetsInfo$directAnnot)
+regulons <- sapply(split(regulonTargetsInfo_splitByAnnot[["TRUE"]], regulonTargetsInfo_splitByAnnot[["TRUE"]][,"TF"]), function(x) sort(as.character(unlist(x[,"gene"]))))
+regulons_extended <- sapply(split(regulonTargetsInfo_splitByAnnot[["FALSE"]],regulonTargetsInfo_splitByAnnot[["FALSE"]][,"TF"]), function(x) unname(x[,"gene"]))
+regulons_extended <- sapply(names(regulons_extended), function(tf) sort(unique(c(regulons[[tf]], regulons_extended[[tf]]))))
+names(regulons_extended) <- paste(names(regulons_extended), "_extended", sep="")
+regulons <- c(regulons, regulons_extended)
+save(regulons, file="int/2.6_regulons_asGeneSet.RData")
+```
+
+```{r tfRegulonInfo}
+load("int/2.6_regulons_asGeneSet.RData")
+# Number of regulons and summary of sizes:
+length(regulons)
+summary(lengths(regulons))
+```
+
+**Option B** (faster but less informative, merges *direct*, and *inferred* annotations): 
+```{r tfRegulons_faster, eval=FALSE}
+selfMotifs_byTF <- split(motifEnrichment_selfMotifs_wGenes, motifEnrichment_selfMotifs_wGenes$highlightedTFs)
+regulons <- lapply(selfMotifs_byTF,
+                            function(x) unique(unlist(strsplit(x$enrichedGenes, ";"))))
+save(regulons, file="int/2.6_regulons_B_asGeneSet.RData")
+```
+
+### Incidence matrix (i.e. network)
+The regulons can easily be transformed into an incidence matrix (TFs as rows, genes as columns, and 0/1 as value indicating whether the TF regulates the gene):
+
+```{r incidMats}
+incidList <- melt(regulons)
+incidMat <- table(incidList[,2], incidList[,1])
+save(incidMat, file="int/2.6_regulons_asIncidMat.RData")
+dim(incidMat)
+```
+
+
+# Exploring regulons
+
+At this point you can already proceed to the next step of SCENIC workflow. 
+
+Here we provide some examples on how to explore the results from RcisTarget. These can be useful at this step, in case you already want to check some potentialy-interesting TF, or at the end of the workflow, to explore the selected regulons in more depth.
+
+## How many TFs are self-regulating?
+```{r selfRegTfs}
+table(sapply(names(regulons), function(x) x %in% regulons[[x]]))
+```
+
+## Motifs associated to a TF (i.e. MITF regulons):
+```{r exampleTfMotifs}
+selTF <- "MITF"
+subsetTable <- motifEnrichment_selfMotifs_wGenes[highlightedTFs %in% selTF][order(NES,decreasing=TRUE)][,-"enrichedGenes", with=F]
+
+subsetTable <- addLogo(subsetTable)
+library(DT)
+datatable(subsetTable, escape=FALSE, filter="top", options=list(pageLength=5))
+```
+
+## Gene enrichment plots
+
+The function `getSignificantGenes` also plots the recovery curves used to select the significant genes for a specific motif. 
+
+To interpret these plots, see the help file for `?getSignificantGenes` ('Details' section) or the package vignette (`vignette("RcisTarget")`).
+
+Here we show an example for the motifs enriched in 'MITF_w005' (*10kb around the TSS*):
+```{r showOneTfEnrichment}
+geneSetName <- "MITF_w005"
+motifDbName <- "500bp"
+selectedMotifs <- subsetTable[geneSet==geneSetName & motifDb==motifDbName, motif]
+selectedMotifs <- selectedMotifs[1:3]
+```
+
+```{r signifGenesPlot}
+# pdf("int/2.8_RCC_selectedMotifs.pdf")
+par(mfrow=c(2,2))
+signifGenes_SelectedMotifs <- getSignificantGenes(tfModules[[geneSetName]], 
+                                        motifRankings[[motifDbName]],
+                                        signifRankingNames=selectedMotifs,
+                                        plotCurve=TRUE, maxRank=5000, nCores=4, 
+                                        genesFormat="geneList", method="aprox")
+# dev.off()
+
+# Motif & number of genes:
+cbind(lengths(signifGenes_SelectedMotifs$enrichedGenes))
+```
+
+# SessionInfo
+```{r sessionInfo}
+date()
+sessionInfo()
+```
