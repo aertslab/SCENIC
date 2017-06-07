@@ -16,3 +16,7 @@ Advanced tutorials:
 - [Step1 - Part 2: Co-expression modules](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step1.2_CoexpressionModules.html)
 
 (remaining steps coming soon)
+
+
+
+For more information, please visit http://scenic.aertslab.org
