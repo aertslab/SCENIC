@@ -40,8 +40,6 @@ knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
 SCENIC (Single Cell rEgulatory Network Inference and Clustering) is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. 
 To achieve this, SCENIC infers a gene regulatory network based on co-expression and DNA motifs, and then it analyzes the network activity in each cell to identify the recurrent cellular states. In order to reconstruct the gene regulatory network, first it identifies potential targets for each TF based on co-expression, and then it selects the direct-binding targets (regulons) based on DNA-motif analysis. 
 
-![](../inst/doc/SCENIC_workflow.png)
-
 ## Running SCENIC   
 
 SCENIC can be run in two ways:   **TO DO: Update**
