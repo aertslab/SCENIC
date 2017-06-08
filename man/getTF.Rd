@@ -18,6 +18,10 @@ Returns the TF associated to a regulon name (e.g. removes the #genes sufix)
 \details{
 ...
 }
+\examples{
+reguNames <- c("Dlx1 (103g)", "Dlx1_extended (190g)", "Olig2_extended (29g)", "Sox9 (17g)")
+getTF(reguNames)
+}
 \seealso{
 List of vignettes included in the package: \code{vignette(package="SCENIC")}
 }

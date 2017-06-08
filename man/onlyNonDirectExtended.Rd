@@ -18,6 +18,10 @@ Returns the regulon names filtering-out the "extended" regulons if there is a re
 \details{
 ...
 }
+\examples{
+reguNames <- c("Dlx1 (103g)", "Dlx1_extended (190g)", "Olig2_extended (29g)", "Sox9 (17g)")
+onlyNonDirectExtended(reguNames)
+}
 \seealso{
 List of vignettes included in the package: \code{vignette(package="SCENIC")}
 }
