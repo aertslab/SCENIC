@@ -161,7 +161,7 @@ topTFsperTarget &lt;- lapply(linkList_001_byTarget, function(llt) {
    nTFs &lt;- nTopTfs[which(nTopTfs &lt;= nrow(llt))]
    melt(lapply(nTFs, function(x) llt[1:x,&quot;TF&quot;]))
 })
-
+topTFsperTarget &lt;- topTFsperTarget[which(!sapply(sapply(topTFsperTarget, nrow), is.null))]
 topTFsperTarget.asDf &lt;-  data.frame(rbindlist(topTFsperTarget, idcol=TRUE))
 head(topTFsperTarget.asDf)
 colnames(topTFsperTarget.asDf) &lt;- c(&quot;Target&quot;, &quot;TF&quot;, &quot;method&quot;)
@@ -223,7 +223,7 @@ head(tfModules_withCorr)</code></pre>
 <div id="sessioninfo" class="section level1">
 <h1>SessionInfo</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Wed Jun  7 15:53:00 2017&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Jun  8 17:14:18 2017&quot;</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.3.2 (2016-10-31)
 ## Platform: x86_64-pc-linux-gnu (64-bit)

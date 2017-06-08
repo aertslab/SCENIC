@@ -178,6 +178,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       melt(lapply(nTFs, function(x) llt[1:x,"TF"]))
     })
 
+    topTFsperTarget <- topTFsperTarget[which(!sapply(sapply(topTFsperTarget, nrow), is.null))]
     topTFsperTarget.asDf <-  data.frame(rbindlist(topTFsperTarget, idcol=TRUE))
     head(topTFsperTarget.asDf)
     colnames(topTFsperTarget.asDf) <- c("Target", "TF", "method")

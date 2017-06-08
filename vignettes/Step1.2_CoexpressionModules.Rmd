@@ -131,7 +131,7 @@ topTFsperTarget <- lapply(linkList_001_byTarget, function(llt) {
    nTFs <- nTopTfs[which(nTopTfs <= nrow(llt))]
    melt(lapply(nTFs, function(x) llt[1:x,"TF"]))
 })
-
+topTFsperTarget <- topTFsperTarget[which(!sapply(sapply(topTFsperTarget, nrow), is.null))]
 topTFsperTarget.asDf <-  data.frame(rbindlist(topTFsperTarget, idcol=TRUE))
 head(topTFsperTarget.asDf)
 colnames(topTFsperTarget.asDf) <- c("Target", "TF", "method")
