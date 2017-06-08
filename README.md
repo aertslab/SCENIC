@@ -15,8 +15,8 @@ The package includes tutorials describing the functionality and usage of SCENIC:
 Advanced tutorials:
 - [Step 1 - Part 2: Co-expression modules](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step1.2_CoexpressionModules.html)
 - [Step 2: Regulons (DNA motif analysis with RcisTarget)](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step2_Regulons.html)
-- [Step 3 (part 1): Network activity in each cell (AUCell)](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step3.1_NwActivity.html)
-- [Step 3 (part 2): Binary network activity](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step3.2_BinaryNwActivity.html)
+- [Step 3 - Part 1: Network activity in each cell (AUCell)](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step3.1_NwActivity.html)
+- [Step 3 - Part 2: Binary network activity](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step3.2_BinaryNwActivity.html)
 - [Step 4: GRN-based cell states (Clustering)](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step4_Clustering.html)
 
 (examples for follow-up coming soon)
