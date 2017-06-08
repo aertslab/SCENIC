@@ -7,13 +7,13 @@
 getTF(regulonName)
 }
 \arguments{
-\item{regulonName}{...}
+\item{regulonName}{Character vector containing regulon names}
 }
 \value{
-...
+Character vector containing the TF (including the "_extended" sufix if appropiate)
 }
 \description{
-TO DO
+Returns the TF associated to a regulon name (e.g. removes the #genes sufix)
 }
 \details{
 ...

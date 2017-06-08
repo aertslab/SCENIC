@@ -7,15 +7,15 @@
 getRegulonName(TFs, allRegulonNames)
 }
 \arguments{
-\item{TFs}{...}
+\item{TFs}{Transcription factor name}
 
-\item{allRegulonNames}{...}
+\item{allRegulonNames}{List of regulon names (e.g. rownames(AUC...))}
 }
 \value{
-...
+Named character vector
 }
 \description{
-TO DO
+Gets the regulon name for a given TF (only returns the 'extended' regulons if no directly-annotated regulon is available)
 }
 \details{
 ...

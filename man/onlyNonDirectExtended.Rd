@@ -7,13 +7,13 @@
 onlyNonDirectExtended(regulonNames)
 }
 \arguments{
-\item{regulonNames}{...}
+\item{regulonNames}{Character vector containing the regulon names (e.g. rownames(AUC_))}
 }
 \value{
-...
+Character vector
 }
 \description{
-TO DO
+Returns the regulon names filtering-out the "extended" regulons if there is a regulon based on directly annotated motifs
 }
 \details{
 ...

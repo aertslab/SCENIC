@@ -10,35 +10,34 @@ plot_aucTsne(tSNE, exprMat, regulonAUC = NULL, thresholds = NULL, cex = 1,
   "expression"))
 }
 \arguments{
-\item{tSNE}{...}
+\item{tSNE}{t-SNE coordinates (e.g. \code{tSNE$Y})}
 
-\item{exprMat}{...}
+\item{exprMat}{Expression matrix}
 
-\item{regulonAUC}{...}
+\item{regulonAUC}{Regulon AUC (as returned by calcAUC)}
 
-\item{thresholds}{...}
+\item{thresholds}{Thresholds returned by AUCell}
 
-\item{cex}{...}
+\item{cex}{Scaling factor for the dots in the scatterplot}
 
-\item{alphaOn}{...}
+\item{alphaOn}{Transparency for the dots representing "active" cells}
 
-\item{alphaOff}{...}
+\item{alphaOff}{Transparency for the dots representing "inactive" cells}
 
-\item{borderColor}{...}
+\item{borderColor}{Border color for the dots (scatterplot)}
 
-\item{offColor}{...}
+\item{offColor}{Color for the dots representing "inactive" cells}
 
-\item{plots}{...}
+\item{plots}{Which plots to generate? Select one or multiple: \code{plots=c("histogram", "binaryAUC", "AUC", "expression")}}
 }
 \value{
-...
+Returns invisible: \code{cells_trhAssignment}
 }
 \description{
-TO DO
-To avoid calculating thresholds, set thresholds to FALSE
+Plots the AUC histogram and t-SNE coloured by AUC, binary activity and TF expression
 }
 \details{
-...
+To avoid calculating thresholds, set thresholds to FALSE
 }
 \seealso{
 List of vignettes included in the package: \code{vignette(package="SCENIC")}
