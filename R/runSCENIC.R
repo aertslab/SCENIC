@@ -57,8 +57,8 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
   }
   if("1.2" %in% stepsToRun)
   {
-    if(!file.exists("int/1.3_GENIE3_weightMatrix.RData") && !file.exists("int/1.3_GENIE3_linkList.RData")){
-      stop("The output from GENIE3 should be stored in 'int/1.3_GENIE3_weightMatrix.RData' or 'int/1.3_GENIE3_linkList.RData'")
+    if(!file.exists("int/1.3_GENIE3_weightMatrix.RData") && !file.exists("int/1.5_GENIE3_linkList.RData")){
+      stop("The output from GENIE3 should be stored in 'int/1.3_GENIE3_weightMatrix.RData' or 'int/1.5_GENIE3_linkList.RData'")
     }
     if(!file.exists("int/1.4_corrMat.RData")){
       stop("The output from the correlation should be stored in 'int/1.4_corrMat.RData'")
