@@ -4,12 +4,14 @@
 # @import
 #'
 #' @title onlyNonDirectExtended
-#' @description TO DO
-#' @param regulonNames ...
-#' @return ...
+#' @description Returns the regulon names filtering-out the "extended" regulons if there is a regulon based on directly annotated motifs
+#' @param regulonNames Character vector containing the regulon names (e.g. rownames(AUC_))
+#' @return Character vector
 #' @details ...
 #' @seealso List of vignettes included in the package: \code{vignette(package="SCENIC")}
-# @example
+#' @example
+#' reguNames <- c("Dlx1 (103g)", "Dlx1_extended (190g)", "Olig2_extended (29g)", "Sox9 (17g)")
+#' onlyNonDirectExtended(reguNames)
 #' @export
 onlyNonDirectExtended <- function(regulonNames)
 {

@@ -4,13 +4,16 @@
 # @import
 #'
 #' @title getRegulonName
-#' @description TO DO
-#' @param TFs ...
-#' @param allRegulonNames ...
-#' @return ...
+#' @description Gets the regulon name for a given TF (only returns the 'extended' regulons if no directly-annotated regulon is available)
+#' @param TFs Transcription factor name
+#' @param allRegulonNames List of regulon names (e.g. rownames(AUC...))
+#' @return Named character vector
 #' @details ...
 #' @seealso List of vignettes included in the package: \code{vignette(package="SCENIC")}
-# @example
+#' @example
+#' reguNames <- c("Dlx1 (103g)", "Dlx1_extended (190g)", "Olig2_extended (29g)", "Sox9 (17g)")
+#' getRegulonName("Dlx1", reguNames)
+#' getRegulonName("Olig2", reguNames)
 #' @export
 getRegulonName <- function(TFs, allRegulonNames)
 {
