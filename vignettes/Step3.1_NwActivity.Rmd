@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(data.table)
   library(Biobase)
   library(AUCell)
+  library(SCENIC)
   suppressWarnings(library(NMF, verbose=FALSE, warn.conflicts=FALSE, quietly=TRUE))
 })
 
@@ -46,9 +47,9 @@ Once the regulons (direct TF targets) that comprise the gene regulatory network 
 ## Load regulons & expression matrix
 
 Load the expresion matrix:
-```{r loadEset, eval=TRUE}
+```{r loadEset}
 load("data/esetMouseBrain.RData")
-exprMat <- exprs(eseMouseBrain)
+exprMat <- exprs(esetMouseBrain)
 dim(exprMat)
 
 load("data/colVars.RData")
@@ -86,7 +87,7 @@ To calculate whether the regulon is enriched at the top of the gene-ranking for 
 To increase speed, instead of calculating the AUC on the whole ranking, AUCell can use only the top genes in the ranking (i.e. `aucMaxRank`). If this option is used, it is important to check that most cells have at least the number of expressed/detected genes that are going to be used to calculate the AUC. A histogram showing the number of genes detected by cell is returned if 'plotStats=TRUE'.
 
 
-```{r buildRankings, eval=TRUE}
+```{r runAUCell, eval=TRUE}
 library(AUCell)
 # 1. Create rankings
 aucellRankings <- AUCell.buildRankings(exprMat, nCores=4, plotStats=TRUE)
@@ -95,7 +96,10 @@ save(aucellRankings, file="int/3.1_aucellRankings.RData")
 
 # 2. Calculate AUC
 regulonAUC <- AUCell.calcAUC(regulons, aucellRankings, aucMaxRank=aucellRankings@nGenesDetected["1%"], nCores=10)
-
+save(regulonAUC, file="int/3.2_regulonAUC.RData")
+```
+```{r sortAUC}
+load("int/3.2_regulonAUC.RData")
 # Order the modules by similarity, for easier exploration in the upcoming steps & save
 variableRegulons <- names(which(apply(getAuc(regulonAUC), 1, sd) > 0))
 reguDist <-as.dist(1-cor(t(getAuc(regulonAUC)[variableRegulons,]), method="spear"))
@@ -103,7 +107,7 @@ reguClust <- hclust(reguDist, method="ward.D2")
 regulonClusters <- setNames(dynamicTreeCut::cutreeDynamic(reguClust, distM=as.matrix(reguDist), verbose = FALSE), reguClust$labels)
 regulonOrder <- reguClust$labels[reguClust$order]
 regulonOrder <- regulonOrder[order(regulonClusters[regulonOrder], decreasing = TRUE)]
-regulonAUC@matrix <- regulonAUC[regulonOrder,]
+regulonAUC@matrix <- regulonAUC@matrix[regulonOrder,]
 save(regulonAUC, file="int/3.2_regulonAUC.RData")
 
 # Export as text (optional):
@@ -116,7 +120,7 @@ Since the AUC represents the activity of each regulon in each cell, this informa
 
 To get an overview of the overall network activities, we can use a t-SNE. The t-SNE will project the cells into two dimensions, keeping those cells with similar patterns of regulon activity (AUC) closer to each other. In this way, we can already see whether there are groups of cells that tend to have the same regulons active.
 
-```{r tSNE_AUC, eval=FALSE}
+```{r tSNE_AUC, eval=TRUE}
 # (It is recommended to try different perplexity values)
 regulonAUC_subset <- subset(regulonAUC, onlyNonDirectExtended(rownames(regulonAUC)))
 
@@ -150,7 +154,7 @@ cellColorNgenes <- setNames(adjustcolor(colorPal(10), alpha=.8)[as.numeric(cut(n
 plot(tSNE, col=cellColorNgenes[rownames(tSNE)], pch=16, main="nGenes", sub="t-SNE on regulon activity (AUC)")
 
 # Other known properties:
-for(varName in "Tumor")
+for(varName in names(colVars))
 {
   cellColor <- setNames(colVars[[varName]][cellInfo[,varName]], rownames(cellInfo))
   plot(tSNE, col=cellColor[rownames(tSNE)], pch=16, main=varName, sub="t-SNE on regulon activity (AUC)")
@@ -165,7 +169,7 @@ The following code chunk will create a pdf including the AUC histograms, and the
 
 > `plot_aucTsne()` is a function included in SCENIC package for convenience. Feel free to copy and modify it to suit your needs.
 
-```{r histogramsTsne, eval=FALSE}
+```{r histogramsTsne, eval=TRUE}
 library(SCENIC)
 Cairo::CairoPDF("output/Step3_RegulonActivity_AUCtSNE.pdf", width=20, height=5)
 par(mfrow=c(1,4))
@@ -176,9 +180,43 @@ plot(tSNE, col=cellColor[rownames(tSNE)], pch=16, main=varName, sub="t-SNE on re
 plot.new(); plot.new()
 
 # Plot module activity, thresholds & assignment:
-cells_AUCellThresholds <- plot_aucTsne(exprMat, regulonAUC, tSNE, alphaOff=0.1)
+cells_AUCellThresholds <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=regulonAUC, alphaOff=0.1)
 dev.off()
 save(cells_AUCellThresholds, file="int/3.4_AUCellThresholds.RData")
+```
+
+> *preview of the content of the file (few regulons), only for the HTML tutorial:*
+
+```{r htmlPreview, echo=FALSE, fig.height=6, fig.width=7, eval=TRUE}
+regOrder <- c("Neurod1 (68g)", "Dlx1 (103g)", "Sox10 (686g)")
+par(mfrow=c(3,4))
+tmp <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=regulonAUC[regOrder,], alphaOff=0.1, cex=.8)
+```
+
+#### Save thresholds as text
+
+Let's save the thresholds as a text file. It can be used to explore/sort some of the thresholds and regulons. The next step of the tutorial explains why it might be convenient to adjust some thresholds.
+
+```{r thresholds2edit}
+load("int/3.4_AUCellThresholds.RData")
+
+# Get cells assigned to each regulon
+regulonsCells <- lapply(cells_AUCellThresholds, function(x) x$assignment)
+
+### Save threshold info as text (e.g. to edit/modify...)
+trhAssignment <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$selected))
+commentsThresholds <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$comment))
+
+table2edit <- cbind(regulon=names(trhAssignment), 
+                    threshold=trhAssignment, 
+                    nCellsAssigned=lengths(regulonsCells)[names(trhAssignment)],
+                    AUCellComment=commentsThresholds, 
+                    nGenes=gsub("[\\(g\\)]", "", regmatches(names(cells_AUCellThresholds), gregexpr("\\(.*?\\)", names(cells_AUCellThresholds)))),
+                    clusteringOrder=1:length(trhAssignment), 
+                    clusterGroup=regulonClusters[names(trhAssignment)], 
+                    onlyNonDirectExtended=(names(trhAssignment) %in% onlyNonDirectExtended(names(trhAssignment))),
+                    personalNotes="")
+write.table(table2edit, file="int/3.5_1_AUCellThresholds.txt", row.names=F, quote=F, sep="\t")
 ```
 
 

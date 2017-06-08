@@ -1,7 +1,6 @@
 ---
-title: "SCENIC step 2: Regulons (direct TF targets)"
-abstract: "Second step of SCENIC workflow: How to identify regulons (direct TF targets) based on DNA motif enrichment with RcisTarget"
-output: 
+title: 'SCENIC step 2: Regulons (direct TF targets)'
+output:
   BiocStyle::html_document:
     number_sections: no
     toc: yes
@@ -10,10 +9,10 @@ output:
   pdf_document:
     toc: yes
 package: '`r pkg_ver("SCENIC")`'
-vignette: >
-  %\VignetteIndexEntry{SCENIC step 2: Creating regulons (DNA motif analysis with RcisTarget)} 
-  %\VignetteEngine{knitr::rmarkdown} 
-  %\VignetteEncoding{UTF-8}
+abstract: 'Second step of SCENIC workflow: How to identify regulons (direct TF targets)
+  based on DNA motif enrichment with RcisTarget'
+vignette: |
+  %\VignetteIndexEntry{SCENIC step 2: Creating regulons (DNA motif analysis with RcisTarget)}  %\VignetteEngine{knitr::rmarkdown}  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
@@ -21,6 +20,7 @@ vignette: >
 suppressPackageStartupMessages({
   library(data.table)
   library(RcisTarget)
+  library(SCENIC)
 })
 
 # Do not convert strings to factors
@@ -85,7 +85,7 @@ sort(table(tfModulesSummary[,2]))
 
 ## Motif enrichment analysis & identifying direct targets
 
-The analysis with RcisTarget includes two mayor steps. **First**, for each of the gene-sets (in this case, the TF co-expression modules), it identifies enriched transcription factor binding motifs (TFBS). Since we are only interested in direct binding targets, we only keep those motifs that are enriched, and associated to the TF of the module (according to the direct motif-TF annotation databases). In this way, we have identified which transcription factor modules ???as a whole??? present enrichment of the binding motif of the same factor (i.e. the motif of the TF is over-represented in the search space around the TSS of genes in the module, in comparison to all the other genes in the genome). However, not all the genes in the gene-set will have the same enrichment of the motif. Using the **second** step of RcisTarget, we prune the regulons to keep only those genes which are highly ranked (have a high score) for the given motif. 
+The analysis with RcisTarget includes two mayor steps. **First**, for each of the gene-sets (in this case, the TF co-expression modules), it identifies enriched transcription factor binding motifs (TFBS). Since we are only interested in direct binding targets, we only keep those motifs that are enriched, and associated to the TF of the module (according to the direct motif-TF annotation databases). In this way, we have identified which transcription factor modules –as a whole– present enrichment of the binding motif of the same factor (i.e. the motif of the TF is over-represented in the search space around the TSS of genes in the module, in comparison to all the other genes in the genome). However, not all the genes in the gene-set will have the same enrichment of the motif. Using the **second** step of RcisTarget, we prune the regulons to keep only those genes which are highly ranked (have a high score) for the given motif. 
 
 ### How does RcisTarget work?
 
@@ -117,7 +117,7 @@ From the motif enrichment table, we can now select the motifs that are annotated
 
 #### 2. Prune targets 
 
-These `r nrow(motifEnrichment_selfMotifs)` motifs are over-represented -as a whole- in the input TF-module (in comparison to all the other genes in the genome). In order to build the regulon, we now need to determine which of the genes in the TF-module have good scores for the motif. To identify these genes, RcisTarget uses a GSEA-like approach which will select the top-ranked genes for each motif.
+These motifs (`nrow(motifEnrichment_selfMotifs)`) are over-represented -as a whole- in the input TF-module (in comparison to all the other genes in the genome). In order to build the regulon, we now need to determine which of the genes in the TF-module have good scores for the motif. To identify these genes, RcisTarget uses a GSEA-like approach which will select the top-ranked genes for each motif.
 
 For this task, RcisTarget provides the function `addSignificantGenes`. We will apply it to each of the selected motifs, using the appropriate databases.
 
@@ -173,7 +173,7 @@ if(org=="mm9")
 
 ### Run RcisTarget
 
-> *Expected running time:* This step will likely take a few hours to run (you might want to run it on a separate console...). The running time of this step depends on the number and size of the rankings to evaluate (in this case, 2 rankings with `r ncol(motifRankings[[1]])` motifs), and the number of gene-sets (`r length(tfModules)`) (i.e. not on the number of cells).
+> *Expected running time:* This step will likely take a few hours to run (you might want to run it on a separate console...). The running time of this step depends on the number and size of the rankings to evaluate, and the number of gene-sets  (i.e. not on the number of cells). In this case, 2 rankings with `r ncol(motifRankings[[1]])-1` motifs, and `r length(tfModules)` gene sets.
 
 ```{r RcisTarget, eval=TRUE}
 library(RcisTarget)
@@ -334,7 +334,7 @@ table(sapply(names(regulons), function(x) x %in% regulons[[x]]))
 
 ## Motifs associated to a TF (i.e. MITF regulons):
 ```{r exampleTfMotifs}
-selTF <- "MITF"
+selTF <- "Dlx5"
 subsetTable <- motifEnrichment_selfMotifs_wGenes[highlightedTFs %in% selTF][order(NES,decreasing=TRUE)][,-"enrichedGenes", with=F]
 
 subsetTable <- addLogo(subsetTable)
@@ -350,8 +350,8 @@ To interpret these plots, see the help file for `?getSignificantGenes` ('Details
 
 Here we show an example for the motifs enriched in 'MITF_w005' (*10kb around the TSS*):
 ```{r showOneTfEnrichment}
-geneSetName <- "MITF_w005"
-motifDbName <- "500bp"
+geneSetName <- "Dlx5_top50"
+motifDbName <- "10kbp"
 selectedMotifs <- subsetTable[geneSet==geneSetName & motifDb==motifDbName, motif]
 selectedMotifs <- selectedMotifs[1:3]
 ```

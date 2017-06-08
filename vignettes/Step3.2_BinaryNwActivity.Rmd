@@ -1,6 +1,6 @@
 ---
 title: "SCENIC step 3 (part 2): Binary network activity"
-abstract: "The third step of SCENIC workflow analyzes the network activity in each individual cell with AUCell. This second part of the analysis converts the regulon activity in each cell into ON/OFF"
+abstract: "The third step of SCENIC workflow analyzes the network activity in each individual cell with AUCell. This second part of the analysis converts the regulon activity in each cell into ON/OFF."
 output: 
   BiocStyle::html_document:
     number_sections: no
@@ -22,6 +22,7 @@ suppressPackageStartupMessages({
   library(data.table)
   library(Biobase)
   library(AUCell)
+  library(SCENIC)
   suppressWarnings(library(NMF, verbose=FALSE, warn.conflicts=FALSE, quietly=TRUE))
 })
 
@@ -47,52 +48,37 @@ To determine in which cells each regulon is active, we will use an AUC threshold
 
 > `runSCENIC()` function does not provide the option to manually adjust the thresholds. However, you can adjust the thresholds following this tutorial, and resume the automatic workflow using `runSCENIC(..., stepsToRun="4")`.
 
-To edit the thresholds, we propose to go through the plots on the pdf (*3.4_histograms_AUCell_tSNE.pdf*), and change the thresholds value in the following text file (edit field *threshold*). 
+To edit the thresholds, we propose to go through the plots on the pdf (*3.4_histograms_AUCell_tSNE.pdf*), and change the thresholds value in the `int/3.5_1_AUCellThresholds.txt` text file (edit field *threshold*). 
 
 In the next steps we will read the file and set the threshols according to the value on the column *threshold*:
+
 - To set a manual value: Write the new numeric value
+
 - To select one of the thresholds calculanted by AUCell: Write the name of the threshold (Global_k1, L_k2, R_k3 or minimumDens)
+
     - Grey: Global_k1
+    
     - Red: L_k2
+    
     - Pink: R_k3    
+    
     - Blue: minimumDens
+    
 - To select one of the inflection points of the density curve: Write "Bimodal" (To avoid false positives, AUCell ignores the inflection points when the second distribution is higher, but we can re-calculate it).
+
 - Keep current threshold: Do not edit the field
 
 The file also contains some other columns (to reorder the regulons or to write down your own comments). Those columns are ignored in the followig steps.
 
-Create file to edit:
-```{r thresholds2edit}
-load("int/3.4_cells_AUCellThresholds.RData")
-
-# Get cells assigned to each regulon
-regulonsCells <- lapply(cells_AUCellThresholds, function(x) x$assignment)
-
-### Save threshold info as text (e.g. to edit/modify...)
-trhAssignment <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$selected))
-commentsThresholds <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$comment))
-
-table2edit <- cbind(regulon=names(trhAssignment), 
-                    threshold=trhAssignment, 
-                    nCellsAssigned=lengths(regulonsCells)[names(trhAssignment)],
-                    AUCellComment=commentsThresholds, 
-                    nGenes=gsub("[\\(g\\)]", "", regmatches(names(cells_AUCellThresholds), gregexpr("\\(.*?\\)", names(cells_AUCellThresholds)))),
-                    clusteringOrder=1:length(trhAssignment), 
-                    clusterGroup=regulonClusters[names(trhAssignment)], 
-                    onlyNonDirectExtended=(names(trhAssignment) %in% onlyNonDirectExtended(names(trhAssignment))),
-                    personalNotes="")
-write.table(table2edit, file="int/3.5_1_AUCellThresholds.txt", row.names=F, quote=F, sep="\t")
-```
-
 Read the new thresholds to set:
-```{r manualThresholds}
-manualThresholds <- read.table("int/3.5_2_AUCellThresholds_toEDIT.txt", sep="\t", header=T)
+```{r manualThresholds, eval=FALSE}
+manualThresholds <- read.table("int/3.5_2_AUCellThresholds_EDITED.txt", sep="\t", header=T)
 newThresholds <- setNames(manualThresholds[,"threshold"], manualThresholds[,"regulon"])
 length(newThresholds)
 ```
 
 Get the pre-calculated thresholds (optional):
-```{r precalcThresholds, eval=TRUE}
+```{r precalcThresholds, eval=FALSE}
 load("int/3.4_AUCellThresholds.RData")
 convert <- newThresholds[which(newThresholds %in% c("Global_k1", "L_k2", "R_k3", "minimumDens"))]
 newThresholds[names(convert)] <- sapply(names(convert), function(reg) cells_AUCellThresholds[[reg]]$aucThr$thresholds[convert[reg],"threshold"])
@@ -103,7 +89,7 @@ Calculate the threshold based on the inflection point of the density curve (opti
 
 Please theck this code calculates it correctly (you might need to modify the *adjust* parameter for some regulons)
 
-```{r bimodalThresholds, eval=TRUE, fig.height=7, fig.width=10}
+```{r bimodalThresholds, eval=FALSE, fig.height=7, fig.width=10}
 load("int/3.2_regulonAUC.RData")
 secondHigherRegs <- manualThresholds[grep("Bimodal", manualThresholds[,"threshold"]), "regulon"]
 
@@ -124,7 +110,7 @@ for(modName in secondHigherRegs)
 }
 ```
 
-```{r saveNewThresholds}
+```{r saveNewThresholds, eval=FALSE}
 any(is.na(as.numeric(newThresholds)))
 newThresholds  <- setNames(as.numeric(newThresholds), names(newThresholds))
 save(newThresholds, file="int/3.5_3_newThresholds.RData")
@@ -134,7 +120,7 @@ save(newThresholds, file="int/3.5_3_newThresholds.RData")
 ### Get the cells that have each regulon active with the new thresholds
 
 Once the thresholds are chosen, assign cells according to the new thresholds:
-```{r cellActivity}
+```{r cellActivity, eval=FALSE}
 load("data/esetmouseBrain.RData"); exprMat <- exprs(esetMouseBrain)
 load("int/3.5_3_newThresholds.RData")
 load("int/3.3_tsneRegulonAUC_PCA.RData"); tSNE <- tsneAUC$Y
@@ -213,6 +199,14 @@ boxplot(colSums(binaryRegulonActivity_nonDupl), main="nRegulons per Cell",
 
 To visualize the binary matrix, we will plot it as heatmap. 
 
+Load cell info & variable colors:
+```{r loadColors}
+load("data/colVars.RData")
+load("data/esetMouseBrain.RData")
+cellInfo <- pData(esetMouseBrain)[,names(colVars), drop=F]
+minCells <- ncol(esetMouseBrain) * .01
+```
+
 In this version of the heatmap we will show the regulons that present an absolute correlation with any other module over 0.3:
 ```{r regulonCorrelation}
 load("int/3.6_binaryRegulonActivity.RData")
@@ -239,13 +233,11 @@ missingRegs <- rownames(binaryRegulonActivity_nonDupl)[which(!rownames(binaryReg
 regulonSelection[["Regulons no other regulons correlated\n with abs(cor)>0.30 \n or active in fewer than 1% of cells"]]  <- missingRegs
 
 save(regulonSelection,file="int/3.8_regulonSelections.RData")
-```
 
-Load cell info & variable colors:
-```{r loadColors}
-load("data/colVars.RData")
-load("data/esetMouseBrain.RData")
-cellInfo <- pData(esetMouseBrain)[,names(colVars), drop=F]
+## Set regulon order (for plotting)
+binaryRegulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
+binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+save(binaryRegulonOrder,file="int/3.9_binaryRegulonOrder.RData")
 ```
 
 Plot heatmaps (4 versions):
@@ -260,6 +252,17 @@ for(i in seq_len(length(regulonSelection)))
                 color = c("white", "black"), 
                 filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
 }
+```
+
+> *preview, only for the HTML tutorial:*
+
+```{r htmlPreview, echo=FALSE, fig.height=7, fig.width=7, eval=TRUE}
+selRegs <- names(regulonSelection)[3]
+binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+                annCol=cellInfo[colnames(binaryMat),, drop=FALSE], 
+                annColor=colVars,
+                color = c("white", "black"))
 ```
 
 # SessionInfo

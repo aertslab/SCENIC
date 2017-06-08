@@ -19,9 +19,9 @@ vignette: >
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 # Suppress loading messages when building the HTML
 suppressPackageStartupMessages({
-  # library(data.table)
-  # library(RcisTarget)
-    library(Rtsne)
+  library(Biobase)
+  library(SCENIC)
+  library(Rtsne)
 })
 
 # Do not convert strings to factors
@@ -41,13 +41,15 @@ In this tutorial we present a few examples using t-SNE on the binary matrix, but
 
 ## Load cell info and binary activity matrix
 
-```{r}
+```{r load}
 load("data/esetMouseBrain.RData")
+exprMat <- exprs(esetMouseBrain)
 load("data/colVars.RData")
-cellInfo <- pData(esetMouseBrain)[colnames(exprMat), names(colVars), drop=F]
+cellInfo <- pData(esetMouseBrain)[, names(colVars), drop=F]
 
 load("int/cellColorNgenes.RData")
 load("int/3.7_binaryRegulonActivity_nonDupl.RData")
+tBinaryAct <- t(binaryRegulonActivity_nonDupl)
 ```
 
 ## Calculate t-SNE on the binary regulon activity
@@ -58,9 +60,8 @@ Note that with the binary activity matrix, it is quite likely that some cells sh
 
 > Briefly, a t-SNE is a 2D projection of the cells, where cells (dots) are placed close to each other if they have similar input profiles (in this case, similar GRN activity according to the binary regulon activity matrix).
 
-```{r}
+```{r calcTsnes, eval=FALSE}
 library(Rtsne)
-tBinaryAct <- t(binaryRegulonActivity_nonDupl)
 
 ##################################
 # PCA based t-SNE
@@ -100,8 +101,9 @@ We will now plot the different versionf of the t-SNE coloured by the known cell 
 
 To detect the most likely stable states, we can also generate a density plot. The areas with higher density are more likely to correspond to 'stable states'. 
 
-```{r}
+```{r plotTsnes_cellProps}
 tSNEs_binary <- list()
+load("int/4.1_tsneBinaryActivity_Dist.RData")
 tSNEs_binary[["Dist"]] <- tsneBinaryActivity_Dist$Y
 load("int/4.1_tsneBinaryActivity_5PC.RData")
 tSNEs_binary[["5PC"]] <- tsneBinaryActivity_PCA$Y
@@ -147,44 +149,95 @@ for(tsneName in names(tSNEs_binary))
 }
 ```
 
+> *preview, only for the HTML tutorial:*
+
+t-SNE based on binary activity (and density), coloured by cell properties
+```{r htmlPreview, echo=FALSE, fig.height=8, fig.width=7, eval=TRUE}
+par(mfrow=c(3,3))
+for(tsneName in names(tSNEs_binary))
+{
+    tSNE_binary <- tSNEs_binary[[tsneName]]
+    
+    # Density
+    library(KernSmooth)
+    library(RColorBrewer)
+    dens2d <- bkde2D(tSNE_binary, 1)$fhat
+    
+    # nGenes
+    plot(tSNE_binary, col=cellColorNgenes[rownames(tSNE_binary)], pch=16, main=tsneName,
+         sub="Color: # genes detected")
+    # density
+    image(dens2d, col=brewer.pal(9, "YlOrBr"), axes=FALSE)
+    contour(dens2d, add=TRUE, nlevels=5, drawlabels=FALSE)
+    
+    # Known phenotype:
+    if(!is.null(cellInfo))
+    {
+        nVars <- ncol(cellInfo)
+        for(varName in colnames(cellInfo)[1]) # For the html version, show only first property
+        {
+            cellColor <- setNames(colVars[[varName]][as.character(cellInfo[,varName])], 
+                                  rownames(cellInfo))
+            plot(tSNE_binary, col=cellColor[rownames(tSNE_binary)], pch=16, 
+                 main=varName, sub="t-SNE on Binary regulon activity",
+                 xlab="", ylab="",axes = FALSE)
+        }
+    }
+}
+```
+
 ### Coloured by regulon activity
 Finally, we can choose one of the t-SNEs and project on it the activity of the regulons.
 
 Here we provide several options: 
 
-```{r}
+```{r loadRegAct}
 # Choose a t-SNE
 load("int/4.1_tsneBinaryActivity_50PC.RData")  
 tSNE_binary <- tsneBinaryActivity_PCA$Y
 tSNEname <- "tsneBinaryActivity_50PC"
 
-## Set regulon order (only plotting most correlated regulons)
-regulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
-regulonOrder <- regulonOrder$labels[regulonOrder$order]
+# Load...
+load("int/3.6_binaryRegulonActivity.RData")
+load("int/3.9_binaryRegulonOrder.RData")
+load("int/3.2_regulonAUC.RData")
+load("int/3.4_AUCellThresholds.RData")
 ```
 
-```{r}
+```{r plotTsnes_activity, eval=TRUE}
+regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(tBinaryAct))]
 Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_BinaryRegulons.pdf"), width=20, height=15)
 par(mfrow=c(4,6))
-cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
-    regulonAUC=binaryRegulonActivity[regulonOrder,], cex=1.5, plots="binary", thresholds=0)
+cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat,
+    regulonAUC=tBinaryAct[regOrder,], cex=1.5, plots="binary", thresholds=0)
 dev.off()
 
+regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(regulonAUC))]
 Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_AUCRegulons.pdf"), width=20, height=15)
 par(mfrow=c(4,6))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
-    regulonAUC=regulonAUC[regulonOrder,], cex=1.5, plots="AUC", thresholds=0)
+    regulonAUC=regulonAUC[regOrder,], cex=1.5, plots="AUC", thresholds=0)
 dev.off()
-
 
 Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_allPlots.pdf"), width=20, height=5)
 par(mfrow=c(1,4))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
-        regulonAUC=regulonAUC[regulonOrder,],
-        alphaOff=0.1, thresholds=cells_AUCellThresholds[regulonOrder])
+        regulonAUC=regulonAUC[regOrder,],
+        alphaOff=0.1, thresholds=cells_AUCellThresholds[regOrder])
 dev.off()
 ```
 
+> *preview, only for the HTML tutorial:*
+
+t-SNE based on binary activity, coloured by regulon activity (AUC)
+```{r htmlPreview2, echo=FALSE, fig.height=8, fig.width=7, eval=TRUE}
+regOrder <- c("Neurod1 (68g)", "Dlx1 (103g)", "Dlx5 (95g)",
+              "Sox10 (686g)", "Olig2_extended (29g)", "Sox9 (17g)",
+              "Runx1 (240g)", "Fli1 (802g)", "Ets1 (889g)")
+par(mfrow=c(3,3))
+cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
+    regulonAUC=regulonAUC[regOrder,], cex=1.5, plots="AUC", thresholds=0)
+```
 
 # SessionInfo
 ```{r sessionInfo}

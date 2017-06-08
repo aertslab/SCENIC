@@ -1,5 +1,5 @@
 ---
-title: "Running SCENIC: Step 1 and 'runSCENIC' (automated steps 2-4)"
+title: "Running SCENIC"
 subtitle: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
 abstract: "First steps for running SCENIC: Filtering the expression matrix, running GENIE3, and (optional) running the next steps in SCENIC using runSCENIC(), the wrapper function."
 output:
@@ -14,7 +14,7 @@ package: '`r pkg_ver("SCENIC")`'
 bibliography: references.bib
 csl: cell.csl
 vignette: >
-  %\VignetteIndexEntry{Running SCENIC} 
+  %\VignetteIndexEntry{Running SCENIC: Step 1 (GENIE3) and 'runSCENIC' (automated steps 2-4)} 
   %\VignetteEngine{knitr::rmarkdown} 
   %\VignetteEncoding{UTF-8}
 ---
@@ -252,10 +252,13 @@ Calculate the correlation (it can be run before/simultaneously to GENIE3):
 load("int/1.1_exprMatrix_filtered.RData")
 corrMat <- cor(t(exprMatrix_filtered), method="spearman")
 save(corrMat, file="int/1.4_corrMat.RData")
+
+# To save storage space, you may save only the rows for TFs:
+# corrMat <- corrMat[which(rownames(corrMat) %in% inputTFs),]
 ```
 
 
-# Next steps  
+# Next steps
 
 Once the results from GENIE3/GRNboost (and the correlation) are ready, the remaining steps of SCENIC can be run. You can choose to run each step individually (following the remaining tutorials) or using the "Wrapper function" (`runSCENIC()`, see next section in this tutorial). The wrapper function is equivalent to running each of the individual scripts/tutorias sequentially: 
 

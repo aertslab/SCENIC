@@ -676,6 +676,11 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     regulonSelection[["Regulons no other regulons correlated\n with abs(cor)>0.30 \n or active in fewer than 1% of cells"]]  <- missingRegs
     save(regulonSelection,file="int/3.8_regulonSelections.RData")
 
+    ## Set regulon order (only plotting most correlated regulons)
+    binaryRegulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
+    binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+    save(binaryRegulonOrder,file="int/3.9_binaryRegulonOrder.RData")
+
     ### Plot heatmap:
     for(i in seq_len(length(regulonSelection)))
     {
@@ -700,6 +705,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       #   }
       load("int/cellColorNgenes.RData")
       load("int/3.7_binaryRegulonActivity_nonDupl.RData")
+      load("int/3.9_binaryRegulonOrder.RData")
     }
 
     library(Rtsne)
@@ -785,25 +791,21 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     load("int/4.1_tsneBinaryActivity_50PC.RData")
     tSNE_binary <- tsneBinaryActivity_PCA$Y
 
-    ## Set regulon order (only plotting most correlated regulons)
-    regulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
-    regulonOrder <- regulonOrder$labels[regulonOrder$order]
-
     Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_BinaryRegulons.pdf", width=20, height=15)
     par(mfrow=c(4,6))
-    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=binaryRegulonActivity[regulonOrder,], cex=1.5, plots="binary", thresholds=0)
+    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=tBinaryAct[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
     dev.off()
 
     Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_AUCRegulons.pdf", width=20, height=15)
     par(mfrow=c(4,6))
-    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[regulonOrder,], cex=1.5, plots="AUC", thresholds=0)
+    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[binaryRegulonOrder,], cex=1.5, plots="AUC", thresholds=0)
     dev.off()
 
 
     Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_allPlots.pdf", width=20, height=5)
     par(mfrow=c(1,4))
-    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[regulonOrder,],
-                                        alphaOff=0.1, thresholds=cells_AUCellThresholds[regulonOrder])
+    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[binaryRegulonOrder,],
+                                        alphaOff=0.1, thresholds=cells_AUCellThresholds[binaryRegulonOrder])
     dev.off()
   }
   sink()
