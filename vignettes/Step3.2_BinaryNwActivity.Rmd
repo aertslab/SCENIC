@@ -245,12 +245,15 @@ Plot heatmaps (4 versions):
 for(i in seq_len(length(regulonSelection)))
 {
   selRegs <- names(regulonSelection)[i]
-  binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
-  NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
-                annCol=cellInfo[colnames(binaryMat),, drop=FALSE], 
-                annColor=colVars,
-                color = c("white", "black"), 
-                filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+  if(length(selRegs)>1)
+  {
+      binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+      NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+                    annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                    annColor=colVars,
+                    color = c("white", "black"),
+                    filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+   }
 }
 ```
 

@@ -200,7 +200,7 @@ load(&quot;int/3.4_AUCellThresholds.RData&quot;)</code></pre>
 Cairo::CairoPDF(paste0(&quot;output/Step4.2_&quot;,tSNEname,&quot;_BinaryRegulons.pdf&quot;), width=20, height=15)
 par(mfrow=c(4,6))
 cells_trhAssignment &lt;- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat,
-    regulonAUC=tBinaryAct[regOrder,], cex=1.5, plots=&quot;binary&quot;, thresholds=0)
+    regulonAUC=t(tBinaryAct)[binaryRegulonOrder,], cex=1.5, plots=&quot;binary&quot;, thresholds=0)
 dev.off()
 
 regOrder&lt;- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(regulonAUC))]
@@ -226,7 +226,7 @@ dev.off()</code></pre>
 <div id="sessioninfo" class="section level1">
 <h1>SessionInfo</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Thu Jun  8 14:56:35 2017&quot;</code></pre>
+<pre><code>## [1] &quot;Fri Jun  9 11:04:40 2017&quot;</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.3.2 (2016-10-31)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
