@@ -11,8 +11,10 @@ output:
 package: '`r pkg_ver("SCENIC")`'
 abstract: 'Second step of SCENIC workflow: How to identify regulons (direct TF targets)
   based on DNA motif enrichment with RcisTarget'
-vignette: |
-  %\VignetteIndexEntry{SCENIC step 2: Creating regulons (DNA motif analysis with RcisTarget)}  %\VignetteEngine{knitr::rmarkdown}  %\VignetteEncoding{UTF-8}
+vignette: >
+  %\VignetteIndexEntry{SCENIC step 2: Creating regulons (DNA motif analysis with RcisTarget)}
+  %\VignetteEngine{knitr::rmarkdown}  
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}

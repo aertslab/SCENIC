@@ -68,44 +68,47 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
   stepsToRun <- as.character(stepsToRun)
   ## Motif databases
   if(!org %in% c("mm9", "hg19", NULL)) stop("Organism not valid. Choose either 'hg19' (human), 'mm9' (mouse) or NULL.")
-  if((org=="mm9") & ("2" %in% stepsToRun))
+  if("2" %in% stepsToRun)
   {
-    message(format(Sys.time(), "%H:%M"), "\tLoading mouse (mm9) databases.")
-    library(RcisTarget.mm9.motifDatabases.20k)
+    if(org=="mm9")
+    {
+      message(format(Sys.time(), "%H:%M"), "\tLoading mouse (mm9) databases.")
+      library(RcisTarget.mm9.motifDatabases.20k)
 
-    # Motif rankings (genes x motifs)
-    data(mm9_500bpUpstream_motifRanking)
-    data(mm9_10kbpAroundTss_motifRanking)
-    motifRankings <- list()
-    motifRankings[["500bp"]] <- mm9_500bpUpstream_motifRanking
-    motifRankings[["10kbp"]] <- mm9_10kbpAroundTss_motifRanking
+      # Motif rankings (genes x motifs)
+      data(mm9_500bpUpstream_motifRanking)
+      data(mm9_10kbpAroundTss_motifRanking)
+      motifRankings <- list()
+      motifRankings[["500bp"]] <- mm9_500bpUpstream_motifRanking
+      motifRankings[["10kbp"]] <- mm9_10kbpAroundTss_motifRanking
 
-    # Motif annotation (TFs)
-    data(mm9_direct_motifAnnotation)
-    direct_motifAnnotation <- mm9_direct_motifAnnotation
-    data(mm9_inferred_motifAnnotation) # optional
-    inferred_motifAnnotation <- mm9_inferred_motifAnnotation
+      # Motif annotation (TFs)
+      data(mm9_direct_motifAnnotation)
+      direct_motifAnnotation <- mm9_direct_motifAnnotation
+      data(mm9_inferred_motifAnnotation) # optional
+      inferred_motifAnnotation <- mm9_inferred_motifAnnotation
+    }
+
+    if(org=="hg19")
+    {
+      message(format(Sys.time(), "%H:%M"), "\tLoading human (hg19) databases.")
+      library(RcisTarget.hg19.motifDatabases.20k)
+
+      # Motif rankings (genes x motifs)
+      data(hg19_500bpUpstream_motifRanking)
+      data(hg19_10kbpAroundTss_motifRanking)
+      motifRankings <- list()
+      motifRankings[["500bp"]] <- hg19_500bpUpstream_motifRanking
+      motifRankings[["10kbp"]] <- hg19_10kbpAroundTss_motifRanking
+
+      # Motif annotation (TFs)
+      data(hg19_direct_motifAnnotation)
+      direct_motifAnnotation <- hg19_direct_motifAnnotation
+      data(hg19_inferred_motifAnnotation) # optional
+      inferred_motifAnnotation <- hg19_inferred_motifAnnotation
+    }
+    allTFs <- unique(direct_motifAnnotation$allTFs, inferred_motifAnnotation$allTFs)
   }
-
-  if((org=="hg19") & ("2" %in% stepsToRun))
-  {
-    message(format(Sys.time(), "%H:%M"), "\tLoading human (hg19) databases.")
-    library(RcisTarget.hg19.motifDatabases.20k)
-
-    # Motif rankings (genes x motifs)
-    data(hg19_500bpUpstream_motifRanking)
-    data(hg19_10kbpAroundTss_motifRanking)
-    motifRankings <- list()
-    motifRankings[["500bp"]] <- hg19_500bpUpstream_motifRanking
-    motifRankings[["10kbp"]] <- hg19_10kbpAroundTss_motifRanking
-
-    # Motif annotation (TFs)
-    data(hg19_direct_motifAnnotation)
-    direct_motifAnnotation <- hg19_direct_motifAnnotation
-    data(hg19_inferred_motifAnnotation) # optional
-    inferred_motifAnnotation <- hg19_inferred_motifAnnotation
-  }
-  allTFs <- unique(direct_motifAnnotation$allTFs, inferred_motifAnnotation$allTFs)
 
   ################################################################################
   # Step 1. Part 2: Creating TF modules (potential TF-targets)
@@ -686,12 +689,15 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     for(i in seq_len(length(regulonSelection)))
     {
       selRegs <- names(regulonSelection)[i]
-      binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
-      NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
-                    annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
-                    annColor=colVars,
-                    color = c("white", "black"),
-                    filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+      if(length(selRegs)>1)
+      {
+          binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+          NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+                        annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                        annColor=colVars,
+                        color = c("white", "black"),
+                        filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+       }
     }
   }
   ################################################################################
@@ -794,7 +800,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
     Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_BinaryRegulons.pdf", width=20, height=15)
     par(mfrow=c(4,6))
-    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=tBinaryAct[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
+    cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=t(tBinaryAct)[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
     dev.off()
 
     Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_AUCRegulons.pdf", width=20, height=15)

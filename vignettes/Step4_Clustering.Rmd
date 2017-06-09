@@ -209,7 +209,7 @@ regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(tBinaryAct)
 Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_BinaryRegulons.pdf"), width=20, height=15)
 par(mfrow=c(4,6))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat,
-    regulonAUC=tBinaryAct[regOrder,], cex=1.5, plots="binary", thresholds=0)
+    regulonAUC=t(tBinaryAct)[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
 dev.off()
 
 regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(regulonAUC))]
