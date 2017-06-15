@@ -72,7 +72,7 @@ The file also contains some other columns (to reorder the regulons or to write d
 
 Read the new thresholds to set:
 ```{r manualThresholds, eval=FALSE}
-manualThresholds <- read.table("int/3.5_2_AUCellThresholds_EDITED.txt", sep="\t", header=T)
+manualThresholds <- read.table("int/3.5_2_AUCellThresholds_EDITED.txt", sep="\t", header=T, stringsAsFactors=FALSE)
 newThresholds <- setNames(manualThresholds[,"threshold"], manualThresholds[,"regulon"])
 length(newThresholds)
 ```
@@ -126,11 +126,11 @@ load("int/3.5_3_newThresholds.RData")
 load("int/3.3_tsneRegulonAUC_PCA.RData"); tSNE <- tsneAUC$Y
 load("int/3.2_regulonAUC.RData")
 
-Cairo::CairoPDF("output/Step3_RegulonActivity_AUCtSNE_newThresholds.pdf", width=20, height=5)
+Cairo::CairoPDF("output/Step3_3.1_RegulonActivity_AUCtSNE_newThresholds.pdf", width=20, height=5)
 par(mfrow=c(1,4))
-newAssignment <- plot_aucTsne(exprMat, regulonAUC=regulonAUC, tSNE=tSNE, thresholds=newThresholds)
+new_AUCellThresholds <- plot_aucTsne(exprMat, regulonAUC=regulonAUC, tSNE=tSNE, thresholds=newThresholds)
 dev.off()
-save(newAssignment, file="int/3.5_4_newAssignment.RData")
+save(new_AUCellThresholds, file="int/3.5_4_new_AUCellThresholds.RData")
 ```
 
 ## Binary regulon activity matrix (Active regulons per cell)
@@ -146,9 +146,9 @@ load("int/3.4_AUCellThresholds.RData")
 
 *If you have modified the thresholds:*
 ```{r loadAssignmentA, eval=FALSE}
-load("int/3.5_4_newAssignment.RData")
-cells_AUCellThresholds <- newAssignment
-rm(newAssignment)
+load("int/3.5_4_new_AUCellThresholds.RData")
+cells_AUCellThresholds <- new_AUCellThresholds
+rm(new_AUCellThresholds)
 ```
 
 ```{r createBinaryMatrix}
@@ -160,7 +160,7 @@ length(regulonsCells)
 regulonActivity <- reshape2::melt(regulonsCells)
 binaryRegulonActivity <- t(table(regulonActivity[,1], regulonActivity[,2]))
 class(binaryRegulonActivity) <- "matrix"
-save(binaryRegulonActivity, file="int/3.6_BinaryRegulonActivity.RData")
+save(binaryRegulonActivity, file="int/3.6_binaryRegulonActivity.RData")
 
 dim(binaryRegulonActivity)
 binaryRegulonActivity[1:10,1:3]
@@ -223,6 +223,7 @@ regulonSelection[["Regulons active in more than 1% of cells"]] <- regMinCells
 
 # Correlation across regulons (based on binary cell activity)
 reguCor <- cor(t(binaryRegulonActivity_nonDupl[regMinCells,]))
+reguCor[which(is.na(reguCor))] <- 0
 diag(reguCor) <- 0
 
 # Regulons that co-ocurr in similar cells. If a regulon is relevant by itself it will not be shown, also check the regulons ignored.
@@ -244,16 +245,16 @@ Plot heatmaps (4 versions):
 ```{r heatmapPlot, eval=TRUE}
 for(i in seq_len(length(regulonSelection)))
 {
-  selRegs <- names(regulonSelection)[i]
-  if(length(selRegs)>1)
-  {
-      binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
-      NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+    selRegs <- names(regulonSelection)[i]
+    if(length(regulonSelection[[selRegs]])>1)
+    {
+        binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+        NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
                     annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
                     annColor=colVars,
                     color = c("white", "black"),
-                    filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
-   }
+                    filename=paste0("output/Step3_3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+    }
 }
 ```
 

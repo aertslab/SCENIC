@@ -11,7 +11,7 @@ runSCENIC(exprMat = NULL, org = NULL, cellInfo = NULL, colVars = NULL,
 \arguments{
 \item{exprMat}{expression matrix}
 
-\item{org}{"mm9" for mouse, or "hg19" for human. Determines the databases used for RcisTarget}
+\item{org}{"hg19" for human, "mm9" for mouse, or "dm6" for drosophila melanogaster. Determines the databases used for RcisTarget.}
 
 \item{cellInfo}{Phenodata information for the cells}
 

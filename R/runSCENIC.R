@@ -18,7 +18,7 @@
 #' - Step4_Clustering.Rmd: Identify stable cell states based on their gene regulatory network activity (cell clustering)
 #' (e.g. all steps and parameters are the same)
 #' @param exprMat expression matrix
-#' @param org "mm9" for mouse, or "hg19" for human. Determines the databases used for RcisTarget
+#' @param org "hg19" for human, "mm9" for mouse, or "dm6" for drosophila melanogaster. Determines the databases used for RcisTarget.
 #' @param cellInfo Phenodata information for the cells
 #' @param colVars Colors to use to plot the cellInfo (formatted as a list, same format as in NMF::aheatmap)
 #' @param stepsToRun Determines the Steps of SCENIC to run (matches the numbers/order in the title of the tutorials). By default: c("1.2", "2", "3.1", "3.2", "4").
@@ -67,7 +67,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
   stepsToRun <- as.character(stepsToRun)
   ## Motif databases
-  if(!org %in% c("mm9", "hg19", NULL)) stop("Organism not valid. Choose either 'hg19' (human), 'mm9' (mouse) or NULL.")
+  if(!org %in% c("mm9", "hg19", "dm6", NULL)) stop("Organism not valid. Choose either 'hg19' (human), 'mm9' (mouse), 'dm6' (fruit fly) or NULL.")
   if("2" %in% stepsToRun)
   {
     if(org=="mm9")
@@ -107,6 +107,24 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       data(hg19_inferred_motifAnnotation) # optional
       inferred_motifAnnotation <- hg19_inferred_motifAnnotation
     }
+
+    if(org=="dm6")
+    {
+      message(format(Sys.time(), "%H:%M"), "\tLoading Drosophila melanogaster (dm6) databases.")
+      library(RcisTarget.dm6.motifDatabases.20k)
+
+      # Motif rankings (genes x motifs)
+      data(dm6_UPSTREAM5KB_FULL_TX_motifRanking)
+      motifRankings <- list()
+      motifRankings[["5kbp"]] <- dm6_UPSTREAM5KB_FULL_TX_motifRanking
+
+      # Motif annotation (TFs)
+      data(dm6_direct_motifAnnotation)
+      direct_motifAnnotation <- dm6_direct_motifAnnotation
+      data(dm6_inferred_motifAnnotation) # optional
+      inferred_motifAnnotation <- dm6_inferred_motifAnnotation
+    }
+
     allTFs <- unique(direct_motifAnnotation$allTFs, inferred_motifAnnotation$allTFs)
   }
 
@@ -124,6 +142,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     if(file.exists("int/1.5_GENIE3_linkList.RData"))
     {
       load("int/1.5_GENIE3_linkList.RData")
+      if(!all(colnames(linkList) == c("TF", "Target", "weight"))) stop('The link list colnames should be "TF", "Target", "weight"')
     }else{
       load("int/1.3_GENIE3_weightMatrix.RData")
       linkList <- getLinkList(weightMatrix, threshold=0.001) # (slighly faster)
@@ -135,8 +154,8 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     }
 
 
-    dim(linkList)
-    head(linkList)
+    # dim(linkList)
+    # head(linkList)
 
     quantile(linkList$weight, probs=c(0.75, 0.90))
     plot(linkList$weight[1:1000000], type="l", ylim=c(0, max(linkList$weight)), main="Weight of the links",
@@ -146,7 +165,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
     linkList_001 <- linkList[which(linkList[,"weight"]>0.001),]
     # Number of links over the threshold:
-    nrow(linkList_001)
+    # nrow(linkList_001)
 
     #### Create the gene-sets & save:
 
@@ -237,7 +256,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     # Remove genes missing from RcisTarget databases
     #  (In case the input matrix wasn't already filtered)
     tfModules_withCorr <- tfModules_withCorr[which(as.character(tfModules_withCorr$TF) %in% allTFs),]
-    geneInDb <- tfModules_withCorr$Target %in% motifRankings[["500bp"]]@rankings$rn
+    geneInDb <- tfModules_withCorr$Target %in% motifRankings[[1]]@rankings$rn
         missingGene <- sort(unique(tfModules_withCorr[which(!geneInDb),"Target"]))
         if(length(missingGene)>0) warning(paste0("Genes in co-expression modules not available in RcisTargetDatabases: ", paste(missingGene, collapse=", ")))
     tfModules_withCorr <- tfModules_withCorr[which(geneInDb),]
@@ -276,8 +295,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     message(msg)
 
     motifs_AUC <- lapply(motifRankings, function(ranking) calcAUC(tfModules, ranking, aucMaxRank=0.01*nrow(ranking), nCores=nCores, verbose=FALSE))
-    save(motifs_AUC, file="int/2.2_motifs_AUC_500bp_10kbp.RData")
-    # load("int/2.2_motifs_AUC_500bp_10kbp.RData")
+    save(motifs_AUC, file="int/2.2_motifs_AUC.RData") # renamed from: 2.2_motifs_AUC_500bp_10kbp.RData
 
     ### 1.2 Conver to table, filter by NES & add the TFs to which the motif is annotated
     # (For each database...)
@@ -410,7 +428,6 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
   {
     if(!"2" %in% stepsToRun)  # If 2 has not been run in this execution: Load its outputs TO DO: (something needed from 1?)
     {
-      # load("int/2.2_motifs_AUC_500bp_10kbp.RData")
       load("int/2.6_regulons_asGeneSet.RData")
     #   if(!file.exists("int/")){
     #     # stop("The output from xxx should be stored in 'int/xxx.RData'")
@@ -441,7 +458,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     # AUCell
     library(AUCell)
     # 1. Create rankings
-    pdf("output/Step3.1_aucellGenesStats.pdf")
+    pdf("output/Step3_3.1_aucellGenesStats.pdf")
     aucellRankings <- AUCell.buildRankings(exprMat, nCores=nCores, plotStats=TRUE)
     abline(v=aucellRankings@nGenesDetected["1%"], col="skyblue3", lwd=5, lty=3)
     dev.off()
@@ -497,7 +514,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       save(tsneAUC, file="int/3.3_tsneRegulonAUC_Dist.RData")
 
       # Plot the preview of the t-SNEs (only colored by genes)
-      pdf("output/Step3.1_AUCtSNEs.pdf")
+      pdf("output/Step3_3.1_AUCtSNEs.pdf")
       par(mfrow=c(2,2))
       load("int/3.3_tsneRegulonAUC_PCA.RData")
       tSNE <- tsneAUC$Y
@@ -554,7 +571,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     tSNE <- tsneAUC$Y
     par(mfrow=c(1,2))
 
-    Cairo::CairoPDF("output/Step3.1_RegulonActivity_AUCtSNE.pdf", width=20, height=5)
+    Cairo::CairoPDF("output/Step3_3.1_RegulonActivity_AUCtSNE.pdf", width=20, height=5)
     par(mfrow=c(1,4))
 
     # tSNE (colored by number of genes detected per cell)
@@ -580,14 +597,14 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       }
     }
 
-    for( i in seq_len(4 - (nVars+1 %% 4))) # fill remaining slots in page
+    for( i in seq_len(4 - ((nVars+1) %% 4))) # fill remaining slots in page
     {
       plot.new()
     }
 
 
     # Plot module activity, thresholds & assignment:
-    cells_AUCellThresholds <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=regulonAUC, alphaOff=0.1)
+    cells_AUCellThresholds <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=, alphaOff=0.1)
     dev.off()
     save(cells_AUCellThresholds, file="int/3.4_AUCellThresholds.RData")
 
@@ -618,10 +635,11 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
   {
     if(!"3.1" %in% stepsToRun)  # If 3.1 has not been run in this execution: Load its outputs TO DO: (something needed from 1 or 2?)
     {
-      #   if(!file.exists("int/")){
-      #     # stop("The output from xxx should be stored in 'int/xxx.RData'")
-      #   }
-      # regulonsCells
+        if(!file.exists("int/3.4_AUCellThresholds.RData")){
+          stop("The output from Step 3.1 should be stored in 'int/3.4_AUCellThresholds.RData'")
+        }
+        load("int/3.4_AUCellThresholds.RData")
+        regulonsCells <- lapply(cells_AUCellThresholds, function(x) x$assignment)
     }
 
     ### Convert to matrix (regulons with zero assigned cells are lost)
@@ -646,7 +664,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
 
     ### Boxplot active cells per regulon
-    Cairo::CairoPDF("output/Step3.2_BoxplotActiveCellsRegulon.pdf", width=6, height=6)
+    Cairo::CairoPDF("output/Step3_3.2_BoxplotActiveCellsRegulon.pdf", width=6, height=6)
     par(mfrow=c(1,2))
     boxplot(rowSums(binaryRegulonActivity_nonDupl), main="nCells per regulon",
             sub='number of cells \nthat have the regulon active',
@@ -671,6 +689,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
     # Correlation across regulons (based on binary cell activity)
     reguCor <- cor(t(binaryRegulonActivity_nonDupl[regMinCells,]))
+    reguCor[which(is.na(reguCor))] <- 0
     diag(reguCor) <- 0
 
     # Regulons that co-ocurr in similar cells. If a regulon is relevant by itself it will not be shown, also check the regulons ignored.
@@ -688,15 +707,15 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     ### Plot heatmap:
     for(i in seq_len(length(regulonSelection)))
     {
-      selRegs <- names(regulonSelection)[i]
-      if(length(selRegs)>1)
-      {
-          binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
-          NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
+        selRegs <- names(regulonSelection)[i]
+        if(length(regulonSelection[[selRegs]])>1)
+        {
+            binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+            NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,
                         annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
                         annColor=colVars,
                         color = c("white", "black"),
-                        filename=paste0("output/Step3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
+                        filename=paste0("output/Step3_3.3_binaryRegulonActivity_Heatmap_",i,".pdf"))
        }
     }
   }
@@ -714,7 +733,14 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       load("int/3.7_binaryRegulonActivity_nonDupl.RData")
       load("int/3.9_binaryRegulonOrder.RData")
       load("int/3.2_regulonAUC.RData")
-      load("int/3.4_AUCellThresholds.RData")
+      # load("int/3.4_AUCellThresholds.RData")
+      if(!file.exists("int/3.5_3_newThresholds.RData")){
+          load("int/3.4_AUCellThresholds.RData")
+      } else {
+          load("int/3.5_4_new_AUCellThresholds.RData")
+          cells_AUCellThresholds <- new_AUCellThresholds
+          rm(new_AUCellThresholds)
+      }
     }
 
     library(Rtsne)
@@ -768,7 +794,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       library(RColorBrewer)
       dens2d <- bkde2D(tSNE_binary, 1)$fhat
 
-      Cairo::CairoPDF(paste0("output/Step4.1_tsneModuleActivity_",tsneName,".pdf"), width=15, height=5)
+      Cairo::CairoPDF(paste0("output/Step4_4.1_tsneModuleActivity_",tsneName,".pdf"), width=15, height=5)
       par(mfrow=c(1,3))
       # nGenes
       plot(tSNE_binary, col=cellColorNgenes[rownames(tSNE_binary)], pch=16)
@@ -777,6 +803,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
       contour(dens2d, add=TRUE, nlevels=5, drawlabels=FALSE)
 
       # Known phenotype:
+      nVars <- 0
       if(!is.null(cellInfo))
       {
         nVars <- ncol(cellInfo)
@@ -801,18 +828,18 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
     load("int/4.1_tsneBinaryActivity_50PC.RData")
     tSNE_binary <- tsneBinaryActivity_PCA$Y
 
-    Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_BinaryRegulons.pdf", width=20, height=15)
+    Cairo::CairoPDF("output/Step4_4.2_tsneBinaryActivity_50PC_BinaryRegulons.pdf", width=20, height=15)
     par(mfrow=c(4,6))
     cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=t(tBinaryAct)[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
     dev.off()
 
-    Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_AUCRegulons.pdf", width=20, height=15)
+    Cairo::CairoPDF("output/Step4_4.2_tsneBinaryActivity_50PC_AUCRegulons.pdf", width=20, height=15)
     par(mfrow=c(4,6))
     cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[binaryRegulonOrder,], cex=1.5, plots="AUC", thresholds=0)
     dev.off()
 
 
-    Cairo::CairoPDF("output/Step4.2_tsneBinaryActivity_50PC_allPlots.pdf", width=20, height=5)
+    Cairo::CairoPDF("output/Step4_4.2_tsneBinaryActivity_50PC_allPlots.pdf", width=20, height=5)
     par(mfrow=c(1,4))
     cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, regulonAUC=regulonAUC[binaryRegulonOrder,],
                                         alphaOff=0.1, thresholds=cells_AUCellThresholds[binaryRegulonOrder])

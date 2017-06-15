@@ -33,7 +33,10 @@ plot_aucTsne <- function(tSNE, exprMat, regulonAUC=NULL, thresholds=NULL, cex=1,
   {
     # if it is a list... probably return from AUCell. Let's try...
     if(is.list(thresholds[1])) {
-      thresholds <- sapply(thresholds, function(x) unname(x$aucThr$selected))
+      # Aucell
+      if("aucThr" %in% names(thresholds[[1]])) thresholds <- sapply(thresholds, function(x) unname(x$aucThr$selected))
+      # previous run of this function
+      if("threshold" %in% names(thresholds[[1]]))  thresholds <- sapply(thresholds, function(x) unname(x$threshold))
     }
 
     if(!is.null(names(thresholds)))
@@ -65,9 +68,8 @@ plot_aucTsne <- function(tSNE, exprMat, regulonAUC=NULL, thresholds=NULL, cex=1,
     if(is.null(thresholds) && any(c("histogram", "binaryAUC") %in% plots))
     {
       set.seed(123)
-      cells_trhAssignment <- c(cells_trhAssignment,
-          AUCell.exploreThresholds(regulonAUC[regulon,], assignCells=TRUE,
-                                   plotHist=("histogram" %in% tolower(plots))))
+      cells_trhAssignment[[regulon]] <- AUCell.exploreThresholds(regulonAUC[regulon,], assignCells=TRUE,
+                                   plotHist=("histogram" %in% tolower(plots)))
       thisTrheshold <- cells_trhAssignment[[regulon]]$aucThr$selected
       thisAssignment <- cells_trhAssignment[[regulon]]$assignment
     }
@@ -76,7 +78,13 @@ plot_aucTsne <- function(tSNE, exprMat, regulonAUC=NULL, thresholds=NULL, cex=1,
       if("histogram" %in% tolower(plots))
       {
         hist(getAuc(regulonAUC)[regulon,], main=regulon, sub="AUC", col="#00609060", border="#0060f0", breaks=100)
-        abline(v=thresholds[regulon], lwd=3, lty=2, col="darkorange")
+        if(!is.null(thresholds[regulon]))
+        {
+            abline(v=thresholds[regulon], lwd=3, lty=2, col="darkorange")
+        }else{
+            warning("No threshold for regulon: ",regulon)
+        }
+
       }
       thisTrheshold <- thresholds[regulon]
       if(is.matrix(regulonAUC)){

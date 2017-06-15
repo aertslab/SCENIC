@@ -119,7 +119,7 @@ for(tsneName in names(tSNEs_binary))
     library(RColorBrewer)
     dens2d <- bkde2D(tSNE_binary, 1)$fhat
     
-    Cairo::CairoPDF(paste0("output/Step4.1_tsneModuleActivity_",tsneName,".pdf"), width=15, height=5)
+    Cairo::CairoPDF(paste0("output/Step4_4.1_tsneModuleActivity_",tsneName,".pdf"), width=15, height=5)
     par(mfrow=c(1,3))
     # nGenes
     plot(tSNE_binary, col=cellColorNgenes[rownames(tSNE_binary)], pch=16)
@@ -128,6 +128,7 @@ for(tsneName in names(tSNEs_binary))
     contour(dens2d, add=TRUE, nlevels=5, drawlabels=FALSE)
     
     # Known phenotype:
+    nVars <- 0
     if(!is.null(cellInfo))
     {
         nVars <- ncol(cellInfo)
@@ -201,25 +202,31 @@ tSNEname <- "tsneBinaryActivity_50PC"
 load("int/3.6_binaryRegulonActivity.RData")
 load("int/3.9_binaryRegulonOrder.RData")
 load("int/3.2_regulonAUC.RData")
-load("int/3.4_AUCellThresholds.RData")
+if(!file.exists("int/3.5_3_newThresholds.RData")){
+  load("int/3.4_AUCellThresholds.RData")
+} else {
+  load("int/3.5_4_new_AUCellThresholds.RData")
+  cells_AUCellThresholds <- new_AUCellThresholds
+  rm(new_AUCellThresholds)
+}
 ```
 
 ```{r plotTsnes_activity, eval=TRUE}
 regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(tBinaryAct))]
-Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_BinaryRegulons.pdf"), width=20, height=15)
+Cairo::CairoPDF(paste0("output/Step4_4.2_",tSNEname,"_BinaryRegulons.pdf"), width=20, height=15)
 par(mfrow=c(4,6))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat,
     regulonAUC=t(tBinaryAct)[binaryRegulonOrder,], cex=1.5, plots="binary", thresholds=0)
 dev.off()
 
 regOrder<- binaryRegulonOrder[which(binaryRegulonOrder %in% rownames(regulonAUC))]
-Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_AUCRegulons.pdf"), width=20, height=15)
+Cairo::CairoPDF(paste0("output/Step4_4.2_",tSNEname,"_AUCRegulons.pdf"), width=20, height=15)
 par(mfrow=c(4,6))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
     regulonAUC=regulonAUC[regOrder,], cex=1.5, plots="AUC", thresholds=0)
 dev.off()
 
-Cairo::CairoPDF(paste0("output/Step4.2_",tSNEname,"_allPlots.pdf"), width=20, height=5)
+Cairo::CairoPDF(paste0("output/Step4_4.2_",tSNEname,"_allPlots.pdf"), width=20, height=5)
 par(mfrow=c(1,4))
 cells_trhAssignment <- plot_aucTsne(tSNE=tSNE_binary, exprMat=exprMat, 
         regulonAUC=regulonAUC[regOrder,],

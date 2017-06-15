@@ -170,6 +170,22 @@ if(org=="mm9")
     data(mm9_inferred_motifAnnotation) # optional
     inferred_motifAnnotation <- mm9_inferred_motifAnnotation
 }
+    if(org=="dm6")
+    {
+      message(format(Sys.time(), "%H:%M"), "\tLoading Drosophila melanogaster (dm6) databases.")
+      library(RcisTarget.dm6.motifDatabases.20k)
+
+      # Motif rankings (genes x motifs)
+      data(dm6_UPSTREAM5KB_FULL_TX_motifRanking)
+      motifRankings <- list()
+      motifRankings[["5kbp"]] <- dm6_UPSTREAM5KB_FULL_TX_motifRanking
+
+      # Motif annotation (TFs)
+      data(dm6_direct_motifAnnotation)
+      direct_motifAnnotation <- dm6_direct_motifAnnotation
+      data(dm6_inferred_motifAnnotation) # optional
+      inferred_motifAnnotation <- dm6_inferred_motifAnnotation
+    }
 ```
 
 
@@ -184,7 +200,7 @@ library(RcisTarget)
 
 ### 1.1 Calculate enrichment
 motifs_AUC <- lapply(motifRankings, function(ranking) calcAUC(tfModules, ranking, aucMaxRank=0.01*nrow(ranking@rankings), nCores=4, verbose=FALSE))
-save(motifs_AUC, file="int/2.2_motifs_AUC_500bp_10kbp.RData")
+save(motifs_AUC, file="int/2.2_motifs_AUC.RData") # renamed from: 2.2_motifs_AUC_500bp_10kbp.RData
 
 ### 1.2 Conver to table, filter by NES & add the TFs to which the motif is annotated
 # (For each database...)
