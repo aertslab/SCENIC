@@ -24,7 +24,7 @@
 #' @param stepsToRun Determines the Steps of SCENIC to run (matches the numbers/order in the title of the tutorials). By default: c("1.2", "2", "3.1", "3.2", "4").
 #' @param nCores Number of cores to use for computation
 #' @param seed Seed to use for "random" computations (for reproducibility of the results)
-#' @param verbose TRUE/FALSE. Whether to show progress messages on screen. In either case, the messages will be saved in the log file: output/runSCENIC_log.txt
+#' @param verbose TRUE/FALSE. Whether to show progress messages on screen. If false, the progress messages will be saved in the log file: output/runSCENIC_log.txt
 #' @param showAlternativeTsnes TRUE/FALSE. Whether to plot t-SNEs with diferent parameters.
 #' In general it is recommended to plot multiple t-SNEs to evaluate the stability of the results, but it might take long time to run. For big datasets, it might be better to manually choose/try the parameters following the individual tutorials.
 #' @return No value is returned. The outputs of this function are saved in the folder "output" the current working directory. Other files are saved in the folder "int" (e.g. for further exploration or to perform alternative analyses).
@@ -46,11 +46,20 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
   #   library(GENIE3)
   #   library(AUCell)
   #   library(RcisTarget)
+  # dynamicTreeCut
+  # if(ncores>1) Check if DoMC is available...?
   # })
 
   # Check existing files
   dir.create("output", showWarnings=FALSE)
-  sink("output/runSCENIC_log.txt", split=verbose)
+
+    if(!verbose){
+        con <- file("test_log.txt")
+        sink(con, append=TRUE)
+        sink(con, append=TRUE, type="message") # cannot split the message connection
+
+        writeLines(paste("Run date:\t", date(), "\n\n"), con=con)
+    }
 
   if(!file.exists("int")){
     stop("The output from GENIE3 should be located in a folder named 'int' in the current working directory.")
@@ -604,7 +613,7 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
 
 
     # Plot module activity, thresholds & assignment:
-    cells_AUCellThresholds <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=, alphaOff=0.1)
+    cells_AUCellThresholds <- plot_aucTsne(tSNE=tSNE, exprMat=exprMat, regulonAUC=regulonAUC, alphaOff=0.1)
     dev.off()
     save(cells_AUCellThresholds, file="int/3.4_AUCellThresholds.RData")
 
@@ -845,5 +854,10 @@ runSCENIC <- function(exprMat=NULL, org=NULL, cellInfo=NULL, colVars=NULL,
                                         alphaOff=0.1, thresholds=cells_AUCellThresholds[binaryRegulonOrder])
     dev.off()
   }
-  sink()
+
+  if(!verbose){
+      sink()
+      sink(type="message")
+      close(con)
+  }
 }

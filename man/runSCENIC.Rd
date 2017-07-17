@@ -23,7 +23,7 @@ runSCENIC(exprMat = NULL, org = NULL, cellInfo = NULL, colVars = NULL,
 
 \item{seed}{Seed to use for "random" computations (for reproducibility of the results)}
 
-\item{verbose}{TRUE/FALSE. Whether to show progress messages on screen. In either case, the messages will be saved in the log file: output/runSCENIC_log.txt}
+\item{verbose}{TRUE/FALSE. Whether to show progress messages on screen. If false, the progress messages will be saved in the log file: output/runSCENIC_log.txt}
 
 \item{showAlternativeTsnes}{TRUE/FALSE. Whether to plot t-SNEs with diferent parameters.
 In general it is recommended to plot multiple t-SNEs to evaluate the stability of the results, but it might take long time to run. For big datasets, it might be better to manually choose/try the parameters following the individual tutorials.}

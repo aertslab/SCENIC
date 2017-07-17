@@ -55,7 +55,7 @@ plot_aucTsne <- function(tSNE, exprMat, regulonAUC=NULL, thresholds=NULL, cex=1,
   }else{
     selectedRegulons <- rownames(exprMat)
     plots <- "expression"
-    warning("no AUC provided... only plotting expression")
+    # warning("no AUC provided... only plotting expression")
   }
 
   colorPal_Expr <- grDevices::colorRampPalette(c("orange", "darkorange", "brown", "brown"))
@@ -69,7 +69,7 @@ plot_aucTsne <- function(tSNE, exprMat, regulonAUC=NULL, thresholds=NULL, cex=1,
     {
       set.seed(123)
       cells_trhAssignment[[regulon]] <- AUCell.exploreThresholds(regulonAUC[regulon,], assignCells=TRUE,
-                                   plotHist=("histogram" %in% tolower(plots)))
+                                   plotHist=("histogram" %in% tolower(plots)))[[regulon]]
       thisTrheshold <- cells_trhAssignment[[regulon]]$aucThr$selected
       thisAssignment <- cells_trhAssignment[[regulon]]$assignment
     }
