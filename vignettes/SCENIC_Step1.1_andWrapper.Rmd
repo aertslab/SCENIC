@@ -1,7 +1,10 @@
 ---
 title: "Running SCENIC"
 subtitle: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
-abstract: "First steps for running SCENIC: Filtering the expression matrix, running GENIE3, and (optional) running the next steps in SCENIC using runSCENIC(), the wrapper function."
+abstract: "First steps for running SCENIC: 
+  Filtering the expression matrix, 
+  running GENIE3, and 
+  (optional) running the next steps in SCENIC using runSCENIC(), the wrapper function."
 output:
   BiocStyle::html_document:
     number_sections: no
@@ -34,9 +37,7 @@ options(stringsAsFactors=FALSE)
 knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
 ```
 
-
 > This tutorial assumes you have read the introduction to SCENIC and run the setup steps: `vignette(package="SCENIC")`
-
 
 # Input
 
@@ -223,9 +224,9 @@ The filtered expression matrix and the list of TFs (candidate regulators) will b
 
 GENIE3 default arguments are usually adequate for most datasets. A couple of arguments that might be worth checking are:
 
-- `seed`: To reproduce the results in a future run. Since GENIE3 is based on a Random Forest approach, each time it is run the results will be slightly different. The higher the number of trees used (`ntrees`), the lower the variability it will be. The seed allows to reproduce exact results in multiple runs.
-
 - `ncores`: To run GENIE3 in parallel in multiple cores. 
+
+Since GENIE3 is based on a Random Forest approach, each time it is run the results will be slightly different. The higher the number of trees used (`ntrees`), the lower the variability it will be. We recommend to use `set.seed` to reproduce exact results in multiple runs.
 
 For more details, check GENIE3 help with `?GENIE3`.
 
@@ -234,18 +235,20 @@ GENIE3 will tipically take several hours (or days) to run. If you are running th
 ```{r genie3, eval=FALSE}
 # setwd("SCENIC_MouseBrain")
 load("int/1.1_exprMatrix_filtered.RData")
+# Optional: add log (if it is not logged already)
+# exprMatrix_filtered <- log2(exprMatrix_filtered+1) 
 load("int/1.2_inputTFs.RData")
 library(GENIE3)
 
 # Run GENIE3
-weightMatrix <- GENIE3(exprMatrix_filtered, regulators=inputTFs, 
-                       ncores=4, seed=123)
+set.seed(123)
+weightMatrix <- GENIE3(exprMatrix_filtered, regulators=inputTFs, ncores=4)
 save(weightMatrix, file="int/1.3_GENIE3_weightMatrix.RData")
 ```
 
 ## Correlation
 
-GENIE3 can detect both positive and negative associations. In order to distinguish potential activation from repression, we will split the targets into positive- and negative- correlated targets (i.e. Spearman correlation between the TF and the potential target).
+GENIE3 can detect both positive and negative associations. In order to distinguish potential activation from repression, we will split the targets into positive- and negative-correlated targets (i.e. Spearman correlation between the TF and the potential target).
 
 Calculate the correlation (it can be run before/simultaneously to GENIE3):
 ```{r correlationMat, eval=FALSE}

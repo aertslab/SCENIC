@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <h4 class="abstract">Abstract</h4>
 First steps for running SCENIC: Filtering the expression matrix, running GENIE3, and (optional) running the next steps in SCENIC using runSCENIC(), the wrapper function.
 </div>
-<h4 class="package">Package version: <span style="font-weight: normal">SCENIC 0.1.1</span></h4>
+<h4 class="package">Package version: <span style="font-weight: normal">SCENIC 0.1.6</span></h4>
 
 <h1>Contents</h1>
 <div id="TOC">
@@ -229,24 +229,26 @@ c(allTFs=length(allTFs), inputTFs=length(inputTFs))</code></pre>
 <p>The filtered expression matrix and the list of TFs (candidate regulators) will be the input to GENIE3.</p>
 <p>GENIE3 default arguments are usually adequate for most datasets. A couple of arguments that might be worth checking are:</p>
 <ul>
-<li><p><code>seed</code>: To reproduce the results in a future run. Since GENIE3 is based on a Random Forest approach, each time it is run the results will be slightly different. The higher the number of trees used (<code>ntrees</code>), the lower the variability it will be. The seed allows to reproduce exact results in multiple runs.</p></li>
-<li><p><code>ncores</code>: To run GENIE3 in parallel in multiple cores.</p></li>
+<li><code>ncores</code>: To run GENIE3 in parallel in multiple cores.</li>
 </ul>
+<p>Since GENIE3 is based on a Random Forest approach, each time it is run the results will be slightly different. The higher the number of trees used (<code>ntrees</code>), the lower the variability it will be. We recommend to use <code>set.seed</code> to reproduce exact results in multiple runs.</p>
 <p>For more details, check GENIE3 help with <code>?GENIE3</code>.</p>
 <p>GENIE3 will tipically take several hours (or days) to run. If you are running this workflow on an RStudio session, we recommend that you stop here and run the next code chunk in an independent R console (i.e. with <code>screen</code>/<code>tmux</code>) or in an server/HPC (if available). The upcoming code chunks will resume the workflow by loading GENIE3 output.</p>
 <pre class="r"><code># setwd(&quot;SCENIC_MouseBrain&quot;)
 load(&quot;int/1.1_exprMatrix_filtered.RData&quot;)
+# Optional: add log (if it is not logged already)
+# exprMatrix_filtered &lt;- log2(exprMatrix_filtered+1) 
 load(&quot;int/1.2_inputTFs.RData&quot;)
 library(GENIE3)
 
 # Run GENIE3
-weightMatrix &lt;- GENIE3(exprMatrix_filtered, regulators=inputTFs, 
-                       ncores=4, seed=123)
+set.seed(123)
+weightMatrix &lt;- GENIE3(exprMatrix_filtered, regulators=inputTFs, ncores=4)
 save(weightMatrix, file=&quot;int/1.3_GENIE3_weightMatrix.RData&quot;)</code></pre>
 </div>
 <div id="correlation" class="section level2">
 <h2>Correlation</h2>
-<p>GENIE3 can detect both positive and negative associations. In order to distinguish potential activation from repression, we will split the targets into positive- and negative- correlated targets (i.e. Spearman correlation between the TF and the potential target).</p>
+<p>GENIE3 can detect both positive and negative associations. In order to distinguish potential activation from repression, we will split the targets into positive- and negative-correlated targets (i.e. Spearman correlation between the TF and the potential target).</p>
 <p>Calculate the correlation (it can be run before/simultaneously to GENIE3):</p>
 <pre class="r"><code>load(&quot;int/1.1_exprMatrix_filtered.RData&quot;)
 corrMat &lt;- cor(t(exprMatrix_filtered), method=&quot;spearman&quot;)
@@ -292,7 +294,7 @@ runSCENIC(exprMat=exprMat, org=&quot;mm9&quot;, cellInfo=cellInfo, colVars=colVa
 <div id="sessioninfo" class="section level1">
 <h1>SessionInfo</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Thu Jun  8 11:03:21 2017&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Oct  5 15:58:50 2017&quot;</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.3.2 (2016-10-31)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -311,29 +313,27 @@ runSCENIC(exprMat=exprMat, org=&quot;mm9&quot;, cellInfo=cellInfo, colVars=colVa
 ## [8] base     
 ## 
 ## other attached packages:
-## [1] RcisTarget.mm9.motifDatabases.20k_0.1.1
+## [1] RcisTarget.mm9.motifDatabases.20k_0.1.2
 ## [2] reshape2_1.4.2                         
 ## [3] data.table_1.10.4                      
 ## [4] Biobase_2.34.0                         
 ## [5] BiocGenerics_0.20.0                    
 ## [6] BiocStyle_2.2.1                        
-## [7] telegram_0.6.0                         
-## [8] BiocInstaller_1.24.0                   
+## [7] BiocInstaller_1.24.0                   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.10      knitr_1.15.1      magrittr_1.5     
-##  [4] AUCell_0.99.5     RcisTarget_0.99.0 R6_2.2.0         
-##  [7] stringr_1.2.0     httr_1.2.1        plyr_1.8.4       
-## [10] tools_3.3.2       htmltools_0.3.5   yaml_2.1.14      
-## [13] rprojroot_1.2     digest_0.6.9      curl_2.3         
-## [16] evaluate_0.10     rmarkdown_1.4     stringi_1.1.3    
-## [19] backports_1.0.5   jsonlite_1.3</code></pre>
+##  [1] Rcpp_0.12.12      digest_0.6.12     rprojroot_1.2    
+##  [4] plyr_1.8.4        backports_1.1.1   magrittr_1.5     
+##  [7] evaluate_0.10.1   RcisTarget_0.99.0 stringi_1.1.5    
+## [10] rmarkdown_1.6     AUCell_0.99.5     tools_3.3.2      
+## [13] stringr_1.2.0     yaml_2.1.14       htmltools_0.3.6  
+## [16] knitr_1.17</code></pre>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-aibar2017">
-<p>Aibar, S., González-Blas, C.B., Moerman, T., Wouters, J., Huynh-Thu, V.A., Imrichová, H., Kalender Atak, Z., Hulselmans, G., Dewaele, M., Rambow, F., et al. (2017). SCENIC: Single-Cell Regulatory Network Inference And Clustering. BioRxiv.</p>
+<p>Aibar, S., González-Blas, C.B., Moerman, T., Wouters, J., Huynh-Thu, V.A., Imrichová, H., Kalender Atak, Z., Hulselmans, G., Dewaele, M., Rambow, F., et al. (2017). SCENIC: Single-Cell Regulatory Network Inference And Clustering. Nature Methods.</p>
 </div>
 <div id="ref-crow2016">
 <p>Crow, M., Paul, A., Ballouz, S., Huang, Z.J., and Gillis, J. (2016). Exploiting single-cell expression to characterize co-expression replicability. Genome Biology <em>17</em>, 101.</p>
@@ -357,7 +357,7 @@ runSCENIC(exprMat=exprMat, org=&quot;mm9&quot;, cellInfo=cellInfo, colVars=colVa
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

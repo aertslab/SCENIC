@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, setup and source of the dataset used as example.
 </div>
-<h4 class="package">Package version: <span style="font-weight: normal">SCENIC 0.1.1</span></h4>
+<h4 class="package">Package version: <span style="font-weight: normal">SCENIC 0.1.6</span></h4>
 
 <h1>Contents</h1>
 <div id="TOC">
@@ -76,14 +76,20 @@ SCENIC is a tool to infer Gene Regulatory Networks and cell types from single-ce
 <p>SCENIC (Single Cell rEgulatory Network Inference and Clustering) is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. To achieve this, SCENIC infers a gene regulatory network based on co-expression and DNA motifs, and then it analyzes the network activity in each cell to identify the recurrent cellular states. In order to reconstruct the gene regulatory network, first it identifies potential targets for each TF based on co-expression, and then it selects the direct-binding targets (regulons) based on DNA-motif analysis.</p>
 <div id="running-scenic" class="section level2">
 <h2>Running SCENIC</h2>
-<p>SCENIC can be run in two ways: <strong>TO DO: Update</strong></p>
+<p>SCENIC can be run in two ways:</p>
 <p><strong>A.</strong> The <strong>simplified version</strong> is based on a “wrapper function” that runs the whole workflow with the default settings starting from the output of GENIE3. To run this version, follow the tutorial in:</p>
 <ul>
-<li><p><code>SCENIC_Genie3.Rmd</code>: First steps for running SCENIC: Filtering the expression matrix, running GENIE3, and (optional) running the next steps in SCENIC using runSCENIC(), the wrapper function that goes through the next steps (Steps 1.2, 2, 3 and 4)</p></li>
-<li><p><code>SCENIC_ExploringOutput.Rmd</code> (optional)</p></li>
+<li><code>SCENIC_Step1.1_andWrapper.Rmd</code>: First steps for running SCENIC:
+<ul>
+<li>Filtering the expression matrix</li>
+<li>Running GENIE3</li>
+<li>(optional) Running the next steps in SCENIC using runSCENIC(), the wrapper function that goes through the next steps (Steps <em>1.2</em>, <em>2</em>, <em>3</em> and <em>4</em>).</li>
+</ul></li>
 </ul>
+<!-- - `SCENIC_ExploringOutput.Rmd` (optional)  -->
 <p><strong>B.</strong> <strong>Step by step</strong>, following several notebook files that guide through each step of the workflow. These notebooks/tutorials include detailed explanations. Therefore they are useful for users who want to know the details of the implementation, or to modify or run only some of the steps of the workflow.</p>
 <ul>
+<li><p><code>SCENIC_Step1.1_andWrapper.Rmd</code>: First steps for running SCENIC: Filtering the expression matrix and running GENIE3. You can skip the last command to run SCENIC with the function “runSCENIC()”, and run SCENIC step by step instead.</p></li>
 <li><p><code>Step1.2_CoexpressionModules.Rmd</code>: Formatting the targets from Genie3 into co-expression modules (e.g. potential TF-targets based on co-expression).</p></li>
 <li><p><code>Step1.2_Regulons.Rmd</code>: Identifying regulons (direct TF targets) based on DNA motif enrichment.</p></li>
 <li><p><code>Step3.1_NwActivity.Rmd</code>: Analyzing the network activity in each individual cell (part 1: calculate AUC).</p></li>
@@ -92,7 +98,7 @@ SCENIC is a tool to infer Gene Regulatory Networks and cell types from single-ce
 </ul>
 <p>The application of SCENIC to several datasets was presented in the following article:</p>
 <blockquote>
-<p>Aibar et al. (2017) SCENIC: Single-Cell Regulatory Network Inference And Clustering. bioRxiv Preprint. doi: <a href="https://doi.org/10.1101/144501">10.1101/144501</a></p>
+<p>Aibar et al. (2017) SCENIC: single-cell regulatory network inference and clustering. Nature Methods. doi: <a href="10.1038/nmeth.4463" class="uri">10.1038/nmeth.4463</a> Also available as preprint in <a href="https://doi.org/10.1101/144501">bioRxiv</a></p>
 </blockquote>
 <p>Please, also cite this article if you use SCENIC in your research.</p>
 </div>
@@ -108,18 +114,33 @@ SCENIC is a tool to infer Gene Regulatory Networks and cell types from single-ce
 <!-- 1.  to infer the co-expression network -->
 <!-- 2.  for the analysis of transcription factor binding motifs  -->
 <!-- 3.  to identify cells with active gene sets (gene-network) in scRNA-seq data -->
-<p>The links to all these packages are available on <a href="http://scenic.aertslab.org" class="uri">http://scenic.aertslab.org</a>.</p>
-<p>For consistency, we recommend to use the following versions of the packages with this version of the tutorial:</p>
+<p>These packages will soon be available in Bioconductor (31 October 2017). We will then update SCENIC to work with the Bioconductor versions (expected: Early November). For this version of SCENIC (0.1.6) we recommend to install the following versions of the packages:</p>
+<pre class="r"><code># GENIE3:
+install.packages(&quot;https://bioconductor.org/packages/devel/bioc/src/contrib/GENIE3_0.99.7.tar.gz&quot;, repos=NULL)</code></pre>
+<pre><code>## Installing package into '/media/seq-srv-06/lcb/saibar/z_Rlibraries/x86_64-pc-linux-gnu-library/3.3'
+## (as 'lib' is unspecified)</code></pre>
+<pre class="r"><code># AUCell 0.99.5:
+install.packages(&quot;http://scenic.aertslab.org/downloads/Rpackages/AUCell_0.99.5.tar.gz&quot;, repos=NULL)</code></pre>
+<pre><code>## Installing package into '/media/seq-srv-06/lcb/saibar/z_Rlibraries/x86_64-pc-linux-gnu-library/3.3'
+## (as 'lib' is unspecified)</code></pre>
+<pre class="r"><code># RcisTarget 0.99.0:
+install.packages(&quot;http://scenic.aertslab.org/downloads/Rpackages/RcisTarget_0.99.0.tar.gz&quot;, repos=NULL)</code></pre>
+<pre><code>## Installing package into '/media/seq-srv-06/lcb/saibar/z_Rlibraries/x86_64-pc-linux-gnu-library/3.3'
+## (as 'lib' is unspecified)</code></pre>
+<pre class="r"><code># You might need to install some of these dependencies first:
+c(&quot;R.utils&quot;, &quot;utils&quot;, &quot;graphics&quot;, &quot;stats&quot;, &quot;data.table&quot;, &quot;mixtools&quot;, &quot;GSEABase&quot;, 
+&quot;SummarizedExperiment&quot;, &quot;methods&quot;, &quot;Biobase&quot;, &quot;zoo&quot;, &quot;DT&quot;, &quot;NMF&quot;, &quot;plotly&quot;, 
+&quot;BiocStyle&quot;, &quot;rmarkdown&quot;, &quot;doMC&quot;, &quot; doRNG&quot;, &quot; zoo&quot;, &quot;doParallel&quot;, &quot;foreach&quot;)</code></pre>
+<pre><code>##  [1] &quot;R.utils&quot;              &quot;utils&quot;                &quot;graphics&quot;            
+##  [4] &quot;stats&quot;                &quot;data.table&quot;           &quot;mixtools&quot;            
+##  [7] &quot;GSEABase&quot;             &quot;SummarizedExperiment&quot; &quot;methods&quot;             
+## [10] &quot;Biobase&quot;              &quot;zoo&quot;                  &quot;DT&quot;                  
+## [13] &quot;NMF&quot;                  &quot;plotly&quot;               &quot;BiocStyle&quot;           
+## [16] &quot;rmarkdown&quot;            &quot;doMC&quot;                 &quot; doRNG&quot;              
+## [19] &quot; zoo&quot;                 &quot;doParallel&quot;           &quot;foreach&quot;</code></pre>
 <ul>
-<li><p>GENIE3 0.99.3 (Last update: 2 jun 2017)</p></li>
-<li><p><a href="http://scenic.aertslab.org/downloads/Rpackages/AUCell_0.99.5.tar.gz">AUCell 0.99.5</a> (Last update: 2 jun 2017)</p></li>
-<li><p><a href="http://scenic.aertslab.org/downloads/Rpackages/RcisTarget_0.99.0.tar.gz">RcisTarget 0.99.0</a> (Last update: 2 jun 2017)</p></li>
-<li><p>Motif databases: <a href="http://scenic.aertslab.org/downloads/databases/RcisTarget.hg19.motifDatabases.20k_0.1.1.tar.gz">RcisTarget.hg19.motifDatabases.20k 0.1.1</a> (for human), <a href="http://scenic.aertslab.org/downloads/databases/RcisTarget.mm9.motifDatabases.20k_0.1.1.tar.gz">RcisTarget.mm9.motifDatabases.20k 0.1.1</a> (for mouse). <em>(In this tutorial we will analyze a mouse dataset)</em></p></li>
+<li>Motif databases: <a href="http://scenic.aertslab.org/downloads/databases/RcisTarget.hg19.motifDatabases.20k_0.1.1.tar.gz">RcisTarget.hg19.motifDatabases.20k 0.1.1</a> (for human), <a href="http://scenic.aertslab.org/downloads/databases/RcisTarget.mm9.motifDatabases.20k_0.1.1.tar.gz">RcisTarget.mm9.motifDatabases.20k 0.1.1</a> (for mouse). <em>(In this tutorial we will analyze a mouse dataset)</em></li>
 </ul>
-<p>We plan to submit these packages to Bioconductor. Meanwhile, the latest Beta versions of these packages can be installed from Github. Note that SCENIC and the associated packages are still a work in progress, and therefore the packages might undergo frequent updates.</p>
-<pre class="r"><code>devtools::install_github(&quot;aertslab/GENIE3&quot;)
-devtools::install_github(&quot;aertslab/RcisTarget&quot;)
-devtools::install_github(&quot;aertslab/AUCell&quot;)</code></pre>
 <!-- # When they are published in Bioconductor: -->
 <!-- source("http://bioconductor.org/biocLite.R") -->
 <!-- biocLite(c("GENIE3", "RcisTarget", "AUCell")) -->
@@ -132,13 +153,13 @@ devtools::install_github(&quot;aertslab/AUCell&quot;)</code></pre>
 <!-- # i.e.  -->
 <!-- biocLite("RcisTarget.hg19.motifDatabases") -->
 <!-- ``` -->
-<p>Some extra packages can also be installed to enhance some sections of the tutorial:</p>
+<p>We also recommend to install these packages to enhance some sections of the tutorial:</p>
 <pre class="r"><code># Recommended to run AUCell:
 biocLite(c(&quot;mixtools&quot;))
 # To support paralell execution:
 biocLite(c(&quot;doMC&quot;, &quot;doRNG&quot;))
-# Some auxiliary packages used in the workflow:
-biocLite(c(&quot;NMF&quot;, &quot;Rtsne&quot;)) # (Follow up: Clustering)</code></pre>
+# To visualize the binary matrices and perform t-SNEs:
+biocLite(c(&quot;NMF&quot;, &quot;Rtsne&quot;)) </code></pre>
 </div>
 <div id="some-tips" class="section level1">
 <h1>Some tips…</h1>
@@ -174,7 +195,7 @@ vignette(&quot;SCENIC&quot;) # open</code></pre>
 </div>
 <div id="sample-dataset-download-format" class="section level1">
 <h1>Sample dataset: Download &amp; format</h1>
-<p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results (available at <em>ToDo: Update</em>).</p>
+<p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results (available at scenic.aertslab.org).</p>
 <p>As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).</p>
 <blockquote>
 <p>Zeisel, A., et al. (2015). Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq. Science 347, 1138–1142. doi: <a href="http://dx.doi.org/10.1126/science.aaa1934">10.1126/science.aaa1934</a></p>
@@ -220,7 +241,7 @@ save(esetMouseBrain, file=&quot;data/esetMouseBrain.RData&quot;)</code></pre>
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
