@@ -3,7 +3,7 @@
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
 
 ## Installation
-To use SCENIC you will also need to install GENIE3, RcisTarget and AUCell. The current version of SCENIC (v0.1.6) requires AUCell 0.99.5 and RcisTarget 0.99.0. Newer versions are available in the corresponding Github repositories and will soon be available in Bioconductor. We will update SCENIC to work with these updated versions once they are available in Bioconductor (begining of November 2017).
+To use SCENIC you will also need to install GENIE3, RcisTarget and AUCell. The current version of SCENIC (v0.1.6) requires AUCell 0.99.5 and RcisTarget 0.99.0. Newer versions of these packages are available in the corresponding Github repositories and will soon be included in Bioconductor. We will update SCENIC to work with these updated versions once they are available in Bioconductor (begining of November 2017).
 
 To install the versions compatible with this version of SCENIC, you can use:
 ```
