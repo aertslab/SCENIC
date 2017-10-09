@@ -36,7 +36,7 @@ devtools::install_github("aertslab/SCENIC")
 
 The package includes tutorials describing the functionality and usage of SCENIC:
 - [Introduction to SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Intro.html)
-- [Running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_runningStep1nWrapper.html)
+- [Running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Step1.1_andWrapper.html)
 
 Advanced tutorials:
 - [Step 1 - Part 2: Co-expression modules](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/Step1.2_CoexpressionModules.html)
