@@ -185,7 +185,7 @@ genesLeft_minCells_inDatabases <- genesLeft_minCells[which(genesLeft_minCells %i
 length(genesLeft_minCells_inDatabases)
 ```
 
-We can now **filter the expression matrix** to contain only these `r length(genesLeft_minCells)` genes. 
+We can now **filter the expression matrix** to contain only these `r length(genesLeft_minCells_inDatabases)` genes. 
 This matrix is now ready to be used as input for GENIE3.
 ```{r saveFilteredExprMat}
 exprMatrix_filtered <- exprMat[genesLeft_minCells_inDatabases, ]
@@ -230,7 +230,7 @@ Since GENIE3 is based on a Random Forest approach, each time it is run the resul
 
 For more details, check GENIE3 help with `?GENIE3`.
 
-GENIE3 will tipically take several hours (or days) to run. If you are running this workflow on an RStudio session, we recommend that you stop here and run the next code chunk in an independent R console (i.e. with `screen`/`tmux`) or in an server/HPC (if available). The upcoming code chunks will resume the workflow by loading GENIE3 output.
+GENIE3 will typically take several hours (or days) to run. If you are running this workflow on an RStudio session, we recommend that you stop here and run the next code chunk in an independent R console (i.e. with `screen`/`tmux`) or in an server/HPC (if available). The upcoming code chunks will resume the workflow by loading GENIE3 output.
 
 ```{r genie3, eval=FALSE}
 # setwd("SCENIC_MouseBrain")
