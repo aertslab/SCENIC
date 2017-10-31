@@ -242,7 +242,7 @@ library(GENIE3)
 
 # Run GENIE3
 set.seed(123)
-weightMatrix <- GENIE3(exprMatrix_filtered, regulators=inputTFs, ncores=4)
+weightMatrix <- GENIE3(exprMatrix_filtered, regulators=inputTFs, nCores=4)
 save(weightMatrix, file="int/1.3_GENIE3_weightMatrix.RData")
 ```
 
