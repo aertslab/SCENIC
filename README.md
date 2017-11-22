@@ -29,6 +29,7 @@ RcisTarget databases (choose the appropiate organism):
 ```
 
 Finally, to install SCENIC:
+
 *(`dep=FALSE` is set to avoid that AUCell is updated to the latest version in Bioconductor. However, it requires that all other dependencies are already installed...)*
 ```
 # SCENIC:
