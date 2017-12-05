@@ -101,7 +101,7 @@ These packages will soon be available in Bioconductor (31 October 2017). We will
 
 ```{r}
 # GENIE3:
-install.packages("https://bioconductor.org/packages/devel/bioc/src/contrib/GENIE3_0.99.7.tar.gz", repos=NULL)
+install.packages("http://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.0.0.tar.gz", repos=NULL)
 # AUCell 0.99.5:
 install.packages("http://scenic.aertslab.org/downloads/Rpackages/AUCell_0.99.5.tar.gz", repos=NULL)
 # RcisTarget 0.99.0:
