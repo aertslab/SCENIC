@@ -110,7 +110,7 @@ install.packages("http://scenic.aertslab.org/downloads/Rpackages/RcisTarget_0.99
 # You might need to install some of these dependencies first:
 c("R.utils", "utils", "graphics", "stats", "data.table", "mixtools", "GSEABase", 
 "SummarizedExperiment", "methods", "Biobase", "zoo", "DT", "NMF", "plotly", 
-"BiocStyle", "rmarkdown", "doMC", " doRNG", " zoo", "doParallel", "foreach")
+"BiocStyle", "rmarkdown", "doMC", " doRNG", " zoo", "doParallel", "foreach", "dynamicTreeCut")
 ```
 
 - Motif databases: [RcisTarget.hg19.motifDatabases.20k 0.1.1](http://scenic.aertslab.org/downloads/databases/RcisTarget.hg19.motifDatabases.20k_0.1.1.tar.gz) (for human), [RcisTarget.mm9.motifDatabases.20k 0.1.1](http://scenic.aertslab.org/downloads/databases/RcisTarget.mm9.motifDatabases.20k_0.1.1.tar.gz) (for mouse). *(In this tutorial we will analyze a mouse dataset)*
