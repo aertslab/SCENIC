@@ -12,10 +12,10 @@ To install the versions compatible with this version of SCENIC, you can use:
 # You might need to install some of these dependencies first:
 c("R.utils", "utils", "graphics", "stats", "data.table", "mixtools", "GSEABase", 
 "SummarizedExperiment", "methods", "Biobase", "zoo", "DT", "NMF", "plotly", 
-"BiocStyle", "rmarkdown", "doMC", " doRNG", " zoo", "doParallel", "foreach")
+"BiocStyle", "rmarkdown", "doMC", " doRNG", " zoo", "doParallel", "foreach","dynamicTreeCut")
 
 # GENIE3:
-install.packages("https://bioconductor.org/packages/devel/bioc/src/contrib/GENIE3_0.99.7.tar.gz", repos=NULL)
+install.packages("http://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.0.0.tar.gz", repos=NULL)
 # AUCell:
 install.packages("http://scenic.aertslab.org/downloads/Rpackages/AUCell_0.99.5.tar.gz", repos=NULL)
 # RcisTarget:
@@ -29,9 +29,11 @@ RcisTarget databases (choose the appropiate organism):
 ```
 
 Finally, to install SCENIC:
+
+*(`dep=FALSE` is set to avoid that AUCell is updated to the latest version in Bioconductor. However, it requires that all other dependencies are already installed...)*
 ```
 # SCENIC:
-devtools::install_github("aertslab/SCENIC")
+devtools::install_github("aertslab/SCENIC", dep = FALSE)
 ```
 
 ## Tutorials
