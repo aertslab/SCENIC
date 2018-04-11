@@ -1,11 +1,14 @@
 ### News
 
-GRNBoost2 and scalable GENIE3 now available in the Arboretum package!
-- Fast co-expression module inference (Step1)
-- Recommended for larger datasets
-- Easy to install Python library
-- Supports distributed computing
-- info: https://arboretum.readthedocs.io/
+30/03/2018 New releases:
+- Drosophila databases (link below, in RcisTarget section).
+- [pySCENIC](http://pyscenic.readthedocs.io): lightning-fast python implementation of the SCENIC pipeline.
+- [Arboretum](https://arboretum.readthedocs.io/) package including *GRNBoost2* and scalable GENIE3: Easy to install Python library that supports distributed computing. It allows fast co-expression module inference (Step1) on large datasets, compatible with both, the R and python implementations of SCENIC.
+
+Coming soon: 
+Update of RcisTarget and (R) SCENIC pipeline.
+
+
 ---
 
 # SCENIC
@@ -36,6 +39,8 @@ RcisTarget databases (choose the appropiate organism):
 ```
 # Human: install.packages("http://scenic.aertslab.org/downloads/databases/RcisTarget.hg19.motifDatabases.20k_0.1.1.tar.gz", repos=NULL)
 # Mouse: install.packages("http://scenic.aertslab.org/downloads/databases/RcisTarget.mm9.motifDatabases.20k_0.1.1.tar.gz", repos=NULL)
+# Fly: install.packages("http://scenic.aertslab.org/downloads/databases/RcisTarget.dm6.motifDatabases.20k_0.2.1____.tar.gz 
+", repos=NULL)
 ```
 
 Finally, to install SCENIC:
