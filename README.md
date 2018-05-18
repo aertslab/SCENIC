@@ -28,7 +28,7 @@ c("R.utils", "utils", "graphics", "stats", "data.table", "mixtools", "GSEABase",
 "BiocStyle", "rmarkdown", "doMC", " doRNG", " zoo", "doParallel", "foreach","dynamicTreeCut")
 
 # GENIE3 (or GRNBoost2):
-install.packages("http://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.0.0.tar.gz", repos=NULL)
+install.packages("http://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.0.tar.gz", repos=NULL)
 # AUCell:
 install.packages("http://scenic.aertslab.org/downloads/Rpackages/AUCell_0.99.5.tar.gz", repos=NULL)
 # RcisTarget:
