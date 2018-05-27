@@ -4,7 +4,7 @@ subtitle: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
 abstract: SCENIC is a tool to infer Gene Regulatory Networks
   and their associated cell states from single-cell RNA-seq data.
   This introductory vignette provides an overview of the steps of the workflow,
-  setup, and source of the dataset used as example.
+  installation, and source of the dataset used as example.
 output:
   BiocStyle::html_document:
     number_sections: no
@@ -68,7 +68,7 @@ The input to SCENIC is the single-cell RNA-seq **expression matrix**:
 - Expression **units**: The preferred expression values are gene-summarized counts (which might or might not use unique molecular identifiers, UMI).
 Other measurements, such as counts or transcripts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (*@crow2016*). Although more work is still needed in order to determine the best normalization approach (*@vallejos2017*), we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and all of them provided reliable results (see *@aibar2017*). The remaining steps of the workflow should not be affected by the expression units/normalization, as the expression is not taken into account for the motif analysis, and AUCell is within-cell ranking-based (wich works as an implicit normalization).
 
-# Setup
+# Installation
 
 SCENIC is based on three R packages:
 
@@ -93,14 +93,14 @@ biocLite(c("doMC", "doRNG"))
 ```
 
 AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions:
-**AUCell 1.2.1**, and **RcisTarget 1.0.1** or posterior.
+**AUCell 1.2.2**, and **RcisTarget 1.0.2** or posterior.
 
 ```{r versions, eval=FALSE}
 packageVersion("AUCell")
 packageVersion("RcisTarget")
 ```
 
-In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them directly from the Bioconductor links:
+In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
 ```{r alternativeDownload, eval=FALSE}
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.2.tar.gz", repos=NULL)
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz", repos=NULL)
@@ -138,14 +138,14 @@ dbFiles <- c("https://resources.aertslab.org/cistarget/databases/drosophila_mela
 # mc8nr: Motif collection version 8: 20k motifs
 ```
 
-Download the *.feather* and *.descr* files for the relevant organism *(feel free to use any alternative download method)* [Aprox file size: 1GB]:
+Download the *.feather* files (and *.descr*, if available) for the relevant organism *(feel free to use any alternative download method)* [Aprox file size: 1GB]:
 ```{r downloadDatabases, eval=FALSE}
 # dir.create("cisTarget_databases"); setwd("cisTarget_databases") # if needed
 for(featherURL in dbFiles)
 {
   download.file(featherURL, destfile=basename(featherURL)) # saved in current dir
-    descrURL <- gsub(".feather$", ".descr", featherURL)
-    if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
+  descrURL <- gsub(".feather$", ".descr", featherURL)
+  if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
 }
 ```
 
