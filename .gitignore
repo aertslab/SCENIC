@@ -1,0 +1,17 @@
+SCENIC.Rproj
+.Rproj.user
+.Rhistory
+.Rprofile
+.RData
+.Ruserdata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+packrat/lib*/
+packrat/src/
+z_*
+SCENIC_MouseBrain

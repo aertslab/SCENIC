@@ -17,11 +17,13 @@
 #' @export
 getRegulonName <- function(TFs, allRegulonNames)
 {
-  ret <- setNames(sapply(TFs, function(TF) allRegulonNames[grep(paste(TF, " \\(", sep=""), allRegulonNames)]), TFs)
+  if(all(grepl(" \\(", allRegulonNames))) allRegulonNames <- sapply(strsplit(allRegulonNames," \\("), function(x) x[1])
+  
+  ret <- sapply(setNames(TFs,TFs), function(TF) allRegulonNames[grep(paste(TF, "$", sep=""), allRegulonNames)])
   ret <- c(ret, setNames(sapply(TFs, function(TF) allRegulonNames[grep(paste(TF, "_extended", sep=""), allRegulonNames)]), TFs))
   ret <- unlist(ret)
 
-  ret <- unlist(onlyNonDirectExtended(ret))
+  ret <- unlist(onlyNonDuplicatedExtended(ret))
 
   ret
 }

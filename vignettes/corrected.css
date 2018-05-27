@@ -1,0 +1,12 @@
+p, img { 
+  padding-left: 0em;
+}
+
+pre { 
+  padding-left: 1em;
+}
+
+blockquote {
+  font-size: 90%;
+  padding-top: 0.5em;
+}

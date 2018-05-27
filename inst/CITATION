@@ -1,3 +1,4 @@
+
 citEntry(entry="Article",
   author = personList(
     person(given="Sara", family="Aibar"),
@@ -18,7 +19,7 @@ citEntry(entry="Article",
   journal ="Nature Methods",
   year ="2017",
   doi = "10.1038/nmeth.4463",
-  volume ="",
-  number = "",
-  pages = "",
-  textVersion = "Aibar et al. (2017) SCENIC: single-cell regulatory network inference and clustering. Nature Methods. doi: 10.1038/nmeth.4463")
+  volume ="14",
+  pages = "1083-1086",
+  textVersion = "Aibar et al. (2017) SCENIC: single-cell regulatory network 
+  inference and clustering. Nature Methods. doi: 10.1038/nmeth.4463")
