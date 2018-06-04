@@ -104,7 +104,7 @@ In case you have trobule installing the packages with `biocLite` (for example, i
 ```{r alternativeDownload, eval=FALSE}
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.2.tar.gz", repos=NULL)
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.0.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.1.tar.gz", repos=NULL)
 ```
 
 You are now ready to install SCENIC:

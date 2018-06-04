@@ -106,7 +106,10 @@ plot.new(); legend(0,1, fill=colVars$CellType, legend=names(colVars$CellType))
 
 In order to keep consistent settings across the multiple steps of SCENIC, most functions in SCENIC package use a common object where the options for the current run are stored. This object replaces the "arguments" for most functions, and should be created at the begining of a SCENIC run with the function `initializeScenic()`. 
 
-The default settings should be valid for most analyses. The parameters that need to be specified in all runs is the organism (`mgi` for mouse, or `hgnc` for human), and the directory where the RcisTarget databases are stored (you may create a link in the current directory if that is more convenient, e.g. in linux: `system("ln -s ~/a/file/path/dbs databases")`).
+The default settings should be valid for most analyses. The parameters that need to be specified in all runs is the organism (`mgi` for mouse, or `hgnc` for human), and the directory where the RcisTarget databases are stored (you may create a link in the current directory if that is more convenient, e.g. in linux:
+```{r linkDBs, eval=FALSE}
+system("ln -s ~/a/file/path/dbs databases")
+```
 
 For details on the options that can be modified check the help of `?initializeScenic`.
 
@@ -242,6 +245,7 @@ GENIE3 will typically take several hours (or days) to run. If you are running th
 # setwd("SCENIC_MouseBrain")
 # library(SCENIC)
 # scenicOptions <- readRDS("int/scenicOptions.Rds")
+# library(SingleCellExperiment)
 # load("data/sceMouseBrain.RData")
 # exprMat <- counts(sceMouseBrain)
 # genesKept <- loadInt(scenicOptions, "genesKept")
@@ -422,6 +426,12 @@ and to compare them...
 fileNames <- paste0("int/", grep("tSNE_", list.files("int"), value=T))
 par(mfrow=c(1,2))
 plotTsne_compareSettings(fileNames[1:2], scenicOptions, varName="CellType", showLegend=FALSE)
+```
+
+```{r changeDefaultTsne}
+scenicOptions@settings$defaultTsne$dims <- 5
+scenicOptions@settings$defaultTsne$perpl <- 15
+saveRDS(scenicOptions, file="int/scenicOptions.Rds") 
 ```
 
 ## GRN: Regulon targets and motifs

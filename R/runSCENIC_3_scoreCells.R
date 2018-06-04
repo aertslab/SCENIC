@@ -99,7 +99,7 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   ####################################################################
   # Plots
   if(!skipHeatmap){
-    nCellsHeatmap=500
+    nCellsHeatmap <- min(500, ncol(regulonAUC))
     cells2plot <- sample(colnames(regulonAUC), nCellsHeatmap)
     
     cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")   #TODO check if exists, if not... create/ignore?
