@@ -128,6 +128,7 @@ setMethod("getSettings",
               if(slotName=="defaultTsne/perpl") return(object@settings$defaultTsne$perpl)
               if(slotName=="defaultTsne/dims") return(object@settings$defaultTsne$dims)
               if(slotName=="defaultTsne/aucType") return(object@settings$defaultTsne$aucType)
+              if(slotName=="tSNE_filePrefix") return(object@settings$tSNE_filePrefix)
               
               if(slotName=="devType") return(object@settings$devType)
             }
@@ -196,7 +197,7 @@ setMethod("loadFile",
           {
             retObj <- NULL
             
-            if(!file.exists(as.character(fileName))) {
+            if(!file.exists(as.character(fileName)) || is.null(fileName)) {
               ifNotExists <- ifNotExists[1]
               if(ifNotExists=="error") stop("File '", fileName, "' does not exist.")
               if(ifNotExists=="null")
@@ -261,13 +262,22 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
   {
     data(defaultDbNames)
     dbs <- defaultDbNames[[org]]
-    if(any(!sapply(dbs,function(x) file.exists(file.path(dbDir, x))))) stop("RcisTarget databases not found.")
-    message("Motif databases selected: ", paste(dbs, collapse=", "))
+    if(any(!sapply(dbs,function(x) file.exists(file.path(dbDir, x))))) 
+    {
+      warning("RcisTarget databases not found. Please, initialize them manually.")
+      dbs <- NULL
+    }else
+    {
+      message("Motif databases selected: ", paste(dbs, collapse=", "))  
+    }
+    
   }
   
+  db_mcVersion <- dbVersion(dbs)
   scenicSettings=list(
     dbs=dbs,
     dbDir=dbDir,
+    db_mcVersion=db_mcVersion,
     verbose=TRUE,
     nCores=nCores,
     seed=123,
@@ -277,7 +287,8 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
     aucell=list(smallestPopPercent=0.25),
     defaultTsne=list(dims=50,
                 perpl=50,
-                aucType="AUC")
+                aucType="AUC"),
+    tSNE_filePrefix="int/tSNE"
   )
   
   # Files (for output and intermediate files)
@@ -323,10 +334,8 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
       aucell_binary_full=c("int/4.1_binaryRegulonActivity.Rds", NA),
       aucell_binary_nonDupl=c("int/4.2_binaryRegulonActivity_nonDupl.Rds", NA),
       aucell_regulonSelection=c("int/4.3_regulonSelections.Rds", NA),
-      aucell_binaryRegulonOrder=c("int/4.4_binaryRegulonOrder.Rds", NA),
+      aucell_binaryRegulonOrder=c("int/4.4_binaryRegulonOrder.Rds", NA)
       # aucell_tsneBinaryPrefix=c("int/4.5_tsneRegulonActivity", NA),
-      
-      tsne_prefix=c("int/tSNE", NA)
     )
   )
   scenicFiles$output <- cbind(fileName=scenicFiles$output)
@@ -340,4 +349,13 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
                 settings=scenicSettings,
                 fileNames=scenicFiles)
   return(object)
+}
+
+
+dbVersion <- function(dbs)
+{
+  dbVersion <- NULL
+  if(all(grepl(".mc9nr.", dbs))) dbVersion <- "v9"
+  if(all(grepl(".mc8nr.", dbs))) dbVersion <- "v8"
+  return(dbVersion)
 }
