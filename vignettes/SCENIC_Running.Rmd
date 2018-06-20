@@ -511,7 +511,7 @@ dgem <- counts(sceMouseBrain)
 head(colnames(dgem))  #should contain the Cell ID/name
 
 # Export:
-scenicOptions@fileNames$output["loomFile",] <- "mouseBrain"
+scenicOptions@fileNames$output["loomFile",] <- "mouseBrain.loom"
 export2scope(scenicOptions, dgem)
 ```
 

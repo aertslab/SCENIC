@@ -244,6 +244,13 @@ runSCENIC_2_createRegulons <- function(scenicOptions)
   }
 }
 
+#' @title getDbAnnotations
+#' @description Loads the motif annotation for the given organism and database version.
+#' @param scenicOptions Fields used: 'scenicOptions@inputDatasetInfo$org', and 'scenicOptions@settings$db_mcVersion'
+#' @return The motif annotations
+#' @examples 
+#' getDbAnnotations(scenicOptions)
+#' @export 
 getDbAnnotations <- function(scenicOptions)
 {
   org <- getDatasetInfo(scenicOptions, "org")

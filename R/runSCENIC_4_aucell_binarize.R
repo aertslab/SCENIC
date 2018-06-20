@@ -3,6 +3,7 @@
 #' @param scenicOptions Fields used: TODO
 #' @param skipBoxplot Whether to plot the boxplots
 #' @param skipHeatmaps Whether to plot the Binary heatmaps
+#' @skipTsne skipHeatmaps Whether to calculate the binary t-SNE
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -114,6 +115,7 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
 
 ################################################################################
 # Regulon orders/selection for plots
+#' @export
 regulonSelections <- function(binaryRegulonActivity, binaryRegulonActivity_nonDupl, minCells)
 {
   #binaryRegulonActivity <- loadInt(scenicOptions, "aucell_binary_full")

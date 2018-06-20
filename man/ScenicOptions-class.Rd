@@ -63,7 +63,7 @@ dbVersion(dbs)
 }
 \value{
 \itemize{
-\item \code{initializeScenic()}: Creates the object
+\item \code{initializeScenic()}: Creates the object. It also creates the folders where the results will be saved: 'int' and 'output'.
 \item \code{show()}: Prints a summary of the object
 \item \code{loadInt()}: Loads the selected "intermediate" file (normally from folder 'int/'). \code{getIntName(scenicOptions)} lists all possibilities (rownames: object name, fileName: file that will be loaded).
 \item \code{getDatasetInfo()}, \code{getOutName()}: Shows the content of the corresponding slots.
