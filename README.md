@@ -18,4 +18,4 @@ Update SCENIC pipeline to support the new version of RcisTarget and AUCell.
 
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
 
-The package includes two main tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).
+For more details and installation instructions see the tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).
