@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-05-27" />
+<meta name="date" content="2018-06-20" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -127,11 +127,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>27 May 2018</em></h4>
+<h4 class="date"><em>20 June 2018</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 0.99.0.2</p>
+<p>SCENIC 0.99.0.4</p>
 
 </div>
 
@@ -203,14 +203,17 @@ biocLite(c(&quot;mixtools&quot;))
 # To visualize the binary matrices and perform t-SNEs:
 biocLite(c(&quot;NMF&quot;, &quot;Rtsne&quot;, &quot;R2HTML&quot;))
 # To support paralell execution:
-biocLite(c(&quot;doMC&quot;, &quot;doRNG&quot;))</code></pre>
-<p>AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions: <strong>AUCell 1.2.2</strong>, and <strong>RcisTarget 1.0.2</strong> or posterior.</p>
+biocLite(c(&quot;doMC&quot;, &quot;doRNG&quot;))
+# To visualize in http://scope.aertslab.org
+install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;aertslab/SCopeLoomR&quot;)</code></pre>
+<p>AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions: <strong>AUCell 1.2.4</strong>, <strong>RcisTarget 1.0.2</strong>, and <strong>GENIE3 1.2.1</strong> or posterior.</p>
 <pre class="r"><code>packageVersion(&quot;AUCell&quot;)
 packageVersion(&quot;RcisTarget&quot;)</code></pre>
 <p>In case you have trobule installing the packages with <code>biocLite</code> (for example, if you don’t have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:</p>
-<pre class="r"><code>install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.2.tar.gz&quot;, repos=NULL)
+<pre class="r"><code>install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.4.tar.gz&quot;, repos=NULL)
 install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.0.tar.gz&quot;, repos=NULL)</code></pre>
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.1.tar.gz&quot;, repos=NULL)</code></pre>
 <p>You are now ready to install SCENIC:</p>
 <pre class="r"><code># install.packages(&quot;devtools&quot;)
 devtools::install_github(&quot;aertslab/SCENIC&quot;)</code></pre>
@@ -228,7 +231,8 @@ devtools::install_github(&quot;aertslab/SCENIC&quot;)</code></pre>
 <p>For <strong>fly</strong>:</p>
 <pre class="r"><code>dbFiles &lt;- c(&quot;https://resources.aertslab.org/cistarget/databases/drosophila_melanogaster/dm6/flybase_r6.02/mc8nr/gene_based/dm6-5kb-upstream-full-tx-11species.mc8nr.feather&quot;)
 # mc8nr: Motif collection version 8: 20k motifs</code></pre>
-<p>Download the <em>.feather</em> files (and <em>.descr</em>, if available) for the relevant organism <em>(feel free to use any alternative download method)</em> [Aprox file size: 1GB]:</p>
+<p>Download the <em>.feather</em> files (and <em>.descr</em>, if available) for the relevant organism. [Aprox file size: 1GB]</p>
+<p><em>To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use <a href="https://resources.aertslab.org/cistarget/help.html">zsync_curl</a>. If you prefer to download directly from R, you can use the following code:</em></p>
 <pre class="r"><code># dir.create(&quot;cisTarget_databases&quot;); setwd(&quot;cisTarget_databases&quot;) # if needed
 for(featherURL in dbFiles)
 {
@@ -236,6 +240,7 @@ for(featherURL in dbFiles)
   descrURL &lt;- gsub(&quot;.feather$&quot;, &quot;.descr&quot;, featherURL)
   if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
 }</code></pre>
+<p>After these setup steps, SCENIC is ready to run! To start, see the vignette “SCENIC_Running”.</p>
 </div>
 </div>
 <div id="some-tips" class="section level1">
@@ -243,36 +248,25 @@ for(featherURL in dbFiles)
 <div id="template-for-your-own-analysis" class="section level2">
 <h2>Template for your own analysis</h2>
 <p>You can use the <a href="http://rmarkdown.rstudio.com/r_notebooks.html">R notebooks</a> of this workflow as template for your own data (i.e. copy the .Rmd file, and edit it in RStudio).</p>
-<pre class="r"><code>pkgDir &lt;- file.path(system.file('doc', package='SCENIC'))
-list.files(pkgDir)
-
-vignetteFile &lt;- paste(pkgDir, &quot;SCENIC_Running.Rmd&quot;, sep=&quot;/&quot;)
-# Copy to edit as markdown
-file.copy(vignetteFile, &quot;.&quot;)
-# Alternative: extract R code
-Stangle(vignetteFile)</code></pre>
-<p>Note that some steps of this workflow take considerable time. To avoid re-running these steps when <em>knitting</em> the vignette (or the HTML/pdf report), we have added <code>eval=FALSE</code> to some code chunks and <code>load()</code> its output in the next. Feel free to adapt these to your needs.</p>
+<pre class="r"><code>vignetteFile &lt;- file.path(system.file('doc', package='SCENIC'), &quot;SCENIC_Running.Rmd&quot;)
+file.copy(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)</code></pre>
+<p>Note that some steps of this workflow take considerable time. To avoid re-running these steps when <em>knitting</em> the vignette (i.e. create the HTML report), we have added <code>eval=FALSE</code> to some code chunks and <code>load()</code> its output in the next. Feel free to adapt these to your needs.</p>
 </div>
 <div id="help" class="section level2">
 <h2>Help</h2>
 <p>At any time, you an access the help for any function used in this workflow (i.e. for details on their arguments), and the vignettes of the other steps of the workflow with the following commands:</p>
 <pre class="r"><code>## Get help for a function:
-?AUCell.buildRankings
-help(AUCell.buildRankings)
+?runSCENIC_3_scoreCells
+help(runSCENIC_3_scoreCells) # equivalent
 
-## Explore tutorials for a given package:
-# In the web browser:
-browseVignettes(package=&quot;SCENIC&quot;)
-browseVignettes(package=&quot;RcisTarget&quot;)
-
-# Commnad line-based:
+## See the available tutorials:
 vignette(package=&quot;SCENIC&quot;) # list
 vignette(&quot;SCENIC_Running&quot;) # open</code></pre>
 </div>
 </div>
 <div id="sample-dataset-download-format" class="section level1">
 <h1>Sample dataset: Download &amp; format</h1>
-<p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results (available at scenic.aertslab.org).</p>
+<p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results from the example (some are available in <a href="https://github.com/aertslab/SCENIC/">Github</a>).</p>
 <p>As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).</p>
 <blockquote>
 <p>Zeisel, A., et al. (2015). Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq. Science 347, 1138–1142. doi: <a href="http://dx.doi.org/10.1126/science.aaa1934">10.1126/science.aaa1934</a></p>

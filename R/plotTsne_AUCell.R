@@ -15,7 +15,7 @@
 plotTsne_regulonActivityHTML <- function(scenicOptions, exprMat, fileName, tSNE=NULL) 
 {
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
-  if(is.null(tSNE)) tSNE <- readRDS(defaultTsneFileName(scenicOptions))
+  if(is.null(tSNE)) tSNE <- readRDS(tsneFileName(scenicOptions))
   tSNE <- tSNE$Y
 
   # Plot module activity, thresholds & assignment:

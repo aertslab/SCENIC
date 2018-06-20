@@ -1,8 +1,3 @@
-# Help files will be automatically generated from the coments starting with #'
-# (https://cran.r-project.org/web/packages/roxygen2/vignettes/rd.html)
-
-# @import
-#'
 #' @title getTF
 #' @description Returns the TF associated to a regulon name (e.g. removes the #genes sufix)
 #' @param regulonName Character vector containing regulon names

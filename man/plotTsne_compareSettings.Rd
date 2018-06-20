@@ -12,7 +12,8 @@ plotTsne_compareSettings(fileNames, scenicOptions, varName = NULL, ...)
 \item{scenicOptions}{imports cellInfo and colVars}
 
 \item{varName}{If a varName is given, it plots all the t-SNEs (not saved to file), colouring only for that variable.
-If null, it plots all the cellInfo colums for all the t-SNEs (each t-SNE in an individual file).}
+If null, it plots all the cellInfo colums for all the t-SNEs (each t-SNE in an individual file). 
+To plot all cellInfo colums, but as individual plots, use \code{TRUE}.}
 
 \item{...}{Other arguments to pass to \code{AUCell::plotTsne_cellProps}}
 }

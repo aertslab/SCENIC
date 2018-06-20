@@ -120,7 +120,7 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   ####################################################################
   # Plots
   if(!skipTsne){
-    tSNE_fileName <- tsneAUC(scenicOptions, aucType="AUC", filePrefix=getIntName(scenicOptions, "tsne_prefix"), onlyHighConf=FALSE) # default: nPcs, perpl, seed
+    tSNE_fileName <- tsneAUC(scenicOptions, aucType="AUC", onlyHighConf=FALSE) # default: nPcs, perpl, seed, tsne prefix
     tSNE <- readRDS(tSNE_fileName)
     
     # AUCell (activity) plots with the default tsne, as html: 

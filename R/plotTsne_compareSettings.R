@@ -5,6 +5,7 @@
 #' @param scenicOptions imports cellInfo and colVars
 #' @param varName If a varName is given, it plots all the t-SNEs (not saved to file), colouring only for that variable.
 #' If null, it plots all the cellInfo colums for all the t-SNEs (each t-SNE in an individual file). 
+#' To plot all cellInfo colums, but as individual plots, use \code{TRUE}.
 #' @param ... Other arguments to pass to \code{AUCell::plotTsne_cellProps}
 #' @return Plots
 #' @examples
@@ -19,6 +20,7 @@ plotTsne_compareSettings <- function(fileNames, scenicOptions, varName=NULL, ...
   
   if(is.null(varName))
   {
+    if(getSettings(scenicOptions, "verbose")) message("t-SNE plots saved as: ")
     for(tSNE_fileName in fileNames)
     {
       tSNE <- readRDS(tSNE_fileName)
@@ -29,11 +31,17 @@ plotTsne_compareSettings <- function(fileNames, scenicOptions, varName=NULL, ...
       pdf(plot_fileName)
       AUCell::plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, sub=sub, ...)
       dev.off()
+      if(getSettings(scenicOptions, "verbose")) message("  ", plot_fileName)
     }
   }
   if(!is.null(varName))
   {
+    if(is.character(varName) & any(! varName %in% colnames(cellInfo))) 
+      stop("Cannot find cell information named '", varName[which(!varName %in% colnames(cellInfo))]," (it should be a column of the 'cellInfo').")
+    
     cellInfo <- cellInfo[,varName,drop=FALSE]
+      if(ncol(cellInfo)==0) stop("No properties selected for plotting.")
+    
     for(tSNE_fileName in fileNames)
     {
       tSNE <- readRDS(tSNE_fileName)

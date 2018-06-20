@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-SCENIC_MouseBrain
 .gitignore
 .Rhistory
 .Rbuildignore
+example_results

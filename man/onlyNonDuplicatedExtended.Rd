@@ -15,9 +15,6 @@ Character vector
 \description{
 Returns the regulon names filtering-out the "extended" regulons if there is a regulon based on high-confidence annotations
 }
-\details{
-...
-}
 \examples{
 reguNames <- c("Dlx1 (103g)", "Dlx1_extended (190g)", "Olig2_extended (29g)", "Sox9 (17g)")
 onlyNonDuplicatedExtended(reguNames)

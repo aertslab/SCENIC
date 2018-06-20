@@ -12,7 +12,7 @@
 #' @export
 plotTsne_AUCellApp <- function(scenicOptions, exprMat, tSNE_fileName=NULL, skipDuplicatedExtended=TRUE) 
 {
-  if(is.null(tSNE_fileName)) tSNE_fileName <- defaultTsneFileName(scenicOptions)
+  if(is.null(tSNE_fileName)) tSNE_fileName <- tsneFileName(scenicOptions)
   tSNE <- readRDS(tSNE_fileName)
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
   thresholds <- loadInt(scenicOptions, "aucell_thresholds", ifNotExists="null")

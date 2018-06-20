@@ -1,7 +1,7 @@
 ### News
 
 01/05/2018
-- [RcisTarget](https://bioconductor.org/packages/RcisTarget) is now available in Bioconductor. The new databases are available at [https://resources.aertslab.org/cistarget/]. 
+- [RcisTarget](https://bioconductor.org/packages/RcisTarget) is now available in Bioconductor. The new databases can be downloaded from [https://resources.aertslab.org/cistarget/]. 
 
 30/03/2018 New releases:
 - [pySCENIC](http://pyscenic.readthedocs.io): lightning-fast python implementation of the SCENIC pipeline.
