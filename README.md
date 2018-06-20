@@ -1,7 +1,7 @@
 ### News
 
 01/05/2018
-- [RcisTarget](https://bioconductor.org/packages/RcisTarget) is now available in Bioconductor. The new databases are available at [https://resources.aertslab.org/cistarget/]. 
+- [RcisTarget](https://bioconductor.org/packages/RcisTarget) is now available in Bioconductor. The new databases can be downloaded from [https://resources.aertslab.org/cistarget/]. 
 
 30/03/2018 New releases:
 - [pySCENIC](http://pyscenic.readthedocs.io): lightning-fast python implementation of the SCENIC pipeline.
@@ -18,4 +18,4 @@ Update SCENIC pipeline to support the new version of RcisTarget and AUCell.
 
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
 
-See the [Introductory tutorial](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/vignettes/SCENIC_Intro.html) for more details and installation instructions.
+The package includes two main tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).

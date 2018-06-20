@@ -10,25 +10,29 @@
 #' @param ... Other arguments to pass to the \code{Rtsne::Rtsne} function.
 #' @return The file name(s) in whihc the tSNE is saved. 
 #' @examples 
-#' #todo
-#' # tSNE <- readRDS(defaultTsneFileName(scenicOptions))
+#' ## TO DO (See the vignette)
+#' # tSNE <- readRDS(tsneFileName(scenicOptions))
+#' # tsneAUC(scenicOptions)
 #' @export
-tsneAUC <- function(scenicOptions, aucType=NULL, nPcs=NULL, perpl=NULL, filePrefix="tSNE", seed=NULL, onlyHighConf=FALSE, ...)
+tsneAUC <- function(scenicOptions, aucType=NULL, nPcs=NULL, perpl=NULL, filePrefix=NULL, seed=NULL, onlyHighConf=FALSE, ...)
 {
+  if(is.null(filePrefix)) filePrefix <- getSettings(scenicOptions,"tSNE_filePrefix")
   if(is.null(aucType)) aucType <- getSettings(scenicOptions,"defaultTsne/aucType")
   if(is.null(nPcs)) nPcs <- getSettings(scenicOptions,"defaultTsne/dims")
-  if(is.null(perpl)) perpl <- getSettings(scenicOptions,"defaultTsne/dims")
+  if(is.null(perpl)) perpl <- getSettings(scenicOptions,"defaultTsne/perpl")
   
   if(is.null(seed)) seed <- getSettings(scenicOptions,"seed")
   
-  if(!aucType %in% c("Binary", "AUC")) stop('aucType should be either "Binary" or "AUC"')
+  if(is.character(nPcs)) {
+    if(any(is.na(as.integer(nPcs[which(tolower(nPcs)!="dist")])))) stop("nPcs should be integer or 'dist'" )
+  }
+  if(length(aucType)>1) stop('aucType should be either "Binary" or "AUC"')
+  if(length(aucType)>1) stop('aucType should be either "Binary" or "AUC"')
+  if(!aucType %in% c("Binary", "AUC")) stop('aucType should be "Binary" or "AUC"')
     
   if(aucType=="Binary") mat4tsne <- loadInt(scenicOptions, "aucell_binary_nonDupl") 
   if(aucType=="AUC") mat4tsne <- getAUC(loadInt(scenicOptions, "aucell_regulonAUC"))
 
-  msg <- paste0(format(Sys.time(), "%H:%M"), "\tCalculating t-SNE")
-  if(getSettings(scenicOptions, "verbose")) message(msg)
-  
   if(onlyHighConf)
   {
     mat4tsne_subset <- mat4tsne[grep("_extended",rownames(mat4tsne),invert=T, value=T),] 
@@ -36,43 +40,78 @@ tsneAUC <- function(scenicOptions, aucType=NULL, nPcs=NULL, perpl=NULL, filePref
     mat4tsne_subset <- mat4tsne[onlyNonDuplicatedExtended(rownames(mat4tsne)),]
   }
   
-  fileNames <- c()
+  # Prepare all possible combinations...
+  allParams <- list()
   for(perplexity in perpl)
   {
     for(initial_dims in nPcs)
     {
+      allParams[[length(allParams)+1]] <- c(perplexity=perplexity, initial_dims=initial_dims)
+    }
+  }
+  
+  suppressMessages(require("doMC", quietly=TRUE))
+  doMC::registerDoMC(cores=getSettings(scenicOptions, "nCores"))
+  
+  fileNames <- c()
+  fileNames <- foreach(param=allParams) %dopar%
+  {
+    initial_dims <- param["initial_dims"]
+    perplexity <- param["perplexity"]
+    dimsAsText <- initial_dims
+    if(tolower(initial_dims)!="dist") dimsAsText <- paste0(dimsAsText, "PCs")
+    #if(getSettings(scenicOptions, "verbose")) message(paste0(format(Sys.time(), "%H:%M"), "\tCalculating t-SNE (", perplexity,"perpl, ", tolower(dimsAsText),")"))
+    
+    tryCatch(
+    {
       # PCA-based t-SNE
       set.seed(seed)
-      if(aucType=="Binary") mat4tsne_subset <- jitter(mat4tsne_subset, factor=1)
-      tsneMat <- unique(t(mat4tsne_subset))  
-      tsneAUC <- Rtsne::Rtsne(tsneMat,
-                              initial_dims=initial_dims,
-                              perplexity=perplexity, ...) #TODO tSNE function?
-      tsneAUC$type <- paste0(aucType," ", nrow(mat4tsne_subset), " regulons (", initial_dims, " PCs, ", perplexity," perplexity)")
-      rownames(tsneAUC$Y) <- rownames(tsneMat)
+      if(tolower(initial_dims)!="dist")
+      {
+        tsneMat <- mat4tsne_subset
+        if(aucType=="Binary") tsneMat <- jitter(tsneMat, factor=1)
+        tsneMat <- unique(t(tsneMat))
+  
+        tsneAUC <- Rtsne::Rtsne(tsneMat,
+                                initial_dims=as.integer(initial_dims),
+                                perplexity=perplexity, ...) #TODO tSNE function?
+        rownames(tsneAUC$Y) <- rownames(tsneMat)
+      }else{
+        corDist <- as.dist(1-cor(mat4tsne_subset))
+        tsneAUC <- Rtsne::Rtsne(corDist,
+                                is_distance=TRUE,
+                                perplexity=perplexity, ...)
+        rownames(tsneAUC$Y) <- labels(corDist)
+      }
       colnames(tsneAUC$Y) <- c("tsne1", "tsne2")
+      tsneAUC$type <- paste0(aucType," ", nrow(mat4tsne_subset), " regulons (", dimsAsText, ", ", perplexity," perplexity)")
       
-      fileName <- paste0(filePrefix, "_",aucType, "_", initial_dims, "pcs_", perplexity, "perpl.Rds") #TODO
-      if(aucType=="Binary") 
+      fileName <- tsneFileName(filePrefix=filePrefix, aucType=aucType, nPcs=initial_dims, perpl=perplexity)
+      if(aucType=="Binary")
       {
         tsneBinaryAUC <- tsneAUC
         saveRDS(tsneBinaryAUC, file=fileName)
       }else{
         saveRDS(tsneAUC, file=fileName)
       }
-      fileNames <- c(fileNames, fileName)
-    }
+      return(fileName)
+    }, error = function(e) {
+      msg <- paste0("Couldn't create tSNE for: ", aucType,", ", dimsAsText,", ", perplexity, "perpl. Error msg:", e)
+      return(msg)
+    })
   }
-  
-  return(fileNames)
+  return(unlist(fileNames))
 }
 
 #' @export
-defaultTsneFileName <- function(scenicOptions){
-  filePrefix <- getIntName(scenicOptions, "tsne_prefix")
-  aucType <- getSettings(scenicOptions,"defaultTsne/aucType")
-  nPcs <- getSettings(scenicOptions,"defaultTsne/dims")
-  perpl <- getSettings(scenicOptions,"defaultTsne/dims")
+tsneFileName <- function(scenicOptions=NULL, filePrefix=NULL, aucType=NULL, nPcs=NULL, perpl=NULL){
+  if(is.null(filePrefix)) filePrefix <- getSettings(scenicOptions, "tSNE_filePrefix")
+  if(is.null(aucType)) aucType <- getSettings(scenicOptions,"defaultTsne/aucType")
+  if(is.null(nPcs)) nPcs <- getSettings(scenicOptions,"defaultTsne/dims")
+  if(is.null(perpl)) perpl <- getSettings(scenicOptions,"defaultTsne/perpl")
   
-  paste0(filePrefix, "_",aucType, "_", nPcs, "pcs_", perpl, "perpl.Rds") #TODO
+  dimsAsText <- nPcs 
+  if(tolower(nPcs)!="dist") dimsAsText <- paste0(sprintf("%02d", dimsAsText), "PCs")
+  
+  paste0(filePrefix, "_", aucType, "_", tolower(dimsAsText), "_", sprintf("%02d", perpl), "perpl.Rds")
 }

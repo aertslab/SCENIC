@@ -1,26 +1,70 @@
 #' @title Object to store SCENIC settings 
 #' @aliases loadInt show
+#' @rdname ScenicOptions-class
 #' @description
+#' This class contains the options/settings for a run of SCENIC. 
+#' Most SCENIC functions use this object as input instead of traditional arguments that need to be set individually. 
 #' 
+#' The object has three main slots:
+#' \itemize{
+#'    \item \code{@inputDatasetInfo}: Contains the information about the dataset to analyze: 
+#'    dataset name ("datasetTitle", only for user information), 
+#'    organism ("org", determines the motif databases to use), and 
+#'    the files containing cell phenotype information ("cellInfo", "colVars", for plots. optional). 
+#'    
+#'    An overview of this slot can be obtained with \code{getDatasetInfo(scenicOptions)}.
+#'    \item \code{@fileNames}: Contains the file names where the results are saved (\code{$output}: most relevant results, \code{$int}: intermediate files).
+#'    
+#'    Output file names can be obtained with \code{getOutName(scenicOptions)}. To load an intermediate file: \code{getIntName(scenicOptions)} and \code{regulons <- loadInt(scenicOptions, "aucell_regulons")}.
+#'    \item \code{@settings}: Arguments for specific functions/steps:
+#'    
+#'    - General arguments ("verbose", "nCores"), and "seed" for AUCell rankings and t-SNEs.
+#'    
+#'    - \code{runSCENIC_1_coexNetwork2modules()}: "modules/weightThreshold" for the co-expression modules. 
+#'    
+#'    - \code{runSCENIC_2_createRegulons()}: RcisTarget databases ("dbs", "db" , "dbDir"). These are used in \code{runSCENIC_2_createRegulons()}, but the input expression matrix and GENIE3/GRNBoost regulators should be consistent.
+#'    
+#'    - \code{runSCENIC_3_scoreCells()}: "aucell/smallestPopPercent" for AUCell automatic thresholds.
+#'    
+#'    - t-SNEs: "defaultTsne/perpl", "defaultTsne/dims", "defaultTsne/aucType", "tSNE_filePrefix" (and "seed").
+#'    
+#'    The overview of this slot can be obtained with \code{getSettings(scenicOptions)}.
+#' }
 #'
-#' @param object 
+#' In the current version there are not specific functions for setting a value. 
+#' Follow the guidelines in the specific function if you need to modify a specific parameter.
+#' 
 #' @return
 #' \itemize{
-#' \item show: Prints a summary of the object
-#' \item loadInt: Loads the selected object
+#' \item \code{initializeScenic()}: Creates the object
+#' \item \code{show()}: Prints a summary of the object
+#' \item \code{loadInt()}: Loads the selected "intermediate" file (normally from folder 'int/'). \code{getIntName(scenicOptions)} lists all possibilities (rownames: object name, fileName: file that will be loaded).
+#' \item \code{getDatasetInfo()}, \code{getOutName()}: Shows the content of the corresponding slots.
 #' }
 #' @method show ScenicOptions
 #' @method loadInt ScenicOptions
-# scenicOptions <- initializeScenic(org="mgi", db="test")
-# ##' @example 
-# write.table(motifEnrichment_selfMotifs_wGenes, file=scenicOptions@fileNames$output["s2_motifEnrichment",],
-#             sep="\t", quote=FALSE, row.names=FALSE)
-# tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
-# saveRDS(motifEnrichment, file=getIntName(scenicOptions, "aucell_regulons"))
-# getDatasetInfo(scenicOptions, "org")
-# getDatasetInfo(scenicOptions, "verbose")
-# getDatasetInfo(scenicOptions, "dbs")
-#' @rdname ScenicOptions-class
+#' @examples
+#' # Create object:
+#' scenicOptions <- initializeScenic(org="hgnc", datasetTitle="My dataset", dbDir="databases", nCores=4)
+#' 
+#' ### Accessor functions
+#' # Get output file names:
+#' getOutName(scenicOptions)  # Shows all
+#' getOutName(scenicOptions, "s2_motifEnrichmentHtml") 
+#' 
+#' # Load intermediate files: 
+#' getIntName(scenicOptions) # Shows all (use the rowname to subset)
+#' regulons <- loadInt(scenicOptions, "aucell_regulons") # load the file
+#' 
+#' # other:
+#' getDatasetInfo(scenicOptions)
+#' getDatasetInfo(scenicOptions, "datasetTitle")
+#' scenicOptions@inputDatasetInfo$datasetTitle <- "new title" # to assign new value
+#' getSettings(scenicOptions, "defaultTsne/dims")  
+#' 
+#' tsneFileName(scenicOptions)
+#' getDatabases(scenicOptions) 
+#' dbVersion(getDatabases(scenicOptions))
 #' @export ScenicOptions
 ScenicOptions <- setClass(
   # Set the name for the class
@@ -40,17 +84,23 @@ setMethod("show",
            signature="ScenicOptions",
            definition = function(object) {
             
-             message <- paste("SCENIC settings object", sep="") # TODO $datasetTitle
-            
-            if(is.null(object@settings$dbs))
+             message <- paste("SCENIC settings object \n",
+                              "\t Dataset title: ",getDatasetInfo(scenicOptions, "datasetTitle"), "\n",
+                              "\t Organism: ", getDatasetInfo(scenicOptions, "org"), "\n", sep="")
+                              
+             message <- paste(message,
+                              "\t Cell info and colvars files: ",
+                              getDatasetInfo(scenicOptions, "cellInfo"),", ",
+                              getDatasetInfo(scenicOptions, "colVars"), "\n", sep="") 
+
+            if(is.null(object@settings$dbs)){
               message <- paste(message,
                                "\nInitialise DB\n", sep="") 
-            
-            if(is.null(object@inputDatasetInfo$org))
+            }else{
               message <- paste(message,
-                               "\nnInitialise Organism\n", sep="")
-          
-          
+                               "\t Databases for this analysis: ",
+                               paste0(getDatabases(scenicOptions), collapse=", "), "\n", sep="") 
+            }
             cat(message) 
           }
 )
@@ -71,7 +121,7 @@ setMethod("getDatasetInfo",
           {
             if(is.null(slotName))
             {
-              print(do.call(rbind,object@inputDatasetInfo)[,1,drop=FALSE]) #TODO
+              print(do.call(rbind, object@inputDatasetInfo)[,1,drop=FALSE]) #TODO
             }else{
               if(slotName=="org") return(object@inputDatasetInfo$org)
               if(slotName=="datasetTitle") return(object@inputDatasetInfo$datasetTitle)
@@ -243,13 +293,15 @@ setMethod("loadInt",
 
 
 ########################################################
-# initializeScenic(org="mgi", dbs="test")
+#' @rdname ScenicOptions-class
 #' @export 
-initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
-  
+initializeScenic <- function(org=NULL, dbDir="databases", datasetTitle="", nCores=4)
+{
+  if(!org %in% c("mgi","hgnc", "dmel")) stop("'org' should be one of: mgi, hgnc, dmel.") 
+    
   inputDataset<- list(
-    org=org,#"mgi",
-    datasetTitle="",
+    org=org,
+    datasetTitle=datasetTitle,
     cellInfo=c("int/cellInfo.Rds", NA),
     colVars=c("int/colVars.Rds", NA),
     int_01=c("int/cellColorNgenes.Rds", NA)
@@ -341,6 +393,7 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
   scenicFiles$output <- cbind(fileName=scenicFiles$output)
   scenicFiles$int <- do.call(rbind,scenicFiles$int) #as.data.frame()
   colnames(scenicFiles$int) <- c("fileName", "keep")
+  scenicFiles$int <- scenicFiles$int[,"fileName", drop=FALSE]  # TODO: dedice if used
   
   dir.create("int", showWarnings=FALSE)
   dir.create("output", showWarnings=FALSE)
@@ -351,7 +404,8 @@ initializeScenic <- function(org=NULL, dbDir="databases", nCores=4, ...){
   return(object)
 }
 
-
+#' @rdname ScenicOptions-class
+#' @export 
 dbVersion <- function(dbs)
 {
   dbVersion <- NULL

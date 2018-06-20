@@ -1,6 +1,6 @@
 #' @title plotTsne_rgb
 #' @description Colors the t-SNE based on the activity of 3 (groups of) regulons
-#' @param scenicOptions Fields used: 
+#' @param scenicOptions Fields used: AUC matrix (continuous or binary), default t-SNE.
 #' @param regulonNames Regulons to plot
 #' @param aucType "AUC" or "Binary"
 #' @param aucMaxContrast To increase the AUC contrast decrease the value.
@@ -36,7 +36,7 @@ plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContr
   aucType <- tolower(aucType)
   if(aucType=="binary") mat4col <- loadInt(scenicOptions, "aucell_binary_nonDupl") 
   if(aucType=="auc") mat4col <- getAUC(loadInt(scenicOptions, "aucell_regulonAUC"))
-  if(showPlot && is.null(tSNE_fileName)) tSNE_fileName <- defaultTsneFileName(scenicOptions)
+  if(showPlot && is.null(tSNE_fileName)) tSNE_fileName <- tsneFileName(scenicOptions)
   tSNE <- readRDS(tSNE_fileName)
   
   mat4col <- mat4col[onlyNonDuplicatedExtended(rownames(mat4col)),,drop=FALSE]
@@ -58,7 +58,7 @@ plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContr
   # Apply color
   missingCol <- setdiff(c("red","green", "blue"), colnames(cellColChan))
   if(length(missingCol)>0)
-    cellColChan <- cbind(cellColChan, matrix(rep(0, nrow(cellColChan)), dimnames=list(NULL,missingCol)))
+    cellColChan <- cbind(cellColChan, matrix(rep(0, nrow(cellColChan)*length(missingCol)),ncol=length(missingCol), dimnames=list(NULL,missingCol)))
   cellCol <- apply(cellColChan, 1, function(x) rgb(x["red"], x["green"], x["blue"], alpha=.8))
   if(!is.null(offColor)) cellCol[which(cellCol=="#000000CC")] <- offColor # mostly for binary
   names(cellCol) <- colnames(mat4col)

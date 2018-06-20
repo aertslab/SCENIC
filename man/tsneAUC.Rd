@@ -5,7 +5,7 @@
 \title{tsneAUC}
 \usage{
 tsneAUC(scenicOptions, aucType = NULL, nPcs = NULL, perpl = NULL,
-  filePrefix = "tSNE", seed = NULL, onlyHighConf = FALSE, ...)
+  filePrefix = NULL, seed = NULL, onlyHighConf = FALSE, ...)
 }
 \arguments{
 \item{scenicOptions}{Fields used:}
@@ -31,6 +31,7 @@ The file name(s) in whihc the tSNE is saved.
 Calculates the t-SNE based on the regulon activity. (i.e. binary/continuous AUC)
 }
 \examples{
-#todo
-# tSNE <- readRDS(defaultTsneFileName(scenicOptions))
+## TO DO (See the vignette)
+# tSNE <- readRDS(tsneFileName(scenicOptions))
+# tsneAUC(scenicOptions)
 }

@@ -1,8 +1,3 @@
-# Help files will be automatically generated from the coments starting with #'
-# (https://cran.r-project.org/web/packages/roxygen2/vignettes/rd.html)
-
-# @import
-#'
 #' @title getRegulonName
 #' @description Gets the regulon name for a given TF (only returns the 'extended' regulons if no directly-annotated regulon is available)
 #' @param TFs Transcription factor name

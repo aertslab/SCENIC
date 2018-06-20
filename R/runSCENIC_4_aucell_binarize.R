@@ -64,15 +64,17 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
     if(is.null(regulonSelection)) 
       regulonSelection <- regulonSelections(binaryRegulonActivity, binaryRegulonActivity_nonDupl, minCells)
     
-    cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"))
+    cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
     cellInfo <- data.frame(cellInfo)
-    colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"))
+    colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"), ifNotExists="null")
+    
     
     ### Plot heatmap:
     for(selRegs in names(regulonSelection$labels))
     {
       if(length(regulonSelection[[selRegs]])>1)
       {
+        regulonSelection[[selRegs]] <- regulonSelection[[selRegs]][which(regulonSelection[[selRegs]] %in% rownames(binaryRegulonActivity))]
         binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
         
         fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)

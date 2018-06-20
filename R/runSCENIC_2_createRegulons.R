@@ -31,7 +31,12 @@ runSCENIC_2_createRegulons <- function(scenicOptions)
   motifAnnot <- getDbAnnotations(scenicOptions)
   
   if(is.null(names(getSettings(scenicOptions, "dbs")))) 
-    names(getSettings(scenicOptions, "dbs")) <- sapply(strsplit(getSettings(scenicOptions, "dbs"),"-", fixed=T), function(x) x[grep("bp|kb",x)])
+  {
+    names(scenicOptions@settings$"dbs") <- scenicOptions@settings$"dbs"
+    tmp <- sapply(strsplit(getSettings(scenicOptions, "dbs"),"-", fixed=T), function(x) x[grep("bp|kb",x)])
+    if(all(lengths(tmp)>0)) names(scenicOptions@settings$"dbs") <- tmp
+  }
+    
   suppressMessages(motifRankings <- lapply(getDatabases(scenicOptions), importRankings))
   ####################
   
@@ -239,14 +244,6 @@ runSCENIC_2_createRegulons <- function(scenicOptions)
   }
 }
 
-getDbVersion <- function(scenicOptions)
-{
-  dbVersion <- NULL
-  if(all(grepl(".mc9nr.", getDatabases(scenicOptions)))) dbVersion <- "v9"
-  if(all(grepl(".mc8nr.", getDatabases(scenicOptions)))) dbVersion <- "v8"
-  return(dbVersion)
-}
-
 getDbAnnotations <- function(scenicOptions)
 {
   org <- getDatasetInfo(scenicOptions, "org")
@@ -257,7 +254,7 @@ getDbAnnotations <- function(scenicOptions)
   if(org=="mgi") motifAnnotName <- "motifAnnotations_mgi"
   if(org=="dmel") motifAnnotName <- "motifAnnotations_dmel"
   
-  if(getDbVersion(scenicOptions)=="v8") motifAnnotName <- paste0(motifAnnotName, "_v8")
+  if(scenicOptions@settings$db_mcVersion=="v8") motifAnnotName <- paste0(motifAnnotName, "_v8")
   
   library(RcisTarget) # Lazyload
   #data(package="RcisTarget", verbose = T)

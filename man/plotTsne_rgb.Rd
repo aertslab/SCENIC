@@ -9,7 +9,7 @@ plotTsne_rgb(scenicOptions, regulonNames, aucType = "AUC",
   tSNE_fileName = NULL, ...)
 }
 \arguments{
-\item{scenicOptions}{Fields used:}
+\item{scenicOptions}{Fields used: AUC matrix (continuous or binary), default t-SNE.}
 
 \item{regulonNames}{Regulons to plot}
 

@@ -17,7 +17,7 @@ output:
 package: '`r pkg_ver("SCENIC")`'
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{SCENIC Intro}
+  %\VignetteIndexEntry{SCENIC Setup}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -90,10 +90,13 @@ biocLite(c("mixtools"))
 biocLite(c("NMF", "Rtsne", "R2HTML"))
 # To support paralell execution:
 biocLite(c("doMC", "doRNG"))
+# To visualize in http://scope.aertslab.org
+install.packages("devtools")
+devtools::install_github("aertslab/SCopeLoomR")
 ```
 
 AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions:
-**AUCell 1.2.2**, and **RcisTarget 1.0.2** or posterior.
+**AUCell 1.2.4**, **RcisTarget 1.0.2**, and **GENIE3 1.2.1** or posterior.
 
 ```{r versions, eval=FALSE}
 packageVersion("AUCell")
@@ -102,7 +105,7 @@ packageVersion("RcisTarget")
 
 In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
 ```{r alternativeDownload, eval=FALSE}
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.2.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.4.tar.gz", repos=NULL)
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz", repos=NULL)
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.1.tar.gz", repos=NULL)
 ```
@@ -115,7 +118,8 @@ devtools::install_github("aertslab/SCENIC")
 
 ## Species-specific databases
 
-In addition to the R-packages, you will also need to download the species-specific databases for RcisTarget (the motif rankings). The links to all the available databases are available in [our website](https://resources.aertslab.org/cistarget/).
+In addition to the R-packages, you will also need to download the species-specific databases for RcisTarget (the motif rankings). 
+The links to all the available databases are available in [our website](https://resources.aertslab.org/cistarget/).
 By default, SCENIC uses the databases that score the motifs in the promoter of the genes (up to 500bp upstream the TSS), and in the 20kb around the TSS (+/-10kbp).
 
 For **human**:
@@ -138,7 +142,9 @@ dbFiles <- c("https://resources.aertslab.org/cistarget/databases/drosophila_mela
 # mc8nr: Motif collection version 8: 20k motifs
 ```
 
-Download the *.feather* files (and *.descr*, if available) for the relevant organism *(feel free to use any alternative download method)* [Aprox file size: 1GB]:
+Download the *.feather* files (and *.descr*, if available) for the relevant organism. [Aprox file size: 1GB]
+
+*To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use [zsync_curl](https://resources.aertslab.org/cistarget/help.html). If you prefer to download directly from R, you can use the following code:*
 ```{r downloadDatabases, eval=FALSE}
 # dir.create("cisTarget_databases"); setwd("cisTarget_databases") # if needed
 for(featherURL in dbFiles)
@@ -149,44 +155,35 @@ for(featherURL in dbFiles)
 }
 ```
 
+After these setup steps, SCENIC is ready to run! To start, see the vignette "SCENIC_Running".
+
 # Some tips...
 
 ## Template for your own analysis
 You can use the [R notebooks](http://rmarkdown.rstudio.com/r_notebooks.html) of this workflow as template for your own data (i.e. copy the .Rmd file, and edit it in RStudio).
 ```{r template, eval=FALSE}
-pkgDir <- file.path(system.file('doc', package='SCENIC'))
-list.files(pkgDir)
-
-vignetteFile <- paste(pkgDir, "SCENIC_Running.Rmd", sep="/")
-# Copy to edit as markdown
-file.copy(vignetteFile, ".")
-# Alternative: extract R code
-Stangle(vignetteFile)
+vignetteFile <- file.path(system.file('doc', package='SCENIC'), "SCENIC_Running.Rmd")
+file.copy(vignetteFile, "SCENIC_myRun.Rmd")
 ```
 
-Note that some steps of this workflow take considerable time. To avoid re-running these steps when *knitting* the vignette (or the HTML/pdf report), we have added `eval=FALSE` to some code chunks and `load()` its output in the next. Feel free to adapt these to your needs.
+Note that some steps of this workflow take considerable time. To avoid re-running these steps when *knitting* the vignette (i.e. create the HTML report), we have added `eval=FALSE` to some code chunks and `load()` its output in the next. Feel free to adapt these to your needs.
 
 ## Help
 At any time, you an access the help for any function used in this workflow (i.e. for details on their arguments), and the vignettes of the other steps of the workflow with the following commands:
 
 ```{r help, eval=FALSE}
 ## Get help for a function:
-?AUCell.buildRankings
-help(AUCell.buildRankings)
+?runSCENIC_3_scoreCells
+help(runSCENIC_3_scoreCells) # equivalent
 
-## Explore tutorials for a given package:
-# In the web browser:
-browseVignettes(package="SCENIC")
-browseVignettes(package="RcisTarget")
-
-# Commnad line-based:
+## See the available tutorials:
 vignette(package="SCENIC") # list
 vignette("SCENIC_Running") # open
 ```
 
 # Sample dataset: Download & format
 
-This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results (available at scenic.aertslab.org).
+This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results from the example (some are available in [Github](https://github.com/aertslab/SCENIC/)).
 
 As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).
 
