@@ -192,7 +192,7 @@ As example, we will use a dataset containing 3005 cells from the adult mouse bra
 The expression matrix can be downloaded from GEO accession number GSE60361 or the author's website: http://linnarssonlab.org/cortex/.
 The expression is provided as Unique Molecular Identifier counts:
 
-```{r GEOdownload, cache=TRUE, results='hide', message=FALSE, eval=FALSE}
+```{r GEOdownload, results='hide', message=FALSE, eval=FALSE}
 # dir.create("SCENIC_MouseBrain"); setwd("SCENIC_MouseBrain") # if needed
 
 # (This may take a few minutes)

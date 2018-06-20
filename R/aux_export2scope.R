@@ -26,7 +26,7 @@ export2scope <- function(scenicOptions, dgem)
   
   
   # TODO: ask max about order of samples tsne-expr-info
-  suppressPackageStartupMessages(library(SCopeLoomR))
+  suppressPackageStartupMessages(require(SCopeLoomR))
 
   # Default embedding (e.g. t-SNE or PCA coordinates)
   defaultTsne <- readRDS(tsneFileName(scenicOptions))

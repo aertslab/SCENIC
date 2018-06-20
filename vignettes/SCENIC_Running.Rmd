@@ -84,7 +84,6 @@ dim(exprMat)
 In Step 3-4 (scoring the GRN and clustering), you can plot some information about the cells on the heatmaps or t-SNE. You can choose which variables from the phenodata to plot, and assign them a specific color (otherwise one will be assigned automatically):
 
 ```{r cellInfo, fig.height=4, fig.width=4}
-#TODO: explain
 cellInfo <- colData(sceMouseBrain)
 cellInfo$nGene <- colSums(exprMat>0)
 cellInfo <- data.frame(cellInfo)
@@ -114,7 +113,8 @@ For details on the options that can be modified check the help of `?initializeSc
 library(SCENIC)
 org="mgi" # or hgnc, or dmel
 dbDir="databases" # RcisTarget databases location
-scenicOptions <- initializeScenic(org=org, dbDir=dbDir, datasetTitle="SCENIC example on Mouse brain", nCores=20) 
+myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
+scenicOptions <- initializeScenic(org=org, dbDir=dbDir, datasetTitle=myDatasetTitle, nCores=20) 
 
 # Modify if needed
 scenicOptions@inputDatasetInfo$cellInfo <- "int/cellInfo.Rds"
@@ -500,7 +500,7 @@ DT::datatable(motifEnrichment_selfMotifs_wGenes[highlightedTFs=="Dlx5", colsToSh
 
 The results from SCENIC can also be explored in http://scope.aertslab.org ([*@davie2018*](https://doi.org/10.1016/j.cell.2018.05.057)).
 
-The `.loom` file can be created with the function `export2scope()` (requires the package [SCopeLoomR](https://github.com/aertslab/SCopeLoomR/)). This function automatically adds the SCENIC data into the .loom file. 
+The `.loom` file can be created with the function `export2scope()`. This function saves the SCENIC data into a .loom file. 
 
 ```{r eval=FALSE}
 # DGEM (Digital gene expression matrix)
