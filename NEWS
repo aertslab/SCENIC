@@ -1,4 +1,8 @@
 
+Version 1.0
+---------------
+Version bump. Added export2scope() and the detailed tutorials for each of the step wrappers.
+
 Version 0.99.0
 ---------------
 Compatibility with RcisTarget version published in Bioconductor (.feather databases)

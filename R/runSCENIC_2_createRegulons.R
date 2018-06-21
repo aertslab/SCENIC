@@ -21,6 +21,9 @@ runSCENIC_2_createRegulons <- function(scenicOptions)
   tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
   nCores <- getSettings(scenicOptions, "nCores")
   
+  # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
+  if("BiocParallel" %in% installed.packages()) library(BiocParallel); register(MulticoreParam(nCores), default=TRUE) 
+  
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tStep 2. Identifying regulons")
   if(getSettings(scenicOptions, "verbose")) message(msg)
 

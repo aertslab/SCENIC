@@ -31,6 +31,7 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
     #sum(linkList$weight>0.001)/nrow(linkList)
   dev.off()
   
+  # Keep only genes with weight > threshold
   linkList_001 <- linkList[which(linkList[,"weight"]>getSettings(scenicOptions, "modules/weightThreshold")),]
   if(getSettings(scenicOptions, "verbose")) message("Number of links between TFs and targets: ", nrow(linkList_001))
   
@@ -84,7 +85,7 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
             nLinks=nrow(tfModules))
   )
   
-  ### Split into positive- and negative-correlated targets
+  ### Add correlation to split into positive- and negative-correlated targets
   corrMat <- loadInt(scenicOptions, "corrMat")
   # Keep only correlation between TFs and potential targets
   tfs <- unique(tfModules$TF)
@@ -97,7 +98,8 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
     corrMat <- corrMat[tfs,]
   }
   
-  # Split TF modules according to correlation
+  # Add correlation to the table
+  # "corr" column: 1 if the correlation between the TF and the target is > 0.03, -1 if the correlation is < -0.03 and 0 otherwise.
   tfModules_byTF <- split(tfModules, factor(tfModules$TF))
   tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs], function(tfGeneSets)
   {

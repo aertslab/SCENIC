@@ -294,8 +294,7 @@ The easiest/fastest way is to use the following *wrapper* functions, each of the
   4. Cluster cells according to the GRN activity
 
 >An overview of the steps workflow is explained in [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463).
-We will soon create detailed tutorials/notebooks explaining the internal code of each of these functions.
-<!-- We will soon create detailed tutorials/notebooks explaining the internal code of each of these functions (`vignette(package="SCENIC")`). These might be useful for users who want to know the details of the implementation, or to modify or run only some of the steps of the workflow. -->
+Detailed tutorials/notebooks explaining the internal code of each of these functions are also available (see `vignette(package="SCENIC")`). These might be useful for users who want to know the details of the implementation, or to modify or run only some of the steps of the workflow.
 
 Re-load the expression matrix if necessary: 
 ```{r loadData2}
@@ -362,7 +361,8 @@ saveRDS(scenicOptions, file="int/scenicOptions.Rds")
 
 Building the GRN and scoring its activity in AUCell is often enough for datasets with very clear cell types. However, in many cases it is also useful to binarize the activity score into "on/off"; either for easier interpretation, or for maximizing the differences across cell types. This is specially useful to reduce technical biases (e.g. number of detected genes, batch effects), or the grouping by sample of origin in cancer datasets (see [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463)).
 
-AUCell automatically calculates possible thresholds for the binarization, but these often need to be adjusted. 
+To determine in which cells each regulon is active, we will use an AUC threshold. AUCell automatically calculates possible thresholds for the binarization, but they are often too conservative. We recommend to check these thresholds manually before proceeding to the binarization. This can be a iterative process, where the thresholds can be re-adjusted after an initial exploration. Once the final thresholds are selected, the cell-regulon activity will be summarized into a *binary activity matrix* in which the columns represent the cells and the rows the regulons. The coordinates of the matrix that correspond to active regulons in a given cell will contain a "1" value, and "0" all the others. 
+
 You can see the selected thresholds in the output from the previous step [file: `output/Step3_3.2_AUCtSNEs.html` (If you are using Rstudio, you might need to download the file and accompanying folder)], and these can be adjusted with AUCell's Shiny app: 
 
 ```{r adjustThresholds, eval=FALSE}
@@ -393,14 +393,15 @@ Some examples on how to explore the results:
 
 ## Cell states 
 
-AUCell provides the activity of the regulons across the cells. By using its visualization functions and different clustering methods on the AUC (or binary AUC), we can explore the **association of cell states with specific regulons**. 
+AUCell provides the activity of the regulons across the cells. By clustering the cells based on this regulon activity (either the continuous or binary AUC matrix), we can see whether there are groups of cells that tend to have the same regulons active, and reveal the network states that are recurrent across multiple cells. These states would be equivalent to the *attractor states* of the network. Combining these clustering with different visualization methods, we can explore the **association of cell states with specific regulons**. 
 
 SCENIC provides some wrapper functions to get a quick overview. For example, projecting the AUC and TF expression onto t-SNEs, and visualizing of the AUC as heatmaps, but feel free to explore alternative clustering and visualization tools.
 
 ### Projection the AUC and TFexpression onto t-SNEs
 
-The t-SNE usually allows to get a quick and easy overview of the cell states in the dataset (in our case, based on the regulon activity). 
-Note t-SNE is works well to identify distinct classes, but it is not appropiate for dinamic/continuous processes (e.g. trajectory-like visualizations).
+Briefly, a t-SNE is a 2D projection of the cells, where cells (dots) are placed close to each other if they have similar input profiles (in our case, regulon activity).
+The t-SNE usually allows to get a quick and easy overview of the cell states in the dataset. 
+Note however, that t-SNE works well to identify distinct classes, but it is not appropiate for dinamic/continuous processes (e.g. trajectory-like visualizations).
 
 AUCell's interactive app *(for [SCope](http://scope.aertslab.org), see section "Export to loom/SCope")*:
 ```{r aucellApp2, eval=FALSE}
@@ -494,7 +495,6 @@ motifEnrichment_selfMotifs_wGenes <- RcisTarget::addLogo(motifEnrichment_selfMot
 colsToShow <- c("motifDb", "logo", "NES", "geneSet", "TF_highConf") # "TF_lowConf", "enrichedGenes"
 DT::datatable(motifEnrichment_selfMotifs_wGenes[highlightedTFs=="Dlx5", colsToShow, with=F], escape=FALSE, filter="top")
 ```
-
 
 # Export to loom/SCope
 

@@ -1,4 +1,5 @@
 SCENIC.Rproj
+.gitignore
 .Rproj.user
 .Rhistory
 .Rprofile
@@ -14,4 +15,4 @@ Thumbs.db
 packrat/lib*/
 packrat/src/
 z_*
-SCENIC_MouseBrain
+vignettes/SCENIC_MouseBrain/

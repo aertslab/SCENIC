@@ -1,0 +1,165 @@
+---
+title: "Code of runSCENIC_4_aucell_binarize()"
+subtitle: Workflow run by runSCENIC_4_aucell_binarize() 
+output:
+  BiocStyle::html_document:
+    number_sections: no
+    toc: yes
+    toc_float: false
+    css: corrected.css
+  html_notebook:
+    toc: yes
+  pdf_document:
+    toc: yes
+package: '`r pkg_ver("SCENIC")`'
+vignette: >
+  %\VignetteIndexEntry{Internal code for: runSCENIC_4_aucell_binarize()} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Suppress loading messages when building the HTML
+suppressPackageStartupMessages({
+  library(SCENIC)
+  library(AUCell)
+  library(RcisTarget)
+  library(SingleCellExperiment)
+})
+```
+
+This tutorial provides the detailed explanation of `runSCENIC_4_aucell_binarize()`: Binarize the AUC and re-cluster.
+
+All the code below is the content of the function `runSCENIC_4_aucell_binarize()`. This tutorial is meant for advanced users, who want know the details about what this function does internally, or to modify the workflow. There is no need to follow this tutorial for a regular run of SCENIC (see `vignette("SCENIC_Running")`).
+
+# Input
+
+(See in the main vignette how to adjust the AUCell thresholds)
+
+```{r, eval=FALSE}
+setwd("SCENIC_MouseBrain")
+scenicOptions <- readRDS("int/scenicOptions.Rds")
+
+skipBoxplot=FALSE # Whether to plot the boxplots
+skipHeatmaps=FALSE # Whether to plot the Binary heatmaps
+skipTsne=FALSE # Whether to caculate the Binary t-SNE
+```
+
+# runSCENIC_4_aucell_binarize() code:
+
+Main code: Assing cells and save as binary matrix
+```{r, eval=FALSE}
+nCores <- getSettings(scenicOptions, "nCores")
+regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+thresholds <- loadInt(scenicOptions, "aucell_thresholds")
+thresholds <- getThresholdSelected(thresholds)
+
+# Assign cells
+regulonsCells <- setNames(lapply(names(thresholds), 
+                                 function(x) {
+                                   trh <- thresholds[x]
+                                   names(which(getAUC(regulonAUC)[x,]>trh))
+                                 }),names(thresholds))
+### Convert to matrix (regulons with zero assigned cells are lost)
+regulonActivity <- reshape2::melt(regulonsCells)
+binaryRegulonActivity <- t(table(regulonActivity[,1], regulonActivity[,2]))
+class(binaryRegulonActivity) <- "matrix"
+saveRDS(binaryRegulonActivity, file=getIntName(scenicOptions, "aucell_binary_full"))
+```
+
+The binaryRegulonActivity contains some duplicated regulons (e.g. for some TFs, there is a regulon based on direct annotation, and also the extended version). We will also save a version that only keeps the "extended" regulons if there is not a regulon based on direct annotation:
+```{r, eval=FALSE}
+# Alternative version: Keep only non-duplicated thresholds
+binaryRegulonActivity_nonDupl <- binaryRegulonActivity[which(rownames(binaryRegulonActivity) %in% onlyNonDuplicatedExtended(rownames(binaryRegulonActivity))),]
+saveRDS(binaryRegulonActivity_nonDupl, file=getIntName(scenicOptions, "aucell_binary_nonDupl"))
+```
+
+Info: 
+```{r, eval=FALSE}
+minCells <- ncol(binaryRegulonActivity) * .01
+msg <- paste0("Binary regulon activity: ",
+              nrow(binaryRegulonActivity_nonDupl), " TF regulons x ",
+              ncol(binaryRegulonActivity), " cells.\n(",
+              nrow(binaryRegulonActivity), " regulons including 'extended' versions)\n",
+              sum(rowSums(binaryRegulonActivity_nonDupl)>minCells),
+              " regulons are active in more than 1% (", minCells, ") cells.")
+if(getSettings(scenicOptions, "verbose")) message(msg)
+```
+
+Plot boxplots (optional):
+```{r, eval=FALSE}
+if(!skipBoxplot)
+{
+  .openDev(fileName=getOutName(scenicOptions, "s4_boxplotBinaryActivity"),
+           devType=getSettings(scenicOptions, "devType"))
+  par(mfrow=c(1,2))
+  boxplot(rowSums(binaryRegulonActivity_nonDupl), main="nCells per regulon",
+          sub='number of cells \nthat have the regulon active',
+          col="darkolivegreen1", border="#001100", lwd=2, frame=FALSE)
+  boxplot(colSums(binaryRegulonActivity_nonDupl), main="nRegulons per Cell",
+          sub='number of regulons \nactive per cell',
+          col="darkolivegreen1", border="#001100", lwd=2, frame=FALSE)
+  dev.off()
+}
+```
+
+## Plot binary activity heatmap (optional)
+
+The binary activity matrix can be visualized as heatmap. 
+
+Since there are usually regulons detected in very few cells that can hide more relevant regulons, we will plot several versions of the heatmap (e.g. one including all the regulons, and others with several subsets):
+
+```{r, eval=FALSE}
+if(!skipHeatmaps)
+{
+  regulonSelection <- loadInt(scenicOptions, "aucell_regulonSelection", ifNotExists="null", verbose=FALSE)
+  if(is.null(regulonSelection)) 
+    regulonSelection <- regulonSelections(binaryRegulonActivity, binaryRegulonActivity_nonDupl, minCells)
+  
+  cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
+  cellInfo <- data.frame(cellInfo)
+  colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"), ifNotExists="null")
+  
+  
+  ### Plot heatmap:
+  for(selRegs in names(regulonSelection$labels))
+  {
+    if(length(regulonSelection[[selRegs]])>1)
+    {
+      regulonSelection[[selRegs]] <- regulonSelection[[selRegs]][which(regulonSelection[[selRegs]] %in% rownames(binaryRegulonActivity))]
+      binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
+      
+      fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
+      
+      fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
+        NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
+                      annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                      annColor=colVars,
+                      color = c("white", "black"),
+                      filename=fileName)
+      if(getSettings(scenicOptions, "devType")!="pdf") dev.off()
+    }
+  }
+}  
+```
+
+## t-SNE on binary activity (optional)
+```{r, eval=FALSE}
+if(!skipTsne)
+{
+  tSNE_fileName <- tsneAUC(scenicOptions, aucType="Binary", filePrefix=getIntName(scenicOptions, "tsne_prefix"), onlyHighConf=FALSE) # default: nPcs, perpl, seed
+  tSNE <- readRDS(tSNE_fileName)
+  
+  # AUCell (activity) as html: 
+  fileName <- getOutName(scenicOptions, "s4_binarytSNE_colAct")
+  plotTsne_regulonActivityHTML(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
+  
+  # Plot cell properties:
+  sub <- ""; if("type" %in% names(tSNE)) sub <- paste0("t-SNE on ", tSNE$type)
+  cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
+  colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"), ifNotExists="null")
+  pdf(paste0(getOutName(scenicOptions, "s4_binarytSNE_colProps"),".pdf"))
+  plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, cex=1, sub=sub)
+  dev.off()
+}
+```
