@@ -35,7 +35,7 @@ library(SingleCellExperiment)
 options(stringsAsFactors=FALSE)
 
 # To build a personalized report, update this working directory:
-knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
+knitr::opts_knit$set(root.dir = '../../SCENIC_MouseBrain')
 ```
 
 # Introduction to SCENIC
@@ -183,7 +183,7 @@ vignette("SCENIC_Running") # open
 
 # Sample dataset: Download & format
 
-This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead, or load the intermediate results from the example (some are available in [Github](https://github.com/aertslab/SCENIC/)).
+This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead.
 
 As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).
 
