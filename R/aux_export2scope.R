@@ -53,10 +53,10 @@ export2scope <- function(scenicOptions, dgem)
   # Add annotation
   for(cn in colnames(cellInfo))
   {
-    add_col_attr(loom=loom, key=cn, value=cellInfo[,cn], as.md.annotation=T) # as.md.annotation: to plot on tSNE
+    add_col_attr(loom=loom, key=cn, value=cellInfo[,cn])
   }
-  cellInfo$nGene <- colSums(dgem>0)
-  add_col_attr(loom=loom, key = "nGene", value=cellInfo$nGene)
+  # cellInfo$nGene <- colSums(dgem>0)
+  # add_col_attr(loom=loom, key = "nGene", value=cellInfo$nGene)
   
   
   # Regulons AUC matrix

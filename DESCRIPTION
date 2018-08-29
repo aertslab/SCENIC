@@ -1,8 +1,8 @@
 Package: SCENIC
 Type: Package
 Title: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
-Version: 1.0.0-02
-Date: 2018-06-21
+Version: 1.0.0-03
+Date: 2018-08-29
 Author: Sara Aibar, Carmen Bravo, Stein Aerts. 
   Laboratory of Computational Biology, KU Leuven Center for Human Genetics. 
   Leuven, Belgium.
@@ -11,9 +11,9 @@ Description: SCENIC workflow
 URL: http://scenic.aertslab.org
 Imports:
   data.table, 
-  GENIE3 (>= 1.2.0), 
+  GENIE3 (>= 1.2.1), 
   RcisTarget (>= 1.0.2), 
-  AUCell (>= 1.2.2), 
+  AUCell (>= 1.2.4), 
   NMF, 
   dynamicTreeCut,
   mixtools, 
