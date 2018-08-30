@@ -22,3 +22,5 @@
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
 
 For more details and installation instructions see the tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).
+
+Output from the examples: http://scenic.aertslab.org/examples/
