@@ -1,3 +1,11 @@
+# SCENIC
+
+SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
+
+For more details and installation instructions see the tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).
+
+The output from the examples is available at: http://scenic.aertslab.org/examples/
+
 ### News
 
 20/06/2018
@@ -13,14 +21,3 @@
 - [pySCENIC](http://pyscenic.readthedocs.io): lightning-fast python implementation of the SCENIC pipeline.
 - [Arboreto](https://arboreto.readthedocs.io/) package including *GRNBoost2* and scalable GENIE3: Easy to install Python library that supports distributed computing. It allows fast co-expression module inference (Step1) on large datasets, compatible with both, the R and python implementations of SCENIC.
 - [Drosophila databases](https://resources.aertslab.org/cistarget/) for RcisTarget
-
-
----
-
-# SCENIC
-
-SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
-
-For more details and installation instructions see the tutorials: [Introduction and setup](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html).
-
-Output from the examples: http://scenic.aertslab.org/examples/
