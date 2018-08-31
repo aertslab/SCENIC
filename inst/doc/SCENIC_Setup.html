@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-06-21" />
+<meta name="date" content="2018-08-31" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -127,11 +127,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>21 June 2018</em></h4>
+<h4 class="date"><em>31 August 2018</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.2</p>
+<p>SCENIC 1.0.0.3</p>
 
 </div>
 
@@ -232,7 +232,7 @@ devtools::install_github(&quot;aertslab/SCENIC&quot;)</code></pre>
 <pre class="r"><code>dbFiles &lt;- c(&quot;https://resources.aertslab.org/cistarget/databases/drosophila_melanogaster/dm6/flybase_r6.02/mc8nr/gene_based/dm6-5kb-upstream-full-tx-11species.mc8nr.feather&quot;)
 # mc8nr: Motif collection version 8: 20k motifs</code></pre>
 <p>Download the <em>.feather</em> files (and <em>.descr</em>, if available) for the relevant organism. [Aprox file size: 1GB]</p>
-<p><em>To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use <a href="https://resources.aertslab.org/cistarget/help.html">zsync_curl</a>. If you prefer to download directly from R, you can use the following code:</em></p>
+<p><em>To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use <a href="https://resources.aertslab.org/cistarget/help.html">zsync_curl</a>. If you prefer to download directly from R, you can try the following code:</em></p>
 <pre class="r"><code># dir.create(&quot;cisTarget_databases&quot;); setwd(&quot;cisTarget_databases&quot;) # if needed
 for(featherURL in dbFiles)
 {
@@ -240,6 +240,7 @@ for(featherURL in dbFiles)
   descrURL &lt;- gsub(&quot;.feather$&quot;, &quot;.descr&quot;, featherURL)
   if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
 }</code></pre>
+<p>To confirm that the databases were downloaded correctly, we recommend to confirm its <code>sha256sum</code>: <a href="https://resources.aertslab.org/cistarget/databases/sha256sum.txt" class="uri">https://resources.aertslab.org/cistarget/databases/sha256sum.txt</a></p>
 <p>After these setup steps, SCENIC is ready to run! To start, see the vignette “SCENIC_Running”.</p>
 </div>
 </div>
@@ -249,7 +250,10 @@ for(featherURL in dbFiles)
 <h2>Template for your own analysis</h2>
 <p>You can use the <a href="http://rmarkdown.rstudio.com/r_notebooks.html">R notebooks</a> of this workflow as template for your own data (i.e. copy the .Rmd file, and edit it in RStudio).</p>
 <pre class="r"><code>vignetteFile &lt;- file.path(system.file('doc', package='SCENIC'), &quot;SCENIC_Running.Rmd&quot;)
-file.copy(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)</code></pre>
+file.copy(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)
+# or: 
+vignetteFile &lt;- &quot;https://raw.githubusercontent.com/aertslab/SCENIC/master/vignettes/SCENIC_Running.Rmd&quot;
+download.file(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)</code></pre>
 <p>Note that some steps of this workflow take considerable time. To avoid re-running these steps when <em>knitting</em> the vignette (i.e. create the HTML report), we have added <code>eval=FALSE</code> to some code chunks and <code>load()</code> its output in the next. Feel free to adapt these to your needs.</p>
 </div>
 <div id="help" class="section level2">
@@ -267,6 +271,7 @@ vignette(&quot;SCENIC_Running&quot;) # open</code></pre>
 <div id="sample-dataset-download-format" class="section level1">
 <h1>Sample dataset: Download &amp; format</h1>
 <p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead.</p>
+<p>The output files from this example are available at <a href="http://scenic.aertslab.org/examples/" class="uri">http://scenic.aertslab.org/examples/</a></p>
 <p>As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).</p>
 <blockquote>
 <p>Zeisel, A., et al. (2015). Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq. Science 347, 1138–1142. doi: <a href="http://dx.doi.org/10.1126/science.aaa1934">10.1126/science.aaa1934</a></p>

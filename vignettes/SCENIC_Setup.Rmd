@@ -144,7 +144,7 @@ dbFiles <- c("https://resources.aertslab.org/cistarget/databases/drosophila_mela
 
 Download the *.feather* files (and *.descr*, if available) for the relevant organism. [Aprox file size: 1GB]
 
-*To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use [zsync_curl](https://resources.aertslab.org/cistarget/help.html). If you prefer to download directly from R, you can use the following code:*
+*To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use [zsync_curl](https://resources.aertslab.org/cistarget/help.html). If you prefer to download directly from R, you can try the following code:*
 ```{r downloadDatabases, eval=FALSE}
 # dir.create("cisTarget_databases"); setwd("cisTarget_databases") # if needed
 for(featherURL in dbFiles)
@@ -155,6 +155,8 @@ for(featherURL in dbFiles)
 }
 ```
 
+To confirm that the databases were downloaded correctly, we recommend to confirm its `sha256sum`: https://resources.aertslab.org/cistarget/databases/sha256sum.txt 
+
 After these setup steps, SCENIC is ready to run! To start, see the vignette "SCENIC_Running".
 
 # Some tips...
@@ -164,6 +166,9 @@ You can use the [R notebooks](http://rmarkdown.rstudio.com/r_notebooks.html) of 
 ```{r template, eval=FALSE}
 vignetteFile <- file.path(system.file('doc', package='SCENIC'), "SCENIC_Running.Rmd")
 file.copy(vignetteFile, "SCENIC_myRun.Rmd")
+# or: 
+vignetteFile <- "https://raw.githubusercontent.com/aertslab/SCENIC/master/vignettes/SCENIC_Running.Rmd"
+download.file(vignetteFile, "SCENIC_myRun.Rmd")
 ```
 
 Note that some steps of this workflow take considerable time. To avoid re-running these steps when *knitting* the vignette (i.e. create the HTML report), we have added `eval=FALSE` to some code chunks and `load()` its output in the next. Feel free to adapt these to your needs.
@@ -184,6 +189,8 @@ vignette("SCENIC_Running") # open
 # Sample dataset: Download & format
 
 This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead.
+
+The output files from this example are available at http://scenic.aertslab.org/examples/ 
 
 As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).
 
