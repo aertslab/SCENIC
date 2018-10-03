@@ -4,12 +4,13 @@
 #' @param skipBoxplot Whether to plot the boxplots
 #' @param skipHeatmaps Whether to plot the Binary heatmaps
 #' @param skipTsne Whether to calculate the binary t-SNE
+#' @param exprMat If skipTsne = FALSE, need expression matrix of data.
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
 #' runSCENIC_4_aucell_binarize(scenicOptions)
 #' @export
-runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE)
+runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
