@@ -3,7 +3,7 @@
 #' @param scenicOptions Fields used: TODO
 #' @param skipBoxplot Whether to plot the boxplots
 #' @param skipHeatmaps Whether to plot the Binary heatmaps
-#' @skipTsne skipHeatmaps Whether to calculate the binary t-SNE
+#' @param skipTsne Whether to calculate the binary t-SNE
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -78,14 +78,25 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
         regulonSelection[[selRegs]] <- regulonSelection[[selRegs]][which(regulonSelection[[selRegs]] %in% rownames(binaryRegulonActivity))]
         binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
         
+        if(nrow(binaryMat) == 0) {
+          if(getSettings(scenicOptions, "verbose")) message(paste0("No regulons to plot for regulon selection '", selRegs, "'. Skipping."))
+          next
+        }
+        
         fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
         
+        rowv <- ifelse(nrow(binaryMat) >= 2, T, NA)
+        colv <- ifelse(ncol(binaryMat) >= 2, T, NA)
+        
         fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
-          NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
-                        annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
-                        annColor=colVars,
-                        color = c("white", "black"),
-                        filename=fileName)
+        
+        NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
+                      annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                      annColor=colVars,
+                      Rowv=rowv,
+                      Colv=colv,
+                      color = c("white", "black"),
+                      filename=fileName)
         if(getSettings(scenicOptions, "devType")!="pdf") dev.off()
       }
     }
