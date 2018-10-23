@@ -159,8 +159,13 @@ regulonSelections <- function(binaryRegulonActivity, binaryRegulonActivity_nonDu
   saveRDS(regulonSelection, file=getIntName(scenicOptions, "aucell_regulonSelection"))
   
   ## Set regulon order (only plotting most correlated regulons)
-  binaryRegulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
-  binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+  reguCor_dist <- as.dist(1-reguCor[corrRegs,corrRegs])
+  if(length(reguCor_dist) >= 2) {
+    binaryRegulonOrder <- hclust(reguCor_dist)
+    binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+  } else {
+    binaryRegulonOrder <- labels(reguCor_dist)
+  }
   saveRDS(binaryRegulonOrder, file=getIntName(scenicOptions, "aucell_binaryRegulonOrder"))
   
   return(regulonSelection)
