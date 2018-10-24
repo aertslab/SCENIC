@@ -5,7 +5,7 @@
 \title{runSCENIC_4_aucell_binarize}
 \usage{
 runSCENIC_4_aucell_binarize(scenicOptions, skipBoxplot = FALSE,
-  skipHeatmaps = FALSE, skipTsne = FALSE)
+  skipHeatmaps = FALSE, skipTsne = FALSE, exprMat = NULL)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}
@@ -13,6 +13,10 @@ runSCENIC_4_aucell_binarize(scenicOptions, skipBoxplot = FALSE,
 \item{skipBoxplot}{Whether to plot the boxplots}
 
 \item{skipHeatmaps}{Whether to plot the Binary heatmaps}
+
+\item{skipTsne}{Whether to calculate the binary t-SNE (and optionally, generate a HTML preview)}
+
+\item{exprMat}{If !skipTsne, the expression matrix can be provided to plot the TF expression on the t-SNE (plotTsne_AUCellHtml)}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'

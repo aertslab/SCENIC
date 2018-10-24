@@ -125,7 +125,7 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
     
     # AUCell (activity) plots with the default tsne, as html: 
     fileName <- getOutName(scenicOptions, "s3_AUCtSNE_colAct")
-    plotTsne_regulonActivityHTML(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
+    plotTsne_AUCellHtml(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
 
     # Plot cell properties:
     sub <- ""; if("type" %in% names(tSNE)) sub <- paste0("t-SNE on ", tSNE$type)

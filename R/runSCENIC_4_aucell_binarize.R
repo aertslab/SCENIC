@@ -3,14 +3,14 @@
 #' @param scenicOptions Fields used: TODO
 #' @param skipBoxplot Whether to plot the boxplots
 #' @param skipHeatmaps Whether to plot the Binary heatmaps
-#' @param skipTsne Whether to calculate the binary t-SNE
-#' @param exprMat If skipTsne = FALSE, need expression matrix of data.
+#' @param skipTsne Whether to calculate the binary t-SNE (and optionally, generate a HTML preview)
+#' @param exprMat If !skipTsne, the expression matrix can be provided to plot the TF expression on the t-SNE (plotTsne_AUCellHtml)
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
 #' runSCENIC_4_aucell_binarize(scenicOptions)
 #' @export
-runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat)
+runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
@@ -74,34 +74,33 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
     ### Plot heatmap:
     for(selRegs in names(regulonSelection$labels))
     {
-      if(length(regulonSelection[[selRegs]])>1)
+      if(length(regulonSelection[[selRegs]])>0)
       {
         regulonSelection[[selRegs]] <- regulonSelection[[selRegs]][which(regulonSelection[[selRegs]] %in% rownames(binaryRegulonActivity))]
         binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
         
-        if(nrow(binaryMat) == 0) {
+        if(nrow(binaryMat)>0) 
+        {
+          fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
+          fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
+         
+          rowv <- ifelse(nrow(binaryMat) >= 2, T, NA)
+          colv <- ifelse(ncol(binaryMat) >= 2, T, NA)
+          
+          NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
+                        annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                        annColor=colVars,
+                        Rowv=rowv,
+                        Colv=colv,
+                        color = c("white", "black"),
+                        filename=fileName)
+          if(getSettings(scenicOptions, "devType")!="pdf") dev.off()
+        }else{
           if(getSettings(scenicOptions, "verbose")) message(paste0("No regulons to plot for regulon selection '", selRegs, "'. Skipping."))
-          next
         }
-        
-        fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
-        
-        rowv <- ifelse(nrow(binaryMat) >= 2, T, NA)
-        colv <- ifelse(ncol(binaryMat) >= 2, T, NA)
-        
-        fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
-        
-        NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
-                      annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
-                      annColor=colVars,
-                      Rowv=rowv,
-                      Colv=colv,
-                      color = c("white", "black"),
-                      filename=fileName)
-        if(getSettings(scenicOptions, "devType")!="pdf") dev.off()
       }
     }
-  }  
+  }
   
   ################################################################################
   # Tsne - on binary activity
@@ -112,7 +111,7 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
     
     # AUCell (activity) as html: 
     fileName <- getOutName(scenicOptions, "s4_binarytSNE_colAct")
-    plotTsne_regulonActivityHTML(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
+    plotTsne_AUCellHtml(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
     
     # Plot cell properties:
     sub <- ""; if("type" %in% names(tSNE)) sub <- paste0("t-SNE on ", tSNE$type)
@@ -121,8 +120,8 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
     pdf(paste0(getOutName(scenicOptions, "s4_binarytSNE_colProps"),".pdf"))
     plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, cex=1, sub=sub)
     dev.off()
-  }  
-}                
+  }
+}
 
 
 ################################################################################
@@ -160,10 +159,12 @@ regulonSelections <- function(binaryRegulonActivity, binaryRegulonActivity_nonDu
   
   ## Set regulon order (only plotting most correlated regulons)
   reguCor_dist <- as.dist(1-reguCor[corrRegs,corrRegs])
-  if(length(reguCor_dist) >= 2) {
+  if(length(reguCor_dist) >= 2) 
+  {
     binaryRegulonOrder <- hclust(reguCor_dist)
     binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
-  } else {
+  } else 
+  {
     binaryRegulonOrder <- labels(reguCor_dist)
   }
   saveRDS(binaryRegulonOrder, file=getIntName(scenicOptions, "aucell_binaryRegulonOrder"))

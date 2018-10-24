@@ -142,74 +142,41 @@ Examples of this approach are presented in [*@aibar2017*](http://dx.doi.org/10.1
 
 ## Gene filter/selection
 
-To run GENIE3/GRNBoost we recommend to apply soft gene filter, to remove genes that are expressed either at very low levels or in too few cells. Here we apply a filtering based on the total number of counts of the gene, and the number of cells in which it is detected. 
+To run GENIE3/GRNBoost we recommend to apply soft gene filter, to remove genes that are expressed either at very low levels or in too few cells. 
+Here we apply a filtering based on the total number of counts of the gene, and the number of cells in which it is detected. 
 
-The first filter, the total number of reads per gene, is meant to remove genes that are most likely noise. 
+1. Filter by the **total number of reads per gene**. This filter is meant to remove genes that are most likely noise. 
+By *default* it keeps only the genes with at least `r 3*.01*ncol(exprMat)` UMI counts across all samples 
+(e.g. the total number the gene would have, if it was expressed with a value of `3` in 1% of the cells). 
+Adjust this value (`minCountsPerGene`) according to the dataset (it will depend on the dataset units, e.g. UMI, TPMs...).
 
-The second filter, the number of cells in which the gene is detected (e.g. >0 UMI, or >1 log2(TPM)), is to avoid that genes that are only expressed in one, or very few cells, gain a lot of weight if they happen to coincide in a given cell.
+2. **Filter by the **number of cells in which the gene is detected** (e.g. >0 UMI, or >1 log2(TPM)). 
+By *default* (`minSamples`), genes that are detected in at least *1%* of the cells are kept. 
+This filtering is meant to remove genes whose reads come from one a few 'noisy' cells (genes that are only expressed in one, or very few cells, gain a lot of weight if they happen to coincide in a given cell).
+To avoid removing small (but potentially interesting) cell populations, we recommend to set a percentage lower than the smallest population of cells to be detected. 
 
-To proceed with these filtering, we will first calculate some basic statistics on the expression matrix:
+3. Finally, only the genes that are **available in RcisTarget databases** will be kept. 
+This filter is mostly to save some running time for GENIE3/GRNBoost, since the genes that are not available in the databases will not be used in upcoming steps.
 
-*Number of cells in which each gene is expressed, and number of counts (in the dataset unit) per gene:*
-```{r exprStats}
-nCellsPerGene <- apply(exprMat, 1, function(x) sum(x>0))
-nCountsPerGene <- apply(exprMat, 1, sum)
-```
-
-```{r statsSummary}
-summary(nCellsPerGene)
-summary(nCountsPerGene)
-max(exprMat)
-sum(exprMat>0) / sum(exprMat==0)
-```
-
-**First filter:** Keep only the genes with at least `r 3*.01*ncol(exprMat)` UMI counts across all samples (e.g. the total number the gene would have, if it was expressed with a value of `3` in 1% of the cells). Adjust this value according to the dataset (it will depend on the dataset units, e.g. UMI, TPMs...).
-
-```{r filter1}
-minReads <- 3*.01*ncol(exprMat)
-genesLeft_minReads <- names(nCountsPerGene)[which(nCountsPerGene > minReads)]
-length(genesLeft_minReads)
-```
-
-**Second filter:** Keep the genes that are detected in at least 1% of the cells. This filtering is meant to remove genes whose reads come from one a few 'noisy' cells. To avoid removing small (but potentially interesting) cell populations, we recommend to set a percentage lower than the smallest population of cells to be detected. 
-
-```{r filter2}
-minSamples <- ncol(exprMat)*.01
-nCellsPerGene2 <- nCellsPerGene[genesLeft_minReads]
-genesLeft_minCells <- names(nCellsPerGene2)[which(nCellsPerGene2 > minSamples)]
-length(genesLeft_minCells)
-```
-
-**Genes in databases:**  *(Added 31 march 2017)*
-In upcoming steps (e.g. motif enrichment analysis), only the genes that are available on RcisTarget databases will be used. To save some running time for GENIE3/GRNBoost, we can ignore the genes that are not in the databases.
-
-Load corresponding databases:
-```{r LoadDbs}
-library(RcisTarget)
-motifRankings <- importRankings(getDatabases(scenicOptions)[[1]]) # either one, they should have the same genes
-genesInDatabase <- colnames(getRanking(motifRankings))
-```
-
-Exclude missing genes:
-```{r filterGenesInDb}
-genesLeft_minCells_inDatabases <- genesLeft_minCells[which(genesLeft_minCells %in% genesInDatabase)]
-length(genesLeft_minCells_inDatabases)
+```{r filterGenes}
+# (Adjust minimum values according to your dataset)
+genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
+                           minCountsPerGene=3*.01*ncol(exprMat),
+                           minSamples=ncol(exprMat)*.01)
 ```
 
 Before proceeding to the network inference, check whether any known relevant genes are filtered-out (if any relevant gene is missing, double-check whether the filters are appropiate): 
+
 ```{r checkMissingGenes}
-# Check whether any relevant gene / potential gene of interest is missing:
 interestingGenes <- c("Neurod1", "Sox10", "Dlx1")
-interestingGenes[which(!interestingGenes %in% genesLeft_minCells_inDatabases)]
+interestingGenes[which(!interestingGenes %in% genesKept)]
 ```
 
-We can now **filter the expression matrix** to contain only these `r length(genesLeft_minCells_inDatabases)` genes. 
+We can now **filter the expression matrix** to contain only these `r length(genesKept)` genes. 
 This matrix is now ready for the co-expression analysis.
 ```{r saveFilteredExprMat}
-genesKept <- genesLeft_minCells_inDatabases
-saveRDS(genesKept, file=getIntName(scenicOptions, "genesKept"))
-
 exprMat_filtered <- exprMat[genesKept, ]
+dim(exprMat_filtered)
 ```
 
 To avoid confusions in the following steps: 
