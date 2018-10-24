@@ -65,8 +65,8 @@ nCountsPerGene <- rowSums(exprMat, na.rm = T)
 nCellsPerGene <- rowSums(exprMat>0, na.rm = T)
 
 ## Show info
-message("Maximum value in the expression matrix: ", max(exprMat))
-message("Ratio of detected vs non-detected: ", signif(sum(exprMat>0) / sum(exprMat==0), 2))
+message("Maximum value in the expression matrix: ", max(exprMat, na.rm=T))
+message("Ratio of detected vs non-detected: ", signif(sum(exprMat>0, na.rm=T) / sum(exprMat==0, na.rm=T), 2))
 message("Number of counts (in the dataset units) per gene:")
 print(summary(nCountsPerGene))
 message("Number of cells in which each gene is detected:")
