@@ -1,0 +1,103 @@
+---
+title: "Code of geneFiltering()"
+subtitle: Workflow run by geneFiltering() 
+output:
+  BiocStyle::html_document:
+    number_sections: no
+    toc: yes
+    toc_float: false
+    css: corrected.css
+  html_notebook:
+    toc: yes
+  pdf_document:
+    toc: yes
+package: '`r pkg_ver("SCENIC")`'
+vignette: >
+  %\VignetteIndexEntry{Internal code for: geneFiltering()} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Suppress loading messages when building the HTML
+suppressPackageStartupMessages({
+  library(SCENIC)
+  library(AUCell)
+  library(RcisTarget)
+  library(SingleCellExperiment)
+})
+```
+
+This tutorial provides the detailed explanation of `geneFiltering()`: Filter-out genes (previous to GRN-inference) based on the counts and number of cells in which they are detected.
+
+All the code below is the content of the function `geneFiltering()`. This tutorial is meant for advanced users, who want know the details about what this function does internally, or to modify the workflow. There is no need to follow this tutorial for a regular run of SCENIC (see `vignette("SCENIC_Running")`).
+
+
+# Gene filtering
+
+See `SCENIC_running.Rmd` vignette for the description/motivation of this function.
+
+# Input
+
+```{r, eval=FALSE}
+setwd("SCENIC_MouseBrain")
+scenicOptions <- readRDS("int/scenicOptions.Rds")
+
+load("data/sceMouseBrain.RData")
+exprMat <- counts(sceMouseBrain)
+```
+
+
+# geneFiltering() code:
+```{r, eval=FALSE}
+# Default values:
+minCountsPerGene <- 3*.01*ncol(exprMat)
+minSamples <- ncol(exprMat)*.01
+outFile_exprMatTxt <- NULL # Filtered expression matrix is not saved
+
+dbFilePath <- getDatabases(scenicOptions)[[1]]
+outFile_genesKept <- getIntName(scenicOptions, "genesKept")
+```
+
+```{r, eval=FALSE}
+# Calculate stats
+nCountsPerGene <- rowSums(exprMat)
+nCellsPerGene <- rowSums(exprMat>0)
+
+## Show info
+message("Maximum value in the expression matrix: ", max(exprMat))
+message("Ratio of detected vs non-detected: ", signif(sum(exprMat>0) / sum(exprMat==0), 2))
+message("Number of counts (in the dataset units) per gene:")
+print(summary(nCountsPerGene))
+message("Number of cells in which each gene is detected:")
+print(summary(nCellsPerGene))
+
+## Filter
+message("\nNumber of genes left after applying the following filters (sequential):")
+# First filter
+# minCountsPerGene <- 3*.01*ncol(exprMat)
+genesLeft_minReads <- names(nCountsPerGene)[which(nCountsPerGene > minCountsPerGene)]
+message("\t", length(genesLeft_minReads), "\tgenes with counts per gene > ", minCountsPerGene)
+
+# Second filter
+# minSamples <- ncol(exprMat)*.01
+nCellsPerGene2 <- nCellsPerGene[genesLeft_minReads]
+genesLeft_minCells <- names(nCellsPerGene2)[which(nCellsPerGene2 > minSamples)]
+message("\t", length(genesLeft_minCells), "\tgenes detected in more than ",minSamples," cells")
+
+# Exclude genes missing from database:
+library(RcisTarget)
+motifRankings <- importRankings(dbFilePath) # either one, they should have the same genes
+genesInDatabase <- colnames(getRanking(motifRankings))
+
+genesLeft_minCells_inDatabases <- genesLeft_minCells[which(genesLeft_minCells %in% genesInDatabase)]
+message("\t", length(genesLeft_minCells_inDatabases), "\tgenes available in RcisTarget database")
+
+genesKept <- genesLeft_minCells_inDatabases
+
+if(is.null(outFile_genesKept)) 
+  saveRDS(genesKept, file=outFile_genesKept)
+```
+
+Return value: `genesKept`
+

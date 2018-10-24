@@ -4,15 +4,18 @@
 \alias{export2scope}
 \title{export2scope}
 \usage{
-export2scope(scenicOptions, dgem)
+export2scope(scenicOptions, dgem, hierarchy = c("SCENIC", "", ""),
+  addAllTsnes = TRUE)
 }
 \arguments{
 \item{scenicOptions}{scenicOptions object}
 
 \item{dgem}{Digital expression matrix}
+
+\item{hierarchy}{Labels for the hierarchy levels (up to three)}
 }
 \value{
-The .loom file (\code{file name indicated in "loomFile" slot in scenicOptions})containing the following information:
+The .loom file (\code{file name indicated in "loomFile" slot in scenicOptions}) containing the following information:
 \itemize{
 \item dgem (digital expression matrix)
 \item title: \code{getDatasetInfo(scenicOptions,"datasetTitle")}
@@ -30,7 +33,7 @@ Create .loom file with the results of the analysis to visualize them in http://s
 \examples{
 # devtools::install_github("aertslab/SCopeLoomR")
 # scenicOptions@fileNames$output["loomFile",] <- "myAnalysis.loom"
-# export2scope(scenicOptions, exprMat)
+# export2scope(scenicOptions, exprMat, hierarchy=c("SCENIC", "MouseBrain"))
 }
 \seealso{
 To add extra data (e.g. embeddings or clusters), see: \code{help(package="SCopeLoomR")}

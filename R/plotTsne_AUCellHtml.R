@@ -1,18 +1,18 @@
 ################################################################
 # Plot AUC histograms & default tsne
 
-#' @title plotTsne_AUCell
-#' @description Wrapper for the 'AUCell_plotTSNE' function: plots the regulon activities on the t-SNE
-#' @param scenicOptions Fields used: aucell_regulonAUC, aucell_thresholds (int), s3_AUCtSNE_colAct (output), and default tsne.
-#' @param exprMat Expression matrix
+#' @title plotTsne_AUCellHtml
+#' @description Wrapper for the 'AUCell_plotTSNE' function: plots the regulon activities on the t-SNE.
+#' @param scenicOptions Fields used: aucell_regulonAUC, aucell_thresholds (int), and if \code{tSNE=NULL} the default tSNE.
+#' @param exprMat Expression matrix (if NULL, TF expression will not be plotted)
 #' @param fileName Location for the plots.
 #' @param tSNE If null, it plots the default t-SNE.
-#' @return NULL. The plots are saved as HTML with the name stored in \code{getOutName(scenicOptions, "s3_AUCtSNE_colAct")}. 
+#' @return NULL. The plots are saved as HTML with the name stored in \code{fileName}. 
 #' If you are using RStudio, you might need to download the .html file and plots folder to view locally.
 #' @examples 
-#' plotTsne_AUCell(scenicOptions, exprMat)
+#' plotTsne_AUCellHtml(scenicOptions, exprMat, fileName)
 #' @export
-plotTsne_regulonActivityHTML <- function(scenicOptions, exprMat, fileName, tSNE=NULL) 
+plotTsne_AUCellHtml <- function(scenicOptions, exprMat, fileName, tSNE=NULL) 
 {
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
   if(is.null(tSNE)) tSNE <- readRDS(tsneFileName(scenicOptions))
