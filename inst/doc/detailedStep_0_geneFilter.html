@@ -119,7 +119,7 @@ $(document).ready(function () {
 <h3 class="subtitle"><em>Workflow run by geneFiltering()</em></h3>
 <h4 class="date"><em>24 October 2018</em></h4>
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.3</p>
+<p>SCENIC 1.0.1.1</p>
 
 </div>
 
@@ -156,8 +156,8 @@ outFile_exprMatTxt &lt;- NULL # Filtered expression matrix is not saved
 dbFilePath &lt;- getDatabases(scenicOptions)[[1]]
 outFile_genesKept &lt;- getIntName(scenicOptions, &quot;genesKept&quot;)</code></pre>
 <pre class="r"><code># Calculate stats
-nCountsPerGene &lt;- rowSums(exprMat)
-nCellsPerGene &lt;- rowSums(exprMat&gt;0)
+nCountsPerGene &lt;- rowSums(exprMat, na.rm = T)
+nCellsPerGene &lt;- rowSums(exprMat&gt;0, na.rm = T)
 
 ## Show info
 message(&quot;Maximum value in the expression matrix: &quot;, max(exprMat))
