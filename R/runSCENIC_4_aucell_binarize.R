@@ -3,13 +3,14 @@
 #' @param scenicOptions Fields used: TODO
 #' @param skipBoxplot Whether to plot the boxplots
 #' @param skipHeatmaps Whether to plot the Binary heatmaps
-#' @skipTsne skipHeatmaps Whether to calculate the binary t-SNE
+#' @param skipTsne Whether to calculate the binary t-SNE
+#' @param exprMat If skipTsne = FALSE, need expression matrix of data.
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
 #' runSCENIC_4_aucell_binarize(scenicOptions)
 #' @export
-runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE)
+runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
@@ -78,14 +79,25 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHe
         regulonSelection[[selRegs]] <- regulonSelection[[selRegs]][which(regulonSelection[[selRegs]] %in% rownames(binaryRegulonActivity))]
         binaryMat <- binaryRegulonActivity[regulonSelection[[selRegs]],,drop=FALSE]
         
+        if(nrow(binaryMat) == 0) {
+          if(getSettings(scenicOptions, "verbose")) message(paste0("No regulons to plot for regulon selection '", selRegs, "'. Skipping."))
+          next
+        }
+        
         fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
         
+        rowv <- ifelse(nrow(binaryMat) >= 2, T, NA)
+        colv <- ifelse(ncol(binaryMat) >= 2, T, NA)
+        
         fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
-          NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
-                        annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
-                        annColor=colVars,
-                        color = c("white", "black"),
-                        filename=fileName)
+        
+        NMF::aheatmap(binaryMat, scale="none", revC=TRUE, main=selRegs,   
+                      annCol=cellInfo[colnames(binaryMat),, drop=FALSE],
+                      annColor=colVars,
+                      Rowv=rowv,
+                      Colv=colv,
+                      color = c("white", "black"),
+                      filename=fileName)
         if(getSettings(scenicOptions, "devType")!="pdf") dev.off()
       }
     }
@@ -147,8 +159,13 @@ regulonSelections <- function(binaryRegulonActivity, binaryRegulonActivity_nonDu
   saveRDS(regulonSelection, file=getIntName(scenicOptions, "aucell_regulonSelection"))
   
   ## Set regulon order (only plotting most correlated regulons)
-  binaryRegulonOrder <- hclust(as.dist(1-reguCor[corrRegs,corrRegs]))
-  binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+  reguCor_dist <- as.dist(1-reguCor[corrRegs,corrRegs])
+  if(length(reguCor_dist) >= 2) {
+    binaryRegulonOrder <- hclust(reguCor_dist)
+    binaryRegulonOrder <- binaryRegulonOrder$labels[binaryRegulonOrder$order]
+  } else {
+    binaryRegulonOrder <- labels(reguCor_dist)
+  }
   saveRDS(binaryRegulonOrder, file=getIntName(scenicOptions, "aucell_binaryRegulonOrder"))
   
   return(regulonSelection)
