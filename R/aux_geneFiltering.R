@@ -36,8 +36,8 @@ geneFiltering <- function(exprMat, scenicOptions,
   
   
   # Calculate stats
-  nCountsPerGene <- rowSums(exprMat)
-  nCellsPerGene <- rowSums(exprMat>0)
+  nCountsPerGene <- rowSums(exprMat, na.rm = T)
+  nCellsPerGene <- rowSums(exprMat>0, na.rm = T)
   
   ## Show info
   message("Maximum value in the expression matrix: ", max(exprMat))
