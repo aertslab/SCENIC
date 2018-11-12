@@ -104,7 +104,7 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
   tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs], function(tfGeneSets)
   {
     tf <- unique(tfGeneSets$TF)
-    targets <- tfGeneSets$Target
+    targets <- as.character(tfGeneSets$Target)
     cbind(tfGeneSets, corr=c(as.numeric(corrMat[tf,targets] > 0.03) - as.numeric(corrMat[tf,targets] < -0.03)))
   })
   tfModules_withCorr <- data.frame(data.table::rbindlist(tfModules_withCorr_byTF))
