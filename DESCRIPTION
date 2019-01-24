@@ -1,8 +1,8 @@
 Package: SCENIC
 Type: Package
 Title: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
-Version: 1.0.1-01
-Date: 2018-10-24
+Version: 1.1.0-01
+Date: 2019-01-24
 Author: Sara Aibar, Carmen Bravo, Stein Aerts. 
   Laboratory of Computational Biology, KU Leuven Center for Human Genetics. 
   Leuven, Belgium.
@@ -23,7 +23,7 @@ Suggests:
   SingleCellExperiment, 
   GEOquery,
   R2HTML,
-  SCopeLoomR,
+  SCopeLoomR (>= 0.3.4),
   hdf5r,
   rbokeh,
   DT,
@@ -35,4 +35,4 @@ License: file LICENSE
 biocViews: SingleCell
 LazyData: TRUE
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1

@@ -19,7 +19,6 @@
 \alias{getIntName,ScenicOptions-method}
 \alias{loadFile}
 \alias{loadFile,ScenicOptions-method}
-\alias{loadInt}
 \alias{loadInt,ScenicOptions-method}
 \alias{initializeScenic}
 \alias{dbVersion}

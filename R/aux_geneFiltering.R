@@ -6,16 +6,16 @@
 #' @param minCountsPerGene Minimum counts per gene required
 #' @param minSamples Minimum number of samples (cells) in which the gene should be detected
 #' @examples 
-# setwd("SCENIC_MouseBrain")
-# scenicOptions <- readRDS("int/scenicOptions.Rds")
-# 
-# load("data/sceMouseBrain.RData")
-# exprMat <- counts(sceMouseBrain)
-# 
-# genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
-#                            minCountsPerGene=3*.01*ncol(exprMat),
-#                            minSamples=ncol(exprMat)*.01)
-# overrideOptions <- list(dbFilePath="databases/mm9-500bp-upstream-7species.mc9nr.feather", outFile_genesKept=NULL)
+#' setwd("SCENIC_MouseBrain")
+#' scenicOptions <- readRDS("int/scenicOptions.Rds")
+#' 
+#' load("data/sceMouseBrain.RData")
+#' exprMat <- counts(sceMouseBrain)
+#' 
+#' genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
+#'                            minCountsPerGene=3*.01*ncol(exprMat),
+#'                            minSamples=ncol(exprMat)*.01)
+#' overrideOptions <- list(dbFilePath="databases/mm9-500bp-upstream-7species.mc9nr.feather", outFile_genesKept=NULL)
 #' @export 
 geneFiltering <- function(exprMat, scenicOptions,
                           minCountsPerGene=3*.01*ncol(exprMat),

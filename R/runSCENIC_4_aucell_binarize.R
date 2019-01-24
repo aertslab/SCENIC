@@ -10,7 +10,8 @@
 #' @examples 
 #' runSCENIC_4_aucell_binarize(scenicOptions)
 #' @export
-runSCENIC_4_aucell_binarize <- function(scenicOptions, skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
+runSCENIC_4_aucell_binarize <- function(scenicOptions, 
+                    skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
@@ -171,3 +172,4 @@ regulonSelections <- function(binaryRegulonActivity, binaryRegulonActivity_nonDu
   
   return(regulonSelection)
 }
+

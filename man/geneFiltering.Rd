@@ -19,3 +19,15 @@ geneFiltering(exprMat, scenicOptions, minCountsPerGene = 3 * 0.01 *
 \description{
 Gene filtering
 }
+\examples{
+setwd("SCENIC_MouseBrain")
+scenicOptions <- readRDS("int/scenicOptions.Rds")
+
+load("data/sceMouseBrain.RData")
+exprMat <- counts(sceMouseBrain)
+
+genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
+                           minCountsPerGene=3*.01*ncol(exprMat),
+                           minSamples=ncol(exprMat)*.01)
+overrideOptions <- list(dbFilePath="databases/mm9-500bp-upstream-7species.mc9nr.feather", outFile_genesKept=NULL)
+}

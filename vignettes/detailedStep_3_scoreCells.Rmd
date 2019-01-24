@@ -119,13 +119,7 @@ regulonAUC <- AUCell_calcAUC(regulons, aucellRankings,
             aucMaxRank=aucellRankings@nGenesDetected["1%"], nCores=nCores)
   
 # Order the modules by similarity, for easier exploration in the upcoming steps & save
-variableRegulons <- names(which(apply(getAUC(regulonAUC), 1, sd) > 0))
-reguDist <-as.dist(1-cor(t(getAUC(regulonAUC)[variableRegulons,]), method="spear"))
-reguClust <- hclust(reguDist, method="ward.D2")
-regulonClusters <- setNames(dynamicTreeCut::cutreeDynamic(reguClust, distM=as.matrix(reguDist), verbose = FALSE), reguClust$labels)
-regulonOrder <- reguClust$labels[reguClust$order]
-regulonOrder <- regulonOrder[order(regulonClusters[regulonOrder], decreasing = TRUE)]
-
+regulonOrder <- orderAUC(regulonAUC) # added to AUCell 1.5.1
 regulonAUC <- regulonAUC[regulonOrder,]
 saveRDS(regulonAUC, file=getIntName(scenicOptions, "aucell_regulonAUC"))
 ```

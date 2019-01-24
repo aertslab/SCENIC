@@ -4,8 +4,9 @@
 \alias{runSCENIC_3_scoreCells}
 \title{runSCENIC_3_scoreCells}
 \usage{
-runSCENIC_3_scoreCells(scenicOptions, exprMat, skipBinaryThresholds = FALSE,
-  skipHeatmap = FALSE, skipTsne = FALSE)
+runSCENIC_3_scoreCells(scenicOptions, exprMat,
+  skipBinaryThresholds = FALSE, skipHeatmap = FALSE,
+  skipTsne = FALSE)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}

@@ -1,0 +1,126 @@
+---
+title: "Importing pySCENIC results"
+subtitle: Importing pySCENIC output into R
+output:
+  BiocStyle::html_document:
+    number_sections: no
+    toc: yes
+    toc_float: false
+    css: corrected.css
+  html_notebook:
+    toc: yes
+  pdf_document:
+    toc: yes
+package: '`r pkg_ver("SCENIC")`'
+vignette: >
+  %\VignetteIndexEntry{Importing pySCENIC output} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r libraries, echo=FALSE, message=FALSE, warning=FALSE}
+# Suppress loading messages when building the HTML
+suppressPackageStartupMessages({
+  library(SCENIC)
+  library(data.table)
+  library(GSEABase)
+  library(AUCell)
+  library(SCopeLoomR)
+})
+```
+
+**pySCENIC** (https://pyscenic.readthedocs.io/) provides a faster implementation of SCENIC (in Python) that can be easily paralelized with Dask (e.g. to take advantage distributed systems). The results of pySCENIC can easily be imported into R.
+
+The main results of SCENIC analysis are stored in the loom file:
+
+- Regulons 
+
+- Regulon activity (AUC matrix and thresholds)
+
+- Embeddings (e.g. t-SNE and UMAP on the regulon activity)
+
+The **motif enrichment analysis** and **co-expression modules** (e.g. GRNBoost/GENIE3 output) are stored in independent text files (mostly due to their bigger size).
+
+
+```{r setDirectories, message=FALSE, warning=FALSE}
+# Output directories (adjust to yours):
+pyScenicDir <- "pySCENIC_tutorial/output"
+
+library(SCENIC)
+```
+
+
+# Reading the loom file
+
+`SCopeLoomR` provides functions to import the regulons, AUC, and embeddings from the loom file: 
+
+```{r loomSCENIC}
+library(SCopeLoomR)
+
+pyScenicLoomFile <- file.path(pyScenicDir, "SCENIC.loom")
+loom <- open_loom(pyScenicLoomFile)
+
+# Read information from loom file:
+regulons_incidMat <- get_regulons(loom)
+regulons <- regulonsToGeneLists(regulons_incidMat)
+regulonsAUC <- get_regulonsAuc(loom)
+regulonsAucThresholds <- get_regulonThresholds(loom)
+embeddings <- get_embeddings(loom)
+```
+
+In addition, the loom file also stores the expression matrix, and allows to save information about the cells (e.g. cell annotations), or results from previous clustering analyses: 
+
+```{r loomExtra}
+exprMat <- get_dgem(loom)
+cellInfo <- get_cellAnnotation(loom)
+clusterings <- get_clusterings_withName(loom)
+```
+
+
+# Motif enrichment analysis
+
+The motif enrichment results provided by pySCENIC are in a slightly different format than the table provided by RcisTarget (e.g. R implementation of SCENIC) but they are equivalent. This table can be read from the text file and visualized/explored in a similar way: 
+
+```{r motifEnrichment}
+# Read table
+motifsDf <- data.table::fread(file.path(pyScenicDir, "motifs.tsv"), header = T, sep="\t")
+
+# Visualize
+motifsDf <- RcisTarget::addLogo(motifsDf, motifCol="MotifID")
+motifsDf[,c("NES","AUC", "MotifSimilarityQvalue")] <- signif(motifsDf[,c("NES","AUC", "MotifSimilarityQvalue")],2)
+colsToShow <- colnames(motifsDf)[-c(9:11)]
+DT::datatable(motifsDf[TF=="Dlx5", colsToShow, with=F], escape=FALSE, filter="top")
+```
+
+# GRNBoost/GENIE3 results
+
+```{r GRNBoost}
+GRNBoost_linkList <- importArboreto(file.path(pyScenicDir,  "adjacencies.tsv"))
+head(GRNBoost_linkList)
+```
+
+# Importing from text files
+
+There are also some options to save/import only partial results (e.g. not using a .loom file):
+
+## Regulons and co-expression modules
+
+Regulons and co-expression modules can be exported as .gmt files, which can be loaded with `GSEABase`: 
+```{r regulons}
+library(GSEABase)
+regulons <- getGmt(file.path(pyScenicDir,  "regulons.gmt"))
+regulons <- geneIds(regulons)
+names(regulons)[5:10]
+regulons[3]
+```
+
+
+## AUCell scores 
+
+The "AUC matrix" provided by pySCENIC can be saved as text and imported with `importAUCfromText`:
+
+```{r AUCell_py}
+regulonAUC <- importAUCfromText(file.path(pyScenicDir,  "aucMatrix.tsv"))
+regulonAUC
+```
+
