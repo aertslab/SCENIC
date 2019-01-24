@@ -71,7 +71,6 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   motifEnrichment <- loadInt(scenicOptions, "motifEnrichment_selfMotifs_wGenes")
   regulonThresholds <- loadInt(scenicOptions, "aucell_thresholds")
   add_scenic_regulons(loom=loom
-                      , dgem=dgem
                       , regulons=regulons
                       , regulon.threshold.assignments=regulonThresholds # Optional
                       , regulon.enrichment.table=motifEnrichment # Optional
