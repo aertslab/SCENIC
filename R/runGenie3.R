@@ -27,7 +27,7 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, ...)
   
   # Run on subsets of genes 
   # (dividing the original gene list into 10 pieces)
-  genesSplit <- split(sort(rownames(exprMat)), 1:nParts)
+  genesSplit <- suppressWarnings(split(sort(rownames(exprMat)), 1:nParts))
   weightMatrices <- list()
   for(i in 1:length(genesSplit))
   {
