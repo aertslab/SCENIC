@@ -7,7 +7,6 @@ Version 0.99.0
 ---------------
 Compatibility with RcisTarget version published in Bioconductor (.feather databases)
 
-
 Version 0.1.5
 ---------------
 Corrected error in plot_aucTsne()
