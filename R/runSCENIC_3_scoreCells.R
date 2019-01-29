@@ -18,6 +18,15 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
 {
   nCores <- getSettings(scenicOptions, "nCores")
   
+  if(is.data.frame(exprMat)) 
+  {
+    supportedClasses <- paste(gsub("AUCell_buildRankings,", "", methods("AUCell_buildRankings")), collapse=", ")
+    supportedClasses <- gsub("-method", "", supportedClasses)
+    
+    stop("'exprMat' should be one of the following classes: ", supportedClasses, 
+         "\n(data.frames are not supported. Please, convert the expression matrix to one of these classes.)")
+  }
+  
   ################################################################
   ## Prepare regulons
   regulons <- loadInt(scenicOptions, "regulons")
@@ -81,17 +90,17 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
     
     ### Save threshold info as text (e.g. to edit/modify...)
     trhAssignment <- getThresholdSelected(cells_AUCellThresholds)
-    trhAssignment <- signif(trhAssignment,3)
+    trhAssignment <- signif(trhAssignment, 3) # TODO why is it sometimes a list? https://github.com/aertslab/AUCell/issues/3
     commentsThresholds <- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$comment))
     
-    table2edit <- cbind(regulon=names(trhAssignment),
-                        threshold=trhAssignment,
-                        nCellsAssigned=lengths(regulonsCells)[names(trhAssignment)],
-                        AUCellComment=commentsThresholds,
+    table2edit <- cbind(regulon=names(cells_AUCellThresholds),
+                        threshold=trhAssignment[names(cells_AUCellThresholds)],
+                        nCellsAssigned=lengths(regulonsCells)[names(cells_AUCellThresholds)],
+                        AUCellComment=commentsThresholds[names(cells_AUCellThresholds)],
                         nGenes=gsub("[\\(g\\)]", "", regmatches(names(cells_AUCellThresholds), gregexpr("\\(.*?\\)", names(cells_AUCellThresholds)))),
-                        clusteringOrder=1:length(trhAssignment),
-                        clusterGroup=regulonClusters[names(trhAssignment)],
-                        onlyNonDuplicatedExtended=(names(trhAssignment) %in% onlyNonDuplicatedExtended(names(trhAssignment))),
+                        clusteringOrder=1:length(cells_AUCellThresholds),
+                        clusterGroup=regulonClusters[names(cells_AUCellThresholds)],
+                        onlyNonDuplicatedExtended=(names(cells_AUCellThresholds) %in% onlyNonDuplicatedExtended(names(cells_AUCellThresholds))),
                         personalNotes="")
     write.table(table2edit, file=getIntName(scenicOptions, "aucell_thresholdsTxt"), row.names=F, quote=F, sep="\t")
     rm(trhAssignment)
