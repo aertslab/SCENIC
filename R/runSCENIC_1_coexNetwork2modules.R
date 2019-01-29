@@ -15,14 +15,17 @@
 runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
 {
   linkList <- loadInt(scenicOptions, "genie3ll")
-  if(!all(colnames(linkList) == c("TF", "Target", "weight"))) stop('The link list colnames should be "TF", "Target", "weight"')
-  # dim(linkList)
-  # head(linkList)
+  if(!all(colnames(linkList) == c("TF", "Target", "weight"))) 
+    stop('The link list colnames should be "TF", "Target", "weight"')
+  
+  uniquePairs <- nrow(unique(linkList[,c("TF", "Target")]))
+  if(uniquePairs < nrow(linkList)) 
+    stop("There are duplicated regulator-target (gene id/name) pairs in the input link list.")
   
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tCreating TF modules")
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
-  quantile(linkList$weight, probs=c(0.75, 0.90))
+  print(quantile(linkList$weight, probs=c(0.75, 0.90)))
   .openDev(fileName=getIntName(scenicOptions, "genie3weighPlot"), 
            devType=getSettings(scenicOptions, "devType"))
     plot(linkList$weight[1:1000000], type="l", ylim=c(0, max(linkList$weight)), main="Weight of the links",
@@ -68,14 +71,16 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
   
   topTFsperTarget <- topTFsperTarget[which(!sapply(sapply(topTFsperTarget, nrow), is.null))]
   topTFsperTarget.asDf <-  data.frame(data.table::rbindlist(topTFsperTarget, idcol=TRUE))
+  # topTFsperTarget.asDf <- apply(topTFsperTarget.asDf, 2, as.character)
   colnames(topTFsperTarget.asDf) <- c("Target", "TF", "method")
-  head(topTFsperTarget.asDf)
   
   # Merge the all the gene-sets:
   tfModules.melted <- reshape2::melt(tfModules)
   colnames(tfModules.melted) <- c("Target", "TF", "method")
   tfModules <- rbind(tfModules.melted, topTFsperTarget.asDf)
-  rm(tfModules.melted)
+  rm(tfModules.melted); rm(topTFsperTarget.asDf)
+  tfModules$TF <- as.character(tfModules$TF)
+  tfModules$Target <- as.character(tfModules$Target)
   
   # Basic counts:  #TODO add comment
   if(getSettings(scenicOptions, "verbose")) print(
@@ -100,11 +105,11 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
   
   # Add correlation to the table
   # "corr" column: 1 if the correlation between the TF and the target is > 0.03, -1 if the correlation is < -0.03 and 0 otherwise.
-  tfModules_byTF <- split(tfModules, factor(tfModules$TF))
-  tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs], function(tfGeneSets)
+  tfModules_byTF <- split(tfModules, as.factor(tfModules$TF))
+  tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs[1:4]], function(tfGeneSets)
   {
-    tf <- unique(tfGeneSets$TF)
-    targets <- tfGeneSets$Target
+    tf <- as.character(unique(tfGeneSets$TF))
+    targets <- as.character(tfGeneSets$Target)
     cbind(tfGeneSets, corr=c(as.numeric(corrMat[tf,targets] > 0.03) - as.numeric(corrMat[tf,targets] < -0.03)))
   })
   tfModules_withCorr <- data.frame(data.table::rbindlist(tfModules_withCorr_byTF))
