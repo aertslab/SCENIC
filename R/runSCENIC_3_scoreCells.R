@@ -52,12 +52,16 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   library(AUCell)
   # 1. Create rankings
   set.seed(getSettings(scenicOptions,"seed"))
-  .openDev(fileName=getIntName(scenicOptions, "aucell_genesStatsPlot"), 
-          devType=getSettings(scenicOptions, "devType"))
-    aucellRankings <- AUCell_buildRankings(exprMat, nCores=nCores, 
-                          plotStats=TRUE, verbose=getSettings(scenicOptions, "verbose"))
-    abline(v=aucellRankings@nGenesDetected["1%"], col="skyblue3", lwd=5, lty=3) #TODO check if similar to previous version
-  dev.off()
+  tryCatch({
+    .openDev(fileName=getIntName(scenicOptions, "aucell_genesStatsPlot"),
+            devType=getSettings(scenicOptions, "devType"))
+      aucellRankings <- AUCell_buildRankings(exprMat, nCores=nCores, 
+                            plotStats=TRUE, verbose=getSettings(scenicOptions, "verbose"))
+      abline(v=aucellRankings@nGenesDetected["1%"], col="skyblue3", lwd=5, lty=3)
+    dev.off()
+  },error = function(e) {
+    message("Catched error in AUCell_buildRankings() or in the histogram plot: ", e$message)
+  })
   saveRDS(aucellRankings, file=getIntName(scenicOptions, "aucell_rankings"))
     
   # 2. Calculate AUC
