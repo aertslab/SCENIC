@@ -35,7 +35,7 @@ library(SingleCellExperiment)
 options(stringsAsFactors=FALSE)
 
 # To build a personalized report, update this working directory:
-knitr::opts_knit$set(root.dir = '../../SCENIC_MouseBrain')
+knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
 ```
 
 # Introduction to SCENIC
@@ -92,11 +92,11 @@ biocLite(c("NMF", "Rtsne", "R2HTML"))
 biocLite(c("doMC", "doRNG"))
 # To visualize in http://scope.aertslab.org
 install.packages("devtools")
-devtools::install_github("aertslab/SCopeLoomR")
+devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
 ```
 
 AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions:
-**AUCell 1.2.4**, **RcisTarget 1.0.2**, and **GENIE3 1.2.1** or posterior.
+**AUCell>=1.2.4**, **RcisTarget>=1.0.2**, and **GENIE3>=1.2.1**.
 
 ```{r versions, eval=FALSE}
 packageVersion("AUCell")
@@ -105,9 +105,9 @@ packageVersion("RcisTarget")
 
 In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
 ```{r alternativeDownload, eval=FALSE}
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.4.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.1.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.0.tar.gz", repos=NULL)
 ```
 
 You are now ready to install SCENIC:

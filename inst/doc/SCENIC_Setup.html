@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-08-31" />
+<meta name="date" content="2019-01-28" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -98,8 +98,14 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -108,14 +114,74 @@ button.code-folding-btn:focus {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -127,11 +193,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>31 August 2018</em></h4>
+<h4 class="date"><em>28 January 2019</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.3</p>
+<p>SCENIC 1.1.0.1</p>
 
 </div>
 
@@ -206,14 +272,14 @@ biocLite(c(&quot;NMF&quot;, &quot;Rtsne&quot;, &quot;R2HTML&quot;))
 biocLite(c(&quot;doMC&quot;, &quot;doRNG&quot;))
 # To visualize in http://scope.aertslab.org
 install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCopeLoomR&quot;)</code></pre>
-<p>AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions: <strong>AUCell 1.2.4</strong>, <strong>RcisTarget 1.0.2</strong>, and <strong>GENIE3 1.2.1</strong> or posterior.</p>
+devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)</code></pre>
+<p>AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions: <strong>AUCell&gt;=1.2.4</strong>, <strong>RcisTarget&gt;=1.0.2</strong>, and <strong>GENIE3&gt;=1.2.1</strong>.</p>
 <pre class="r"><code>packageVersion(&quot;AUCell&quot;)
 packageVersion(&quot;RcisTarget&quot;)</code></pre>
 <p>In case you have trobule installing the packages with <code>biocLite</code> (for example, if you don’t have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:</p>
-<pre class="r"><code>install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.2.4.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.0.2.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.2.1.tar.gz&quot;, repos=NULL)</code></pre>
+<pre class="r"><code>install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz&quot;, repos=NULL)
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz&quot;, repos=NULL)
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.0.tar.gz&quot;, repos=NULL)</code></pre>
 <p>You are now ready to install SCENIC:</p>
 <pre class="r"><code># install.packages(&quot;devtools&quot;)
 devtools::install_github(&quot;aertslab/SCENIC&quot;)</code></pre>
