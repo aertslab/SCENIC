@@ -4,10 +4,12 @@
 \alias{runSCENIC_2_createRegulons}
 \title{runSCENIC_2_createRegulons}
 \usage{
-runSCENIC_2_createRegulons(scenicOptions)
+runSCENIC_2_createRegulons(scenicOptions, minGenes = 20)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}
+
+\item{minGenes}{Minimum size of co-expression gene set (default: 20 genes)}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'
