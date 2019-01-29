@@ -234,10 +234,18 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
 
   # Split into regulons... (output: list TF --> targets)
   regulonTargetsInfo_splitByAnnot <- split(regulonTargetsInfo, regulonTargetsInfo$highConfAnnot)
-  regulons <- sapply(split(regulonTargetsInfo_splitByAnnot[["TRUE"]], regulonTargetsInfo_splitByAnnot[["TRUE"]][,"TF"]), function(x) sort(as.character(unlist(x[,"gene"]))))
-  regulons_extended <- sapply(split(regulonTargetsInfo_splitByAnnot[["FALSE"]],regulonTargetsInfo_splitByAnnot[["FALSE"]][,"TF"]), function(x) unname(x[,"gene"]))
-  regulons_extended <- sapply(names(regulons_extended), function(tf) sort(unique(c(regulons[[tf]], regulons_extended[[tf]]))))
-  names(regulons_extended) <- paste(names(regulons_extended), "_extended", sep="")
+  regulons <- NULL
+  if(!is.null(regulonTargetsInfo_splitByAnnot[["TRUE"]]))
+  {
+    regulons <- lapply(split(regulonTargetsInfo_splitByAnnot[["TRUE"]], regulonTargetsInfo_splitByAnnot[["TRUE"]][,"TF"]), function(x) sort(as.character(unlist(x[,"gene"]))))
+  }
+  regulons_extended <- NULL
+  if(!is.null(regulonTargetsInfo_splitByAnnot[["FALSE"]]))
+  {
+    regulons_extended <- lapply(split(regulonTargetsInfo_splitByAnnot[["FALSE"]],regulonTargetsInfo_splitByAnnot[["FALSE"]][,"TF"]), function(x) unname(unlist(x[,"gene"])))
+    regulons_extended <- lapply(names(regulons_extended), function(tf) sort(unique(c(regulons[[tf]], unlist(regulons_extended[[tf]])))))
+    names(regulons_extended) <- paste(names(regulons_extended), "_extended", sep="")
+  }
   regulons <- c(regulons, regulons_extended)
   saveRDS(regulons, file=getIntName(scenicOptions, "regulons"))
   
