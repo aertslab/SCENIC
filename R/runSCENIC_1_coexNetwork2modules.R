@@ -107,7 +107,7 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
   # Add correlation to the table
   # "corr" column: 1 if the correlation between the TF and the target is > 0.03, -1 if the correlation is < -0.03 and 0 otherwise.
   tfModules_byTF <- split(tfModules, as.factor(tfModules$TF))
-  tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs[1:4]], function(tfGeneSets)
+  tfModules_withCorr_byTF <- lapply(tfModules_byTF[tfs], function(tfGeneSets)
   {
     tf <- as.character(unique(tfGeneSets$TF))
     targets <- as.character(tfGeneSets$Target)
