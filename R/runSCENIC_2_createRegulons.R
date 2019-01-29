@@ -214,9 +214,16 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
   if(!is.null(linkList) & ("weight" %in% colnames(linkList)))
   {
     if(is.data.table(linkList)) linkList <- as.data.frame(linkList)
-    linkList <- linkList[which(linkList$weight>=getSettings(scenicOptions, "modules/weightThreshold")),]  # TODO: Will not work with GRNBOOST!
-    rownames(linkList) <- paste(linkList$TF, linkList$Target,sep="__")
-    regulonTargetsInfo <- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep="__"),"weight"])
+    
+    uniquePairs <- nrow(unique(linkList[,c("TF", "Target")]))
+    if(uniquePairs == nrow(linkList)) {
+      linkList <- linkList[which(linkList$weight>=getSettings(scenicOptions, "modules/weightThreshold")),]  # TODO: Will not work with GRNBOOST!
+      rownames(linkList) <- paste(linkList$TF, linkList$Target,sep="__")
+      regulonTargetsInfo <- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep="__"),"weight"])
+    }else {
+      warning("There are duplicated regulator-target (gene id/name) pairs in the co-expression link list.",
+              "\nThe co-expression weight was not added to the regulonTargetsInfo table.")
+    }
   }else warning("It was not possible to add the weight to the regulonTargetsInfo table.")
 
   saveRDS(regulonTargetsInfo, file=getIntName(scenicOptions, "regulonTargetsInfo"))
