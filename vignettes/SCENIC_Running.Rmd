@@ -263,7 +263,7 @@ The easiest/fastest way is to use the following *wrapper* functions, each of the
   4. Cluster cells according to the GRN activity
 
 >An overview of the steps workflow is explained in [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463).
-Detailed tutorials/notebooks explaining the internal code of each of these functions are also available (see `vignette(package="SCENIC")`). These might be useful for users who want to know the details of the implementation, or to modify or run only some of the steps of the workflow.
+Detailed tutorials/notebooks explaining these functions in detail are also available (see `vignette(package="SCENIC")`). These might be useful for users who want to know the details of the implementation, understand the results more in depth, or to modify or run only some of the steps of the workflow.
 
 Re-load the expression matrix if necessary: 
 ```{r loadData2}
