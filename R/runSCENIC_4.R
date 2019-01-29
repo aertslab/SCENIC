@@ -11,7 +11,7 @@
 #' runSCENIC_4_aucell_binarize(scenicOptions)
 #' @export
 runSCENIC_4_aucell_binarize <- function(scenicOptions, 
-                    skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
+                                        skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
@@ -84,7 +84,7 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions,
         {
           fileName <- paste0(getOutName(scenicOptions, "s4_binaryActivityHeatmap"),selRegs)
           fileName <- .openDevHeatmap(fileName=fileName, devType=getSettings(scenicOptions, "devType"))
-         
+          
           rowv <- ifelse(nrow(binaryMat) >= 2, T, NA)
           colv <- ifelse(ncol(binaryMat) >= 2, T, NA)
           
