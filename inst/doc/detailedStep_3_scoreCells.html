@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-06-21" />
+<meta name="date" content="2019-01-29" />
 
 <title>Code of runSCENIC_3_scoreCells()</title>
 
@@ -88,8 +88,14 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -98,14 +104,74 @@ button.code-folding-btn:focus {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -117,9 +183,9 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Code of runSCENIC_3_scoreCells()</h1>
 <h3 class="subtitle"><em>Workflow run by runSCENIC_3_scoreCells()</em></h3>
-<h4 class="date"><em>21 June 2018</em></h4>
+<h4 class="date"><em>29 January 2019</em></h4>
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.2</p>
+<p>SCENIC 1.1.1.1</p>
 
 </div>
 
@@ -197,13 +263,26 @@ nCores &lt;- getSettings(scenicOptions, &quot;nCores&quot;)</code></pre>
 </div>
 <div id="create-rankings" class="section level2">
 <h2>1. Create rankings</h2>
-<pre class="r"><code>set.seed(getSettings(scenicOptions,&quot;seed&quot;))
-.openDev(fileName=getIntName(scenicOptions, &quot;aucell_genesStatsPlot&quot;), 
-        devType=getSettings(scenicOptions, &quot;devType&quot;))
-  aucellRankings &lt;- AUCell_buildRankings(exprMat, nCores=nCores, 
-                        plotStats=TRUE, verbose=getSettings(scenicOptions, &quot;verbose&quot;))
-  abline(v=aucellRankings@nGenesDetected[&quot;1%&quot;], col=&quot;skyblue3&quot;, lwd=5, lty=3) #TODO check if similar to previous version
-dev.off()
+<pre class="r"><code>if(is.data.frame(exprMat)) 
+{
+  supportedClasses &lt;- paste(gsub(&quot;AUCell_buildRankings,&quot;, &quot;&quot;, methods(&quot;AUCell_buildRankings&quot;)), collapse=&quot;, &quot;)
+  supportedClasses &lt;- gsub(&quot;-method&quot;, &quot;&quot;, supportedClasses)
+  
+  stop(&quot;'exprMat' should be one of the following classes: &quot;, supportedClasses, 
+       &quot;\n(data.frames are not supported. Please, convert the expression matrix to one of these classes.)&quot;)
+}
+
+set.seed(getSettings(scenicOptions,&quot;seed&quot;))
+tryCatch({
+    .openDev(fileName=getIntName(scenicOptions, &quot;aucell_genesStatsPlot&quot;),
+            devType=getSettings(scenicOptions, &quot;devType&quot;))
+      aucellRankings &lt;- AUCell_buildRankings(exprMat, nCores=nCores, 
+                            plotStats=TRUE, verbose=getSettings(scenicOptions, &quot;verbose&quot;))
+      abline(v=aucellRankings@nGenesDetected[&quot;1%&quot;], col=&quot;skyblue3&quot;, lwd=5, lty=3)
+    dev.off()
+  },error = function(e) {
+    message(&quot;Catched error in AUCell_buildRankings() or in the histogram plot: &quot;, e$message)
+  })
 saveRDS(aucellRankings, file=getIntName(scenicOptions, &quot;aucell_rankings&quot;))</code></pre>
 </div>
 <div id="calculate-auc" class="section level2">
@@ -212,13 +291,7 @@ saveRDS(aucellRankings, file=getIntName(scenicOptions, &quot;aucell_rankings&quo
             aucMaxRank=aucellRankings@nGenesDetected[&quot;1%&quot;], nCores=nCores)
   
 # Order the modules by similarity, for easier exploration in the upcoming steps &amp; save
-variableRegulons &lt;- names(which(apply(getAUC(regulonAUC), 1, sd) &gt; 0))
-reguDist &lt;-as.dist(1-cor(t(getAUC(regulonAUC)[variableRegulons,]), method=&quot;spear&quot;))
-reguClust &lt;- hclust(reguDist, method=&quot;ward.D2&quot;)
-regulonClusters &lt;- setNames(dynamicTreeCut::cutreeDynamic(reguClust, distM=as.matrix(reguDist), verbose = FALSE), reguClust$labels)
-regulonOrder &lt;- reguClust$labels[reguClust$order]
-regulonOrder &lt;- regulonOrder[order(regulonClusters[regulonOrder], decreasing = TRUE)]
-
+regulonOrder &lt;- orderAUC(regulonAUC) # added to AUCell 1.5.1
 regulonAUC &lt;- regulonAUC[regulonOrder,]
 saveRDS(regulonAUC, file=getIntName(scenicOptions, &quot;aucell_regulonAUC&quot;))</code></pre>
 </div>
@@ -239,17 +312,17 @@ if(!skipBinaryThresholds)
   
   ### Save threshold info as text (e.g. to edit/modify...)
   trhAssignment &lt;- getThresholdSelected(cells_AUCellThresholds)
-  trhAssignment &lt;- signif(trhAssignment,3)
+  trhAssignment &lt;- signif(trhAssignment, 3) # TODO why is it sometimes a list? https://github.com/aertslab/AUCell/issues/3
   commentsThresholds &lt;- sapply(cells_AUCellThresholds, function(x) unname(x$aucThr$comment))
   
-  table2edit &lt;- cbind(regulon=names(trhAssignment),
-                      threshold=trhAssignment,
-                      nCellsAssigned=lengths(regulonsCells)[names(trhAssignment)],
-                      AUCellComment=commentsThresholds,
+  table2edit &lt;- cbind(regulon=names(cells_AUCellThresholds),
+                      threshold=trhAssignment[names(cells_AUCellThresholds)],
+                      nCellsAssigned=lengths(regulonsCells)[names(cells_AUCellThresholds)],
+                      AUCellComment=commentsThresholds[names(cells_AUCellThresholds)],
                       nGenes=gsub(&quot;[\\(g\\)]&quot;, &quot;&quot;, regmatches(names(cells_AUCellThresholds), gregexpr(&quot;\\(.*?\\)&quot;, names(cells_AUCellThresholds)))),
-                      clusteringOrder=1:length(trhAssignment),
-                      clusterGroup=regulonClusters[names(trhAssignment)],
-                      onlyNonDuplicatedExtended=(names(trhAssignment) %in% onlyNonDuplicatedExtended(names(trhAssignment))),
+                      clusteringOrder=1:length(cells_AUCellThresholds),
+                      clusterGroup=regulonClusters[names(cells_AUCellThresholds)],
+                      onlyNonDuplicatedExtended=(names(cells_AUCellThresholds) %in% onlyNonDuplicatedExtended(names(cells_AUCellThresholds))),
                       personalNotes=&quot;&quot;)
   write.table(table2edit, file=getIntName(scenicOptions, &quot;aucell_thresholdsTxt&quot;), row.names=F, quote=F, sep=&quot;\t&quot;)
   rm(trhAssignment)

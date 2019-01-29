@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-06-21" />
+<meta name="date" content="2019-01-29" />
 
 <title>Code of runSCENIC_2_createRegulons()</title>
 
@@ -88,8 +88,14 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -98,14 +104,74 @@ button.code-folding-btn:focus {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -117,9 +183,9 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Code of runSCENIC_2_createRegulons()</h1>
 <h3 class="subtitle"><em>Workflow run by runSCENIC_2_createRegulons()</em></h3>
-<h4 class="date"><em>21 June 2018</em></h4>
+<h4 class="date"><em>29 January 2019</em></h4>
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.2</p>
+<p>SCENIC 1.1.1.1</p>
 
 </div>
 
@@ -154,7 +220,8 @@ $(document).ready(function () {
 <h1>Input</h1>
 <p>scenicOptions:</p>
 <pre class="r"><code>setwd(&quot;SCENIC_MouseBrain&quot;)
-scenicOptions &lt;- readRDS(&quot;int/scenicOptions.Rds&quot;)</code></pre>
+scenicOptions &lt;- readRDS(&quot;int/scenicOptions.Rds&quot;)
+minGenes=20</code></pre>
 </div>
 <div id="runscenic_2_createregulons-code" class="section level1">
 <h1>runSCENIC_2_createRegulons() code:</h1>
@@ -214,7 +281,7 @@ tfModules_Selected &lt;- cbind(tfModules_Selected, geneSetName=paste(tfModules_S
 tfModules &lt;- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
 
 # Keep gene sets with at least 20 genes
-tfModules &lt;- tfModules[which(lengths(tfModules)&gt;=20)] 
+tfModules &lt;- tfModules[which(lengths(tfModules)&gt;=minGenes)] 
 
 # Add TF to the gene set (used in the following steps, careful if editing)
 tfModules &lt;- setNames(lapply(names(tfModules), function(gsn) {
@@ -386,9 +453,16 @@ colnames(regulonTargetsInfo) &lt;- c(&quot;TF&quot;, &quot;gene&quot;, &quot;nMo
 if(!is.null(linkList) &amp; (&quot;weight&quot; %in% colnames(linkList)))
 {
   if(is.data.table(linkList)) linkList &lt;- as.data.frame(linkList)
-  linkList &lt;- linkList[which(linkList$weight&gt;=getSettings(scenicOptions, &quot;modules/weightThreshold&quot;)),]  # TODO: Will not work with GRNBOOST!
-  rownames(linkList) &lt;- paste(linkList$TF, linkList$Target,sep=&quot;__&quot;)
-  regulonTargetsInfo &lt;- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep=&quot;__&quot;),&quot;weight&quot;])
+    
+    uniquePairs &lt;- nrow(unique(linkList[,c(&quot;TF&quot;, &quot;Target&quot;)]))
+    if(uniquePairs == nrow(linkList)) {
+      linkList &lt;- linkList[which(linkList$weight&gt;=getSettings(scenicOptions, &quot;modules/weightThreshold&quot;)),]  # TODO: Will not work with GRNBOOST!
+      rownames(linkList) &lt;- paste(linkList$TF, linkList$Target,sep=&quot;__&quot;)
+      regulonTargetsInfo &lt;- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep=&quot;__&quot;),&quot;weight&quot;])
+    }else {
+      warning(&quot;There are duplicated regulator-target (gene id/name) pairs in the co-expression link list.&quot;,
+              &quot;\nThe co-expression weight was not added to the regulonTargetsInfo table.&quot;)
+    }
 }else warning(&quot;It was not possible to add the weight to the regulonTargetsInfo table.&quot;)
 
 saveRDS(regulonTargetsInfo, file=getIntName(scenicOptions, &quot;regulonTargetsInfo&quot;))

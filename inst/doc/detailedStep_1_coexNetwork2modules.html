@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2018-06-21" />
+<meta name="date" content="2019-01-29" />
 
 <title>Code of runSCENIC_1_coexNetwork2modules()</title>
 
@@ -88,8 +88,14 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -98,14 +104,74 @@ button.code-folding-btn:focus {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -117,9 +183,9 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Code of runSCENIC_1_coexNetwork2modules()</h1>
 <h3 class="subtitle"><em>Workflow run by runSCENIC_1_coexNetwork2modules()</em></h3>
-<h4 class="date"><em>21 June 2018</em></h4>
+<h4 class="date"><em>29 January 2019</em></h4>
 <h4 class="package">Package</h4>
-<p>SCENIC 1.0.0.2</p>
+<p>SCENIC 1.1.1.1</p>
 
 </div>
 
@@ -162,10 +228,14 @@ scenicOptions &lt;- readRDS(&quot;int/scenicOptions.Rds&quot;)</code></pre>
 <pre class="r"><code>linkList &lt;- loadInt(scenicOptions, &quot;genie3ll&quot;)
 if(!all(colnames(linkList) == c(&quot;TF&quot;, &quot;Target&quot;, &quot;weight&quot;))) stop('The link list colnames should be &quot;TF&quot;, &quot;Target&quot;, &quot;weight&quot;')
 
+uniquePairs &lt;- nrow(unique(linkList[,c(&quot;TF&quot;, &quot;Target&quot;)]))
+if(uniquePairs &lt; nrow(linkList)) 
+  stop(&quot;There are duplicated regulator-target (gene id/name) pairs in the input link list.&quot;)
+  
 msg &lt;- paste0(format(Sys.time(), &quot;%H:%M&quot;), &quot;\tCreating TF modules&quot;)
 if(getSettings(scenicOptions, &quot;verbose&quot;)) message(msg)
 
-quantile(linkList$weight, probs=c(0.75, 0.90))
+print(quantile(linkList$weight, probs=c(0.75, 0.90)))
 .openDev(fileName=getIntName(scenicOptions, &quot;genie3weighPlot&quot;), 
          devType=getSettings(scenicOptions, &quot;devType&quot;))
   plot(linkList$weight[1:1000000], type=&quot;l&quot;, ylim=c(0, max(linkList$weight)), main=&quot;Weight of the links&quot;,
@@ -203,6 +273,7 @@ linkList_001_byTarget &lt;- split(linkList_001, factor(linkList_001$Target))
 nTopTfs &lt;- c(5, 10, 50)
 nTopTfs &lt;- setNames(nTopTfs, paste(&quot;top&quot;, nTopTfs, &quot;perTarget&quot;, sep=&quot;&quot;))
 
+#library(reshape2); library(data.table)
 topTFsperTarget &lt;- lapply(linkList_001_byTarget, function(llt) {
   nTFs &lt;- nTopTfs[which(nTopTfs &lt;= nrow(llt))]
   reshape2::melt(lapply(nTFs, function(x) llt[1:x,&quot;TF&quot;]))
@@ -210,22 +281,25 @@ topTFsperTarget &lt;- lapply(linkList_001_byTarget, function(llt) {
 
 topTFsperTarget &lt;- topTFsperTarget[which(!sapply(sapply(topTFsperTarget, nrow), is.null))]
 topTFsperTarget.asDf &lt;-  data.frame(data.table::rbindlist(topTFsperTarget, idcol=TRUE))
+# topTFsperTarget.asDf &lt;- apply(topTFsperTarget.asDf, 2, as.character)
 colnames(topTFsperTarget.asDf) &lt;- c(&quot;Target&quot;, &quot;TF&quot;, &quot;method&quot;)
-head(topTFsperTarget.asDf)
 
 # Merge the all the gene-sets:
 tfModules.melted &lt;- reshape2::melt(tfModules)
 colnames(tfModules.melted) &lt;- c(&quot;Target&quot;, &quot;TF&quot;, &quot;method&quot;)
 tfModules &lt;- rbind(tfModules.melted, topTFsperTarget.asDf)
-rm(tfModules.melted)
+rm(tfModules.melted); rm(topTFsperTarget.asDf)
+tfModules$TF &lt;- as.character(tfModules$TF)
+tfModules$Target &lt;- as.character(tfModules$Target)
 
-# Basic counts:  
-if(getSettings(scenicOptions, &quot;verbose&quot;)) print(
+# Basic counts:  #TODO add comment
+if(getSettings(scenicOptions, &quot;verbose&quot;)) 
+  print(
     rbind(nTFs=length(unique(tfModules$TF)),
           nTargets=length(unique(tfModules$Target)),
           nGeneSets=nrow(unique(tfModules[,c(&quot;TF&quot;,&quot;method&quot;)])),
           nLinks=nrow(tfModules))
-)
+  )
 
 ### Add correlation to split into positive- and negative-correlated targets
 corrMat &lt;- loadInt(scenicOptions, &quot;corrMat&quot;)
@@ -242,17 +316,17 @@ if(length(missingTFs) &gt;0 )
 
 # Add correlation to the table
 # &quot;corr&quot; column: 1 if the correlation between the TF and the target is &gt; 0.03, -1 if the correlation is &lt; -0.03 and 0 otherwise.
-tfModules_byTF &lt;- split(tfModules, factor(tfModules$TF))
-tfModules_withCorr_byTF &lt;- lapply(tfModules_byTF[tfs], function(tfGeneSets)
+tfModules_byTF &lt;- split(tfModules, as.factor(tfModules$TF))
+tfModules_withCorr_byTF &lt;- lapply(tfModules_byTF[tfs[1:4]], function(tfGeneSets)
 {
-  tf &lt;- unique(tfGeneSets$TF)
-  targets &lt;- tfGeneSets$Target
+  tf &lt;- as.character(unique(tfGeneSets$TF))
+  targets &lt;- as.character(tfGeneSets$Target)
   cbind(tfGeneSets, corr=c(as.numeric(corrMat[tf,targets] &gt; 0.03) - as.numeric(corrMat[tf,targets] &lt; -0.03)))
 })
 tfModules_withCorr &lt;- data.frame(data.table::rbindlist(tfModules_withCorr_byTF))
 if(length(missingTFs) &gt;0 ) 
 { 
-  tfModules_withCorr &lt;- rbind(tfModules_withCorr, data.frame(tfModules[tfModules$TF %in% missingTFs,], corr=NA)) #TODO check that factor levels are ok after merging
+  tfModules_withCorr &lt;- rbind(tfModules_withCorr, data.frame(tfModules[tfModules$TF %in% missingTFs,], corr=NA))
 }
 saveRDS(tfModules_withCorr, file=getIntName(scenicOptions, &quot;tfModules_asDF&quot;))</code></pre>
 <p>From this table, we can easily select gene-sets associated to each TF (i.e. <code>split(tfModules_withCorr$Target, tfModules_withCorr$TF)</code>). In this way, we obtain a list of potential targets for each TF based on their co-expression (<em>TF co-expression modules</em>).</p>
