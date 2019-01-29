@@ -114,13 +114,15 @@ library(SCENIC)
 org="mgi" # or hgnc, or dmel
 dbDir="databases" # RcisTarget databases location
 myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
-scenicOptions <- initializeScenic(org=org, dbDir=dbDir, datasetTitle=myDatasetTitle, nCores=20) 
+data(defaultDbNames)
+dbs <- defaultDbNames[[org]]
+scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=5) 
 
 # Modify if needed
 scenicOptions@inputDatasetInfo$cellInfo <- "int/cellInfo.Rds"
 scenicOptions@inputDatasetInfo$colVars <- "int/colVars.Rds"
 # Databases:
-# scenicOptions@settings$dbs <- setNames("mm9-tss-centered-5kb-10species.mc8nr.feather", "mm9-5kb-mc8nr")
+# scenicOptions@settings$dbs <- c("mm9-5kb-mc8nr"="mm9-tss-centered-5kb-10species.mc8nr.feather")
 # scenicOptions@settings$db_mcVersion <- "v8"
 
 # Save to use at a later time...
