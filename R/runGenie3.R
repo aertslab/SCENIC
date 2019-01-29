@@ -22,8 +22,25 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, ...)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   
+  # Check expression matrix (e.g. not data.frame)
+  if(is.data.frame(exprMat)) 
+  {
+    supportedClasses <- paste(gsub("AUCell_buildRankings,", "", methods("AUCell_buildRankings")), collapse=", ")
+    supportedClasses <- gsub("-method", "", supportedClasses)
+    
+    stop("'exprMat' should be one of the following classes: ", supportedClasses, 
+         "(data.frames are not supported. Please, convert the expression matrix to one of these classes.)")
+  }
+  if(any(table(rownames(exprMat))>1))
+    stop("The rownames (gene id/name) in the expression matrix should be unique.s")
+  
+  # Check TFs
   allTFs <- getDbTfs(scenicOptions)
+  
   inputTFs <- allTFs[allTFs %in% rownames(exprMat)] # TODO check
+  percMatched <- length(inputTFs)/length(allTFs)
+  if(getSettings(scenicOptions, "verbose")) message("Using ", length(inputTFs), " TFs as potential regulators...")
+  if(percMatched < .40) warning("Only ", round(percMatched*100), "% of the ", length(allTFs)," TFs in the database were found in the dataset. Do they use the same gene IDs?")
   
   # Run on subsets of genes 
   # (dividing the original gene list into 10 pieces)
