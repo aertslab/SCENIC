@@ -83,12 +83,13 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
   tfModules$Target <- as.character(tfModules$Target)
   
   # Basic counts:  #TODO add comment
-  if(getSettings(scenicOptions, "verbose")) print(
+  if(getSettings(scenicOptions, "verbose")) 
+    print(
       rbind(nTFs=length(unique(tfModules$TF)),
             nTargets=length(unique(tfModules$Target)),
             nGeneSets=nrow(unique(tfModules[,c("TF","method")])),
             nLinks=nrow(tfModules))
-  )
+    )
   
   ### Add correlation to split into positive- and negative-correlated targets
   corrMat <- loadInt(scenicOptions, "corrMat")
@@ -113,9 +114,9 @@ runSCENIC_1_coexNetwork2modules <- function(scenicOptions)
     cbind(tfGeneSets, corr=c(as.numeric(corrMat[tf,targets] > 0.03) - as.numeric(corrMat[tf,targets] < -0.03)))
   })
   tfModules_withCorr <- data.frame(data.table::rbindlist(tfModules_withCorr_byTF))
-  if(length(missingTFs) >0 ) 
+  if(length(missingTFs) >0 )
   { 
-    tfModules_withCorr <- rbind(tfModules_withCorr, data.frame(tfModules[tfModules$TF %in% missingTFs,], corr=NA)) #TODO check that factor levels are ok after merging
+    tfModules_withCorr <- rbind(tfModules_withCorr, data.frame(tfModules[tfModules$TF %in% missingTFs,], corr=NA))
   }
   saveRDS(tfModules_withCorr, file=getIntName(scenicOptions, "tfModules_asDF"))
 }
