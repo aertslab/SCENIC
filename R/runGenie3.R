@@ -32,7 +32,7 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, ...)
          "(data.frames are not supported. Please, convert the expression matrix to one of these classes.)")
   }
   if(any(table(rownames(exprMat))>1))
-    stop("The rownames (gene id/name) in the expression matrix should be unique.s")
+    stop("The rownames (gene id/name) in the expression matrix should be unique.")
   
   # Check TFs
   allTFs <- getDbTfs(scenicOptions)
