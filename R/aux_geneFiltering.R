@@ -80,8 +80,9 @@ geneFiltering <- function(exprMat, scenicOptions,
   message("\t", length(genesLeft_minCells_inDatabases), "\tgenes available in RcisTarget database")
   
   genesKept <- genesLeft_minCells_inDatabases
-  if(is.null(outFile_genesKept)) 
+  if(!is.null(outFile_genesKept)){ 
     saveRDS(genesKept, file=outFile_genesKept)
-    
+    if(getSettings(scenicOptions, "verbose")) message("Gene list saved in ", outFile_genesKept)
+  }
   return(genesKept)
 }
