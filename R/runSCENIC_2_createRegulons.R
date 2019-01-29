@@ -6,6 +6,7 @@
 #' @title runSCENIC_2_createRegulons
 #' @description Step 2: RcisTarget (prune co-expression modules using TF-motif enrichment analysis)
 #' @param scenicOptions Fields used: TODO
+#' @param minGenes Minimum size of co-expression gene set (default: 20 genes)
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -16,7 +17,7 @@
 #' 
 #' runSCENIC_2_createRegulons(scenicOptions)
 #' @export
-runSCENIC_2_createRegulons <- function(scenicOptions)
+runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
 {
   tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
   nCores <- getSettings(scenicOptions, "nCores")
@@ -62,19 +63,20 @@ runSCENIC_2_createRegulons <- function(scenicOptions)
 
   # Add a column with the geneSet name (TF_method)
   tfModules_Selected <- cbind(tfModules_Selected, geneSetName=paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_"))
+  tfModules_Selected$geneSetName <- factor(as.character(tfModules_Selected$geneSetName))
   # head(tfModules_Selected)
 
   # Split into tfModules (TF-modules, with several methods)
   tfModules <- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
-
-  # Keep gene sets with at least 20 genes
-  tfModules <- tfModules[which(lengths(tfModules)>=20)]  #TODO as arg?
 
   # Add TF to the gene set (used in the following steps, careful if editing)
   tfModules <- setNames(lapply(names(tfModules), function(gsn) {
     tf <- strsplit(gsn, "_")[[1]][1]
     unique(c(tf, tfModules[[gsn]]))
   }), names(tfModules))
+  
+  # Keep gene sets with at least 'minGenes' genes
+  tfModules <- tfModules[which(lengths(tfModules)>=minGenes)]
   saveRDS(tfModules, file=getIntName(scenicOptions, "tfModules_forEnrichment")) #TODO as geneset? & previous step?
 
   if(getSettings(scenicOptions, "verbose")) {
@@ -268,6 +270,7 @@ getDbAnnotations <- function(scenicOptions)
   
   library(RcisTarget) # Lazyload
   #data(package="RcisTarget", verbose = T)
+  data(list=motifAnnotName, package="RcisTarget", verbose = FALSE)
   motifAnnotations <- eval(as.name(motifAnnotName))
   
   return(motifAnnotations)

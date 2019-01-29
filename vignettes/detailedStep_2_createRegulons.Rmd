@@ -44,6 +44,7 @@ scenicOptions:
 ```{r, eval=FALSE}
 setwd("SCENIC_MouseBrain")
 scenicOptions <- readRDS("int/scenicOptions.Rds")
+minGenes=20
 ```
 
 
@@ -107,7 +108,7 @@ tfModules_Selected <- cbind(tfModules_Selected, geneSetName=paste(tfModules_Sele
 tfModules <- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
 
 # Keep gene sets with at least 20 genes
-tfModules <- tfModules[which(lengths(tfModules)>=20)] 
+tfModules <- tfModules[which(lengths(tfModules)>=minGenes)] 
 
 # Add TF to the gene set (used in the following steps, careful if editing)
 tfModules <- setNames(lapply(names(tfModules), function(gsn) {
