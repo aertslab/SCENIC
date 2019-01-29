@@ -116,7 +116,7 @@ dbDir="databases" # RcisTarget databases location
 myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
 data(defaultDbNames)
 dbs <- defaultDbNames[[org]]
-scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=5) 
+scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=10) 
 
 # Modify if needed
 scenicOptions@inputDatasetInfo$cellInfo <- "int/cellInfo.Rds"
