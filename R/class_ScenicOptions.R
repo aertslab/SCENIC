@@ -45,7 +45,9 @@
 #' @method loadInt ScenicOptions
 #' @examples
 #' # Create object:
-#' scenicOptions <- initializeScenic(org="hgnc", datasetTitle="My dataset", dbDir="databases", nCores=4)
+#' data(defaultDbNames)
+#' scenicOptions <- initializeScenic(org="hgnc", datasetTitle="My dataset", 
+#' dbDir="databases", dbs=defaultDbNames[["hgnc"]], nCores=4)
 #' 
 #' ### Accessor functions
 #' # Get output file names:
@@ -257,14 +259,19 @@ setMethod("loadFile",
               }
             }else{
               if(verbose) message("Loading ", fileName)
-              if(grepl(".txt$", fileName))
-              {
-                retObj <- read.table(fileName, sep="\t", ...)
-              }else if(grepl(".rdata$", tolower(fileName))) {
-                retObj <- eval(as.name(load(fileName, verbose=TRUE)))
-              }else {
-                retObj <- readRDS(fileName)
-              }
+              tryCatch({
+                if(grepl(".txt$", fileName))
+                {
+                  retObj <- read.table(fileName, sep="\t", ...)
+                }else if(grepl(".rdata$", tolower(fileName))) {
+                  retObj <- eval(as.name(load(fileName, verbose=TRUE)))
+                }else {
+                  retObj <- readRDS(fileName)
+                }
+              }, error=function(e){
+                e$message=paste(e$message, "[file: ",fileName,"]")
+                stop(e)
+              })
               return(retObj)
             }
           }
@@ -287,7 +294,9 @@ setMethod("loadInt",
           definition = function(object, int_type=NULL, ...)
           {
             if(is.null(int_type)) getIntName(object)
-            else loadFile(object, fileName=getIntName(object, int_type), ...)
+            else {
+                loadFile(object, fileName=getIntName(object, int_type) , ...)
+            }
           }
 )
 
@@ -295,10 +304,8 @@ setMethod("loadInt",
 ########################################################
 #' @rdname ScenicOptions-class
 #' @export 
-initializeScenic <- function(org=NULL, dbDir="databases", datasetTitle="", nCores=4)
+initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle="", nCores=4)
 {
-  if(!org %in% c("mgi","hgnc", "dmel")) stop("'org' should be one of: mgi, hgnc, dmel.") 
-    
   inputDataset<- list(
     org=org,
     datasetTitle=datasetTitle,
@@ -307,25 +314,34 @@ initializeScenic <- function(org=NULL, dbDir="databases", datasetTitle="", nCore
     int_01=c("int/cellColorNgenes.Rds", NA)
   )
   
-  ## Default values
-  # general options
-  dbs <- NULL
-  if(!is.null(org))
+  ## Load databases
+  if(!org %in% c("mgi","hgnc", "dmel")) stop("'org' should be one of: mgi, hgnc, dmel.") 
+  defaultDBs <- FALSE
+  if(is.null(dbs))
   {
     data(defaultDbNames)
     dbs <- defaultDbNames[[org]]
-    if(any(!sapply(dbs,function(x) file.exists(file.path(dbDir, x))))) 
-    {
-      warning("RcisTarget databases not found. Please, initialize them manually.")
-      dbs <- NULL
-    }else
-    {
-      message("Motif databases selected: ", paste(dbs, collapse=", "))  
-    }
-    
   }
+  dbsFound <- unlist(unname(lapply(dbs,function(x) setNames(file.exists(file.path(dbDir, x)), unname(file.path(dbDir, x))))))
+  if(any(!dbsFound)) 
+  {
+    stop("The following RcisTarget databases were not found: ",
+            paste(paste0("\n- ", names(dbsFound[which(!dbsFound)])), collapse=" "), 
+         "\nMake sure the arguments 'dbDir' and 'dbs' are correct.")
+    dbs <- NULL
+  }else
+  {
+    message("Motif databases selected: ", 
+            paste(paste0("\n  ", dbs, collapse=" ")))  
+  }
+  loadAttempt <- sapply(dbs,function(x) dbLoadingAttempt(file.path(dbDir, x)))
+  if(any(!loadAttempt)) warning("It was not possible to load the following databses; check whether they are downloaded correctly: \n",
+                                paste(dbs[which(!loadAttempt)], collapse="\n"))
+  
   
   db_mcVersion <- dbVersion(dbs)
+  #####
+  
   scenicSettings=list(
     dbs=dbs,
     dbDir=dbDir,
@@ -413,3 +429,25 @@ dbVersion <- function(dbs)
   if(all(grepl(".mc8nr.", dbs))) dbVersion <- "v8"
   return(dbVersion)
 }
+
+#' @rdname ScenicOptions-class
+#' @export 
+dbLoadingAttempt <- function(dbFilePath){
+  ret <- FALSE
+  ret <- tryCatch({
+    md <- feather::feather_metadata(dbFilePath)
+    md$path
+    md$dim[2] == length(md$types)
+    randomCol <- sample(names(md$types),1)
+    rnk <- importRankings(dbFilePath, randomCol)
+    TRUE
+  }
+  , error=function(e){
+    print(e$message)
+    return(FALSE)
+  }
+  )
+
+  return(ret)
+}
+

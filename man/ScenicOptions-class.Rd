@@ -22,6 +22,7 @@
 \alias{loadInt,ScenicOptions-method}
 \alias{initializeScenic}
 \alias{dbVersion}
+\alias{dbLoadingAttempt}
 \title{Object to store SCENIC settings}
 \usage{
 \S4method{show}{ScenicOptions}(object)
@@ -55,10 +56,12 @@ loadInt(object, ...)
 
 \S4method{loadInt}{ScenicOptions}(object, int_type = NULL, ...)
 
-initializeScenic(org = NULL, dbDir = "databases", datasetTitle = "",
-  nCores = 4)
+initializeScenic(org = NULL, dbDir = "databases", dbs = NULL,
+  datasetTitle = "", nCores = 4)
 
 dbVersion(dbs)
+
+dbLoadingAttempt(dbFilePath)
 }
 \value{
 \itemize{
@@ -103,7 +106,9 @@ Follow the guidelines in the specific function if you need to modify a specific 
 }
 \examples{
 # Create object:
-scenicOptions <- initializeScenic(org="hgnc", datasetTitle="My dataset", dbDir="databases", nCores=4)
+data(defaultDbNames)
+scenicOptions <- initializeScenic(org="hgnc", datasetTitle="My dataset", 
+dbDir="databases", dbs=defaultDbNames[["hgnc"]], nCores=4)
 
 ### Accessor functions
 # Get output file names:
