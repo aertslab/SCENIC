@@ -11,7 +11,7 @@ The output from the examples is available at: http://scenic.aertslab.org/example
 ### News
 
 20/06/2018
-- Added function `export2scope()` (see http://scope.aertslab.org/).
+- Added function `export2scope()` (see http://scope.aertslab.org/). Version bump to 1.0.
 
 01/06/2018
 - Updated SCENIC pipeline to support the new version of RcisTarget and AUCell.
