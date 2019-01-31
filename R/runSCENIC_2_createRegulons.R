@@ -243,7 +243,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
   if(!is.null(regulonTargetsInfo_splitByAnnot[["FALSE"]]))
   {
     regulons_extended <- lapply(split(regulonTargetsInfo_splitByAnnot[["FALSE"]],regulonTargetsInfo_splitByAnnot[["FALSE"]][,"TF"]), function(x) unname(unlist(x[,"gene"])))
-    regulons_extended <- lapply(names(regulons_extended), function(tf) sort(unique(c(regulons[[tf]], unlist(regulons_extended[[tf]])))))
+    regulons_extended <- setNames(lapply(names(regulons_extended), function(tf) sort(unique(c(regulons[[tf]], unlist(regulons_extended[[tf]]))))), names(regulons_extended))
     names(regulons_extended) <- paste(names(regulons_extended), "_extended", sep="")
   }
   regulons <- c(regulons, regulons_extended)
