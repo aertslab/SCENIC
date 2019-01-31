@@ -37,10 +37,10 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, ...)
   # Check TFs
   allTFs <- getDbTfs(scenicOptions)
   
-  inputTFs <- allTFs[allTFs %in% rownames(exprMat)] # TODO check
+  inputTFs <- allTFs[allTFs %in% rownames(exprMat)] 
   percMatched <- length(inputTFs)/length(allTFs)
   if(getSettings(scenicOptions, "verbose")) message("Using ", length(inputTFs), " TFs as potential regulators...")
-  if(percMatched < .40) warning("Only ", round(percMatched*100), "% of the ", length(allTFs)," TFs in the database were found in the dataset. Do they use the same gene IDs?")
+  if(percMatched < .40) warning("Only ", round(percMatched*100), "% of the ", length(allTFs)," TFs in the database were found in the dataset. Do they use the same gene IDs?\n")
   
   # Run on subsets of genes 
   # (dividing the original gene list into 10 pieces)
