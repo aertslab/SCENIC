@@ -43,9 +43,13 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
     tmp <- sapply(strsplit(getSettings(scenicOptions, "dbs"),"-", fixed=T), function(x) x[grep("bp|kb",x)])
     if(all(lengths(tmp)>0)) names(scenicOptions@settings$"dbs") <- tmp
   }
-    
-  suppressMessages(motifRankings <- lapply(getDatabases(scenicOptions), importRankings))
-  ####################
+  
+  loadAttempt <- sapply(getDatabases(scenicOptions), dbLoadingAttempt)
+  if(any(!loadAttempt)) stop("It is not possible to load the following databses: \n",
+                                paste(dbs[which(!loadAttempt)], collapse="\n"))
+  
+  genesInDb <- unique(unlist(lapply(getDatabases(scenicOptions), function(x)
+    names(feather::feather_metadata(x)[["types"]]))))
   
   ### Filter & format co-expression modules
   # Remove genes missing from RcisTarget databases
@@ -54,7 +58,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   tfModules_asDF$Target <- as.character(tfModules_asDF$Target)
   allTFs <- getDbTfs(scenicOptions)
   tfModules_asDF <- tfModules_asDF[which(tfModules_asDF$TF %in% allTFs),]
-  geneInDb <- tfModules_asDF$Target %in% colnames(getRanking(motifRankings[[1]]))
+  geneInDb <- tfModules_asDF$Target %in% genesInDb
       missingGene <- sort(unique(tfModules_asDF[which(!geneInDb),"Target"]))
       if(length(missingGene)>0) 
         warning(paste0("Genes in co-expression modules not available in RcisTargetDatabases: ", 
@@ -68,6 +72,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   tfModules_Selected <- cbind(tfModules_Selected, geneSetName=paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_"))
   tfModules_Selected$geneSetName <- factor(as.character(tfModules_Selected$geneSetName))
   # head(tfModules_Selected)
+  allGenes <- unique(tfModules_Selected$Target)
 
   # Split into tfModules (TF-modules, with several methods)
   tfModules <- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
@@ -95,7 +100,8 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Calculating AUC")
   if(getSettings(scenicOptions, "verbose")) message(msg)
 
-  motifs_AUC <- lapply(motifRankings, function(ranking) {
+  motifs_AUC <- lapply(getDatabases(scenicOptions), function(rnkName) {
+    ranking <- importRankings(rnkName, columns=allGenes)
     message("Scoring database: ", ranking@description)
     RcisTarget::calcAUC(tfModules, ranking, aucMaxRank=0.03*getNumColsInDB(ranking), nCores=nCores, verbose=FALSE)})
   saveRDS(motifs_AUC, file=getIntName(scenicOptions, "motifs_AUC"))
@@ -140,10 +146,13 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   # 2. Prune targets
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Prunning targets")
   if(getSettings(scenicOptions, "verbose")) message(msg)
-  motifEnrichment_selfMotifs_wGenes <- lapply(names(motifRankings), function(motifDbName){
+    
+  dbNames <- getDatabases(scenicOptions)
+  motifEnrichment_selfMotifs_wGenes <- lapply(names(dbNames), function(motifDbName){
+    ranking <- importRankings(dbNames[motifDbName], columns=allGenes)
     addSignificantGenes(resultsTable=motifEnrichment_selfMotifs[motifEnrichment_selfMotifs$motifDb==motifDbName,],
                         geneSets=tfModules,
-                        rankings=motifRankings[[motifDbName]],
+                        rankings=ranking,
                         maxRank=5000, method="aprox", nCores=nCores)
   })
   
