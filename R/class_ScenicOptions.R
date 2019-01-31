@@ -439,7 +439,7 @@ dbLoadingAttempt <- function(dbFilePath){
     md$path
     md$dim[2] == length(md$types)
     randomCol <- sample(names(md$types),1)
-    rnk <- importRankings(dbFilePath, randomCol)
+    rnk <- RcisTarget::importRankings(dbFilePath, randomCol)
     TRUE
   }
   , error=function(e){
