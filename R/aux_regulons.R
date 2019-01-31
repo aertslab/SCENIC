@@ -82,6 +82,28 @@ onlyNonDuplicatedExtended <- function(regulonNames)
   return(ret)
 }
 
+#' @title selectRegulons
+#' @description Selects the regulons for the given TFs
+#' @param regulons All regulons
+#' @param tfs TFs to select
+#' @param onlyNonDuplicatedExtended Whether to filter with the function 'onlyNonDuplicatedExtended'
+#' @return The selected regulons
+#' @examples
+#' selectRegulons(regulons, c("Dlx5", "Olig2"))
+#' @export
+selectRegulons <- function(regulons, tfs, onlyNonDuplicatedExtended=FALSE)
+{
+  
+  regulonNames <- names(regulons)
+  tfs <- c(tfs, paste0(tfs, "_extended"))
+  regulonNames <- setNames(getTF(regulonNames), regulonNames)
+  selectedRegulons <- names(regulonNames[regulonNames %in%  tfs])
+  if(onlyNonDuplicatedExtended) selectedRegulons <- unname(onlyNonDuplicatedExtended(selectedRegulons))
+  
+  ret <- regulons[selectedRegulons]
+  return(ret)
+}
+
 # TODO: Test
 
 #' @title regulon_plotExpression
