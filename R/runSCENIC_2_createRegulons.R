@@ -7,6 +7,7 @@
 #' @description Step 2: RcisTarget (prune co-expression modules using TF-motif enrichment analysis)
 #' @param scenicOptions Fields used: TODO
 #' @param minGenes Minimum size of co-expression gene set (default: 20 genes)
+#' @param coexMethod Allows to select the method(s) used to generate the co-expression modules
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -17,10 +18,12 @@
 #' 
 #' runSCENIC_2_createRegulons(scenicOptions)
 #' @export
-runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
+runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NULL)
 {
-  tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
   nCores <- getSettings(scenicOptions, "nCores")
+  tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
+  if(!is.null(coexMethod)) tfModules_asDF <- tfModules_asDF[which(tfModules_asDF$method %in% coexMethod),]
+  if(nrow(tfModules_asDF)==0) stop("The co-expression modules are empty.")
   
   # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
   if("BiocParallel" %in% installed.packages()) library(BiocParallel); register(MulticoreParam(nCores), default=TRUE) 
@@ -126,7 +129,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20)
 
   ### 1.3 Keep only the motifs annotated to the initial TF
   motifEnrichment_selfMotifs <- motifEnrichment[which(motifEnrichment$TFinDB != ""),, drop=FALSE]
-  msg <- paste0("Number of motifs annotated to the corresponding TF: ", nrow(motifEnrichment_selfMotifs))
+  msg <- paste0("Number of motifs annotated to the matching TF: ", nrow(motifEnrichment_selfMotifs))
   if(getSettings(scenicOptions, "verbose")) message(msg)
   rm(motifEnrichment)
 

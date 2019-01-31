@@ -4,12 +4,15 @@
 \alias{runSCENIC_2_createRegulons}
 \title{runSCENIC_2_createRegulons}
 \usage{
-runSCENIC_2_createRegulons(scenicOptions, minGenes = 20)
+runSCENIC_2_createRegulons(scenicOptions, minGenes = 20,
+  coexMethod = NULL)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}
 
 \item{minGenes}{Minimum size of co-expression gene set (default: 20 genes)}
+
+\item{coexMethod}{Allows to select the method(s) used to generate the co-expression modules}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'

@@ -46,6 +46,7 @@ scenicOptions:
 setwd("SCENIC_MouseBrain")
 scenicOptions <- readRDS("int/scenicOptions.Rds")
 minGenes=20
+coexMethod=NULL
 ```
 
 
@@ -53,8 +54,10 @@ minGenes=20
 
 ## Load co-expression modules and databases:
 ```{r, eval=FALSE}
-tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
 nCores <- getSettings(scenicOptions, "nCores")
+tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
+if(!is.null(coexMethod)) tfModules_asDF <- tfModules_asDF[which(tfModules_asDF$method %in% coexMethod),]
+if(nrow(tfModules_asDF)==0) stop("The co-expression modules are empty.")
 
 # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
 if("BiocParallel" %in% installed.packages()) library(BiocParallel); register(MulticoreParam(nCores), default=TRUE) 
