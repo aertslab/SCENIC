@@ -81,26 +81,32 @@ SCENIC is based on three R packages:
 Therefore, you will need to install these three packages, and some extra dependencies, to run SCENIC:
 
 ```{r install, eval=FALSE}
-source("https://bioconductor.org/biocLite.R")
-biocLite(c("GENIE3", "RcisTarget", "AUCell"))
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+BiocManager::install(c("GENIE3", "AUCell", "RcisTarget"), version = "3.8")
+# Also required:
+install.packages('zoo')
 
 # Recommended to run AUCell:
-biocLite(c("mixtools"))
+BiocManager::install(c("mixtools"))
 # To visualize the binary matrices and perform t-SNEs:
-biocLite(c("NMF", "Rtsne", "R2HTML"))
-# To support paralell execution:
-biocLite(c("doMC", "doRNG"))
-# To visualize in http://scope.aertslab.org
-install.packages("devtools")
+BiocManager::install(c("NMF", "Rtsne", "R2HTML"))
+# To support paralell execution (not available in Windows):
+BiocManager::install(c("doMC", "doRNG"))
+# To export/visualize in http://scope.aertslab.org
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
+
+# Other dependencies for the examples (lower priority)
+BiocManager::install(c("SingleCellExperiment"))
 ```
 
-AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions:
-**AUCell>=1.2.4**, **RcisTarget>=1.0.2**, and **GENIE3>=1.2.1**.
+AUCell and RcisTarget were updated recently (May 2018/Jan 2019). Please, make sure you have the recommended versions:
+**AUCell >=1.4.1** (minimum 1.2.4), **RcisTarget>=1.2.0** (minimum 1.0.2), and **GENIE3>=1.4.0** (minimum 1.2.1).
 
 ```{r versions, eval=FALSE}
 packageVersion("AUCell")
 packageVersion("RcisTarget")
+packageVersion("GENIE3")
 ```
 
 In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
@@ -236,13 +242,14 @@ Here we use a `SingleCellExperiment`, but a `SummarizedExperiment`, `ExpressionS
 exprMatrix <- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
 dim(exprMatrix)
 
+SingleCellExperiment
 library(SingleCellExperiment)
 sceMouseBrain <- SingleCellExperiment(assays = list(counts = exprMatrix),
 colData=data.frame(cellLabels[colnames(exprMatrix),, drop=FALSE]))
 
 # setwd("SCENIC_MouseBrain")
 dir.create("data")
-save(sceMouseBrain, file="data/sceMouseBrain.RData")
+saveRDS(sceMouseBrain, file="data/sceMouseBrain.Rds")
 ```
 
 # References
