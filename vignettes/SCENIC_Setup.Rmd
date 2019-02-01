@@ -87,7 +87,7 @@ BiocManager::install(c("GENIE3", "AUCell", "RcisTarget"), version = "3.8")
 install.packages('zoo')
 
 # Recommended to run AUCell:
-BiocManager::install(c("mixtools"))
+BiocManager::install(c("mixtools", "rbokeh"))
 # To visualize the binary matrices and perform t-SNEs:
 BiocManager::install(c("NMF", "Rtsne", "R2HTML"))
 # To support paralell execution (not available in Windows):
@@ -119,7 +119,8 @@ install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GEN
 You are now ready to install SCENIC:
 ```{r installSCENIC, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("aertslab/SCENIC")
+devtools::install_github("aertslab/SCENIC") # 
+packageVersion("SCENIC")
 ```
 
 ## Species-specific databases
