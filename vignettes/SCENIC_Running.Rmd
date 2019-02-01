@@ -29,7 +29,7 @@ suppressPackageStartupMessages({
 })
 
 # To build a personalized report, update this working directory:
-knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
+knitr::opts_knit$set(root.dir = 'SCENIC_mouseBrain')
 ```
 
 # SCENIC workflow
@@ -71,14 +71,23 @@ The main output (i.e. plots, HTML reports,... ) will be saved into the `output` 
 ## Expression matrix
 
 Single-cell RNA-seq expression matrix (with gene-symbol as `rownames`, see the `vignette("SCENIC_Setup")` for details).
+
+For tests (quick runs) this subset with only 200 cells and ~1800 genes is included in the package:
+`exprMatPath <- system.file(package="SCENIC", "examples/sceMouseBrain_mini.Rds")`
+
 ```{r loadExprMat}
 # setwd("SCENIC_MouseBrain")
 # optional: system("ln -s /path/to/file/sceMouseBrain.RData ../data/")
+exprMatPath <- "data/sceMouseBrain.RData"
+
 library(SingleCellExperiment)
-load("data/sceMouseBrain.RData")
+sceMouseBrain <- readRDS(exprMatPath)
 exprMat <- counts(sceMouseBrain)
 dim(exprMat)
 ```
+
+
+
 
 ## Cell info
 In Step 3-4 (scoring the GRN and clustering), you can plot some information about the cells on the heatmaps or t-SNE. You can choose which variables from the phenodata to plot, and assign them a specific color (otherwise one will be assigned automatically):
@@ -112,11 +121,11 @@ For details on the options that can be modified check the help of `?initializeSc
 ```{r chooseOrg}
 library(SCENIC)
 org="mgi" # or hgnc, or dmel
-dbDir="databases" # RcisTarget databases location
+dbDir="cisTarget_databases" # RcisTarget databases location
 myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
 data(defaultDbNames)
 dbs <- defaultDbNames[[org]]
-scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=10) 
+scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=5) 
 
 # Modify if needed
 scenicOptions@inputDatasetInfo$cellInfo <- "int/cellInfo.Rds"
@@ -171,6 +180,7 @@ Before proceeding to the network inference, check whether any known relevant gen
 
 ```{r checkMissingGenes}
 interestingGenes <- c("Neurod1", "Sox10", "Dlx1")
+# any missing?
 interestingGenes[which(!interestingGenes %in% genesKept)]
 ```
 
@@ -212,14 +222,14 @@ GENIE3 will typically take several hours (or days) to run. If you are running th
 
 
 ```{r genie3, eval=FALSE}
-# setwd("SCENIC_MouseBrain")
-# library(SCENIC)
-# scenicOptions <- readRDS("int/scenicOptions.Rds")
+## setwd("SCENIC_MouseBrain")
 # library(SingleCellExperiment)
-# load("data/sceMouseBrain.RData")
+# sceMouseBrain <- readRDS(exprMatPath)
 # exprMat <- counts(sceMouseBrain)
 # genesKept <- loadInt(scenicOptions, "genesKept")
 # exprMat_filtered <- exprMat[genesKept,]
+# library(SCENIC)
+# scenicOptions <- readRDS("int/scenicOptions.Rds")
 
 # Optional: add log (if it is not logged/normalized already)
 exprMat_filtered <- log2(exprMat_filtered+1) 
@@ -229,7 +239,7 @@ runGenie3(exprMat_filtered, scenicOptions)
 ```
 
 
-## Option B: GRNboost (Python)
+## Option B: GRNboost (Python)  - TODO: remove
 
 The input to GRNBoost is the filtered expression matrix (transposed), and a list of candidate regulators. 
 `exportsForGRNBoost` export these objects as text to import from GRNBoost:
@@ -242,13 +252,9 @@ exprMat_filtered <- log2(exprMat_filtered+1)
 exportsForGRNBoost(exprMat_filtered, scenicOptions)
 ```
 
-We are now ready to run GRNBoost. You can find the tutorial with some examples in  https://arboreto.readthedocs.io/en/latest/examples.html. Once it has finished running, you can import the output from GRNBoost back to R with: 
+We are now ready to run GRNBoost. You can find the tutorial with some examples in  https://arboreto.readthedocs.io/en/latest/examples.html. Once it has finished running, you can import the output from GRNBoost back to R following the tutorial `vignette("detailedStep_1_coexNetwork2modules")` (starting from a "linkList", you might need to adjust the weight thresholds).
 
-```{r importGRNBoost, eval=FALSE}
-importGRNBoostResults()  # TODO (Not implemented yet!)
-```
-
-# Build and score the GRN (runSCENIC)
+# Build and score the GRN (runSCENIC_...)
 
 Once the results from GENIE3/GRNBoost (and the correlation) are ready, the remaining steps of SCENIC can be run. 
 
@@ -268,7 +274,7 @@ Detailed tutorials/notebooks explaining these functions in detail are also avail
 Re-load the expression matrix if necessary: 
 ```{r loadData2}
 # setwd("SCENIC_MouseBrain")
-load("data/sceMouseBrain.RData")
+sceMouseBrain <- readRDS(exprMatPath)
 exprMat <- counts(sceMouseBrain) 
 # Optional: log expression (for TF expression plot, it does not affect any other calculation)
 exprMat <- log2(exprMat+1)
@@ -280,18 +286,19 @@ Run the remaining steps using the *wrapper* functions:
 library(SCENIC)
 scenicOptions <- readRDS("int/scenicOptions.Rds")
 scenicOptions@settings$verbose <- TRUE
-scenicOptions@settings$nCores <- 20
+scenicOptions@settings$nCores <- 10
 scenicOptions@settings$seed <- 123
 
 runSCENIC_1_coexNetwork2modules(scenicOptions)
-runSCENIC_2_createRegulons(scenicOptions)
+runSCENIC_2_createRegulons(scenicOptions) # , coexMethod = "top5perTarget"
 runSCENIC_3_scoreCells(scenicOptions, exprMat)
 ```
 
-## Optional: Creating/comparing t-SNEs
+# Optional steps:
+## Creating/comparing t-SNEs
 
 The cells can now be grouped based on the AUC (*See the section below "Exploring > Cell states" for details*). 
-Since we use t-SNE as visualization, it is recommended to try different clustering/t-SNE settings to evaluate the stability of the states. 
+Since we use t-SNE as visualization, it is recommended to try different clustering/t-SNE settings to evaluate the stability of the states. Feel free to use UMAP (or trajectory inference methods, if appropriate) instead.
 
 With this function multiple t-SNEs can be run with different settings. It will create all combinations between the selected "number of PCs" and "perplexity" (expected *running time*: few minutes to hours, depending on the number of cells): 
 ```{r altTsnes, eval=FALSE}
@@ -326,7 +333,7 @@ scenicOptions@settings$defaultTsne$perpl <- 50
 saveRDS(scenicOptions, file="int/scenicOptions.Rds") 
 ```
 
-## Optional: Binarize the network activity (regulon *on/off*)
+## Binarize the network activity (regulon *on/off*)
 
 Building the GRN and scoring its activity in AUCell is often enough for datasets with very clear cell types. However, in many cases it is also useful to binarize the activity score into "on/off"; either for easier interpretation, or for maximizing the differences across cell types. This is specially useful to reduce technical biases (e.g. number of detected genes, batch effects), or the grouping by sample of origin in cancer datasets (see [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463)).
 
@@ -375,7 +382,7 @@ Note however, that t-SNE works well to identify distinct classes, but it is not 
 AUCell's interactive app *(for [SCope](http://scope.aertslab.org), see section "Export to loom/SCope")*:
 ```{r aucellApp2, eval=FALSE}
 logMat <- exprMat # Better if it is logged/normalized
-aucellApp <- plotTsne_AUCellApp(scenicOptions, logMat) #default t-SNE
+aucellApp <- plotTsne_AUCellApp(scenicOptions, logMat) # default t-SNE
 savedSelections <- shiny::runApp(aucellApp)
 ```
 
@@ -475,7 +482,7 @@ The `.loom` file can be created with the function `export2scope()`. This functio
 # DGEM (Digital gene expression matrix)
 # (non-normalized counts)
 library(SingleCellExperiment)
-load("data/sceMouseBrain.RData")
+sceMouseBrain <- readRDS(exprMatPath)
 dgem <- counts(sceMouseBrain)
 head(colnames(dgem))  #should contain the Cell ID/name
 
