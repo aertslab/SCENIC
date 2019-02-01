@@ -178,7 +178,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
       fileName <- basename(fileName)
       suppressWarnings(DT::saveWidget(motifEnrichment_2html, fileName))
       file.rename(fileName, file.path(dirName, fileName))
-      if(getSettings(scenicOptions, "verbose")) message("Preview of motif enrichment saved as: ", file.path(dirName, fileName))
+      if(getSettings(scenicOptions, "verbose")) message("\tPreview of motif enrichment saved as: ", file.path(dirName, fileName))
     }, error = function(e) print(e$message))
   }
   
@@ -186,7 +186,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   if(getSettings(scenicOptions, "verbose")) 
   {
     # TODO messages/print
-    message("Number of motifs that support the regulons: ", nrow(motifEnrichment_selfMotifs_wGenes))
+    message(format(Sys.time(), "%H:%M"), "Number of motifs that support the regulons: ", nrow(motifEnrichment_selfMotifs_wGenes))
     motifEnrichment_selfMotifs_wGenes[order(motifEnrichment_selfMotifs_wGenes$NES,decreasing=TRUE),][1:5,(1:ncol(motifEnrichment_selfMotifs_wGenes)-1), with=F] 
   }
 
