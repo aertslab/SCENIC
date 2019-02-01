@@ -111,7 +111,13 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   }
   ####################################################################
   # Plots
+  msg <- paste0(format(Sys.time(), "%H:%M"), "\nFinished running AUCell.")
+  if(getSettings(scenicOptions, "verbose")) message(msg)
+  
   if(!skipHeatmap){
+    msg <- paste0(format(Sys.time(), "%H:%M"), "\nPlotting heatmap...")
+    if(getSettings(scenicOptions, "verbose")) message(msg)
+    
     nCellsHeatmap <- min(500, ncol(regulonAUC))
     cells2plot <- sample(colnames(regulonAUC), nCellsHeatmap)
     
@@ -133,6 +139,9 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   ####################################################################
   # Plots
   if(!skipTsne){
+    msg <- paste0(format(Sys.time(), "%H:%M"), "\nPlotting t-SNEs...")
+    if(getSettings(scenicOptions, "verbose")) message(msg)
+    
     tSNE_fileName <- tsneAUC(scenicOptions, aucType="AUC", onlyHighConf=FALSE) # default: nPcs, perpl, seed, tsne prefix
     tSNE <- readRDS(tSNE_fileName)
     
