@@ -248,6 +248,13 @@ motifEnrichment_selfMotifs_wGenes <- lapply(names(dbNames), function(motifDbName
 suppressPackageStartupMessages(library(data.table))
 motifEnrichment_selfMotifs_wGenes <- rbindlist(motifEnrichment_selfMotifs_wGenes)
 saveRDS(motifEnrichment_selfMotifs_wGenes, file=getIntName(scenicOptions, "motifEnrichment_selfMotifs_wGenes"))
+
+if(getSettings(scenicOptions, "verbose")) 
+{
+  # TODO messages/print
+  message(format(Sys.time(), "%H:%M"), "\tNumber of motifs that support the regulons: ", nrow(motifEnrichment_selfMotifs_wGenes))
+  motifEnrichment_selfMotifs_wGenes[order(motifEnrichment_selfMotifs_wGenes$NES,decreasing=TRUE),][1:5,(1:ncol(motifEnrichment_selfMotifs_wGenes)-1), with=F] 
+}
 ```
 
 Save motif enrichment results as text and HTML (optional):
@@ -276,12 +283,6 @@ if("DT" %in% installed.packages() && nrow(motifEnrichment_selfMotifs_wGenes)>0)
     file.rename(fileName, file.path(dirName, fileName))
     if(getSettings(scenicOptions, "verbose")) message("Preview of motif enrichment saved as: ", file.path(dirName, fileName))
   }, error = function(e) print(e$message))
-}
-
-if(getSettings(scenicOptions, "verbose")) 
-{
-  message("Number of motifs that support the regulons: ", nrow(motifEnrichment_selfMotifs_wGenes))
-  motifEnrichment_selfMotifs_wGenes[order(motifEnrichment_selfMotifs_wGenes$NES,decreasing=TRUE),][1:5,(1:ncol(motifEnrichment_selfMotifs_wGenes)-1), with=F] 
 }
 ```
 
