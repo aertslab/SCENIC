@@ -42,9 +42,9 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tStep 3. Analyzing the network activity in each individual cell")
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
-  msg <- paste0("\nNumber of regulons to evaluate on cells: ", length(regulons),
+  msg <- paste0("\tNumber of regulons to evaluate on cells: ", length(regulons),
                 "\nBiggest (non-extended) regulons: \n",
-                paste("\t", grep("_extended",names(regulons),invert = T, value = T)[1:10], collapse="\n")) # TODO maxlen?
+                paste("\t", grep("_extended",names(regulons),invert = T, value = T)[1:min(length(regulons),10)], collapse="\n")) # TODO maxlen?
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
   ################################################################
@@ -111,11 +111,11 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   }
   ####################################################################
   # Plots
-  msg <- paste0(format(Sys.time(), "%H:%M"), "\nFinished running AUCell.")
+  msg <- paste0(format(Sys.time(), "%H:%M"), "\tFinished running AUCell.")
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
   if(!skipHeatmap){
-    msg <- paste0(format(Sys.time(), "%H:%M"), "\nPlotting heatmap...")
+    msg <- paste0(format(Sys.time(), "%H:%M"), "\tPlotting heatmap...")
     if(getSettings(scenicOptions, "verbose")) message(msg)
     
     nCellsHeatmap <- min(500, ncol(regulonAUC))
@@ -139,7 +139,7 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   ####################################################################
   # Plots
   if(!skipTsne){
-    msg <- paste0(format(Sys.time(), "%H:%M"), "\nPlotting t-SNEs...")
+    msg <- paste0(format(Sys.time(), "%H:%M"), "\tPlotting t-SNEs...")
     if(getSettings(scenicOptions, "verbose")) message(msg)
     
     tSNE_fileName <- tsneAUC(scenicOptions, aucType="AUC", onlyHighConf=FALSE) # default: nPcs, perpl, seed, tsne prefix

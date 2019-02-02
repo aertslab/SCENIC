@@ -125,7 +125,7 @@ dbDir="cisTarget_databases" # RcisTarget databases location
 myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
 data(defaultDbNames)
 dbs <- defaultDbNames[[org]]
-scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=5) 
+scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=10) 
 
 # Modify if needed
 scenicOptions@inputDatasetInfo$cellInfo <- "int/cellInfo.Rds"
@@ -179,7 +179,7 @@ genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
 Before proceeding to the network inference, check whether any known relevant genes are filtered-out (if any relevant gene is missing, double-check whether the filters are appropiate): 
 
 ```{r checkMissingGenes}
-interestingGenes <- c("Neurod1", "Sox10", "Dlx1")
+interestingGenes <- c("Neurod1", "Sox10", "Dlx5")
 # any missing?
 interestingGenes[which(!interestingGenes %in% genesKept)]
 ```
@@ -393,7 +393,7 @@ aucell_regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
 
 # Show TF expression:
 par(mfrow=c(2,3))
-AUCell::AUCell_plotTSNE(tSNE_scenic$Y, exprMat, aucell_regulonAUC[onlyNonDuplicatedExtended(rownames(aucell_regulonAUC))[c("Dlx1", "Sox10", "Neurod1", "Sox9","Irf1", "Maf")],], plots="Expression")
+AUCell::AUCell_plotTSNE(tSNE_scenic$Y, exprMat, aucell_regulonAUC[onlyNonDuplicatedExtended(rownames(aucell_regulonAUC))[c("Dlx5", "Sox10", "Sox9","Irf1", "Stat6")],], plots="Expression")
 ```
 
 ```{r tsneAUC_overview, eval=FALSE}
