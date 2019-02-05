@@ -9,8 +9,8 @@
 #' setwd("SCENIC_MouseBrain")
 #' scenicOptions <- readRDS("int/scenicOptions.Rds")
 #' 
-#' load("data/sceMouseBrain.RData")
-#' exprMat <- counts(sceMouseBrain)
+#' loomPath <- system.file(package="SCENIC", "examples/mouseBrain_toy.loom")
+#' exprMat <- SCopeLoomR::get_dgem(SCopeLoomR::open_loom(loomPath))
 #' 
 #' genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
 #'                            minCountsPerGene=3*.01*ncol(exprMat),
