@@ -54,6 +54,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   {
     cellInfo <- data.frame(cellInfo)
     cellInfo <- cellInfo[,colnames(cellInfo) != "nGene", drop=FALSE]
+    cellInfo <- cellInfo[,colnames(cellInfo) != "nUMI", drop=FALSE]
   
     # Add annotation
     for(cn in colnames(cellInfo))
@@ -69,6 +70,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   # Regulons (gene list)
   regulons <- loadInt(scenicOptions, "aucell_regulons")
   motifEnrichment <- loadInt(scenicOptions, "motifEnrichment_selfMotifs_wGenes")
+  motifEnrichment <- motifEnrichment[grep("transfac_pro__", motifEnrichment[["motif"]], invert = T),] #TODO
   regulonThresholds <- loadInt(scenicOptions, "aucell_thresholds")
   add_scenic_regulons(loom=loom
                       , regulons=regulons
