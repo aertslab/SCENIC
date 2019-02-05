@@ -174,10 +174,8 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   if("DT" %in% installed.packages() && nrow(motifEnrichment_selfMotifs_wGenes)>0)
   {
     nvm <- tryCatch({
-      motifEnrichment_2html <- RcisTarget::addLogo(motifEnrichment_selfMotifs_wGenes)
       colsToShow <- c("motifDb", "logo", "NES", "geneSet", "TF_highConf", "TF_lowConf")
-      
-      motifEnrichment_2html <- DT::datatable(motifEnrichment_2html[,colsToShow, with=F], escape=FALSE, filter="top")
+      motifEnrichment_2html <- viewMotifs(motifEnrichment_selfMotifs_wGenes, colsToShow=colsToShow, options=list(pageLength=100))
       
       fileName <- getOutName(scenicOptions, "s2_motifEnrichmentHtml")
       
