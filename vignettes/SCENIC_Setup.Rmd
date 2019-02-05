@@ -111,15 +111,20 @@ packageVersion("GENIE3")
 
 In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
 ```{r alternativeDownload, eval=FALSE}
+# Github:
+devtools::install_github("aertslab/AUCell")
+devtools::install_github("aertslab/RcisTarget")
+devtools::install_github("aertslab/GENIE3")
+# Bioconductor
 install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.0.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.1.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.3.tar.gz", repos=NULL)
 ```
 
 You are now ready to install SCENIC:
 ```{r installSCENIC, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("aertslab/SCENIC") # 
+devtools::install_github("aertslab/SCENIC", ref="v1.1.0")
 packageVersion("SCENIC")
 ```
 
