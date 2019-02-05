@@ -117,9 +117,8 @@ selectRegulons <- function(regulons, tfs, onlyNonDuplicatedExtended=FALSE)
 #' @param ... Other arguments to pass to \code{NMF::aheatmap}
 #' @return Plots the heatmap
 #' @examples 
-#' library(SingleCellExperiment)
-#' load("data/sceMouseBrain.RData")
-#' exprMat <- counts(sceMouseBrain) # normalized preferred
+#' loomPath <- system.file(package="SCENIC", "examples/mouseBrain_toy.loom")
+#' exprMat <- SCopeLoomR::get_dgem(SCopeLoomR::open_loom(loomPath)) # normalized preferred
 #' dim(exprMat)
 #' 
 #' cellInfo <- data.frame(loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo")))

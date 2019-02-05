@@ -30,9 +30,8 @@ Plots the heatmap
 Plots the expression of the genes in the regulon (as heatmap)
 }
 \examples{
-library(SingleCellExperiment)
-load("data/sceMouseBrain.RData")
-exprMat <- counts(sceMouseBrain) # normalized preferred
+loomPath <- system.file(package="SCENIC", "examples/mouseBrain_toy.loom")
+exprMat <- SCopeLoomR::get_dgem(SCopeLoomR::open_loom(loomPath)) # normalized preferred
 dim(exprMat)
 
 cellInfo <- data.frame(loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo")))
