@@ -84,12 +84,13 @@ The motif enrichment results provided by pySCENIC are in a slightly different fo
 ```{r motifEnrichment}
 # Read table
 motifsDf <- data.table::fread(file.path(pyScenicDir, "motifs.tsv"), header = T, sep="\t")
+maxRows <- 20 # (low value only for the tutorial)
 
 # Visualize
-motifsDf <- RcisTarget::addLogo(motifsDf, motifCol="MotifID")
-motifsDf[,c("NES","AUC", "MotifSimilarityQvalue")] <- signif(motifsDf[,c("NES","AUC", "MotifSimilarityQvalue")],2)
+tableSubset <- motifsDf[TF=="Dlx5"]
+tableSubset <- tableSubset[1:maxRows,] 
 colsToShow <- colnames(motifsDf)[-c(9:11)]
-DT::datatable(motifsDf[TF=="Dlx5", colsToShow, with=F], escape=FALSE, filter="top")
+viewMotifs(tableSubset, colsToShow=colsToShow)
 ```
 
 # GRNBoost/GENIE3 results
