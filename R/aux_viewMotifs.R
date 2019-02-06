@@ -35,25 +35,32 @@ viewMotifs <- function(tableSubset,
     motifCol <- motifCol[which(motifCol %in% colnames(tableSubset))]
     if(length(motifCol) == 1){
       tableSubset <- RcisTarget::addLogo(tableSubset, motifCol=motifCol, addHTML = TRUE)
-      colsToShow <- c("logo", colsToShow)
+      if(!is.null(colsToShow)) colsToShow <- c("logo", colsToShow)
     }else{
       stop("Please indicate the column containing the motif id (argument 'motifCol') or set it to NULL.")
     }
+    # TODO 
+    tableSubset <- tableSubset[grep("transfac_pro__", tableSubset[[motifCol]], invert = T),]
   }
  
   # For numeric columns, show only the number of significant digits...
   for(i in which(sapply(tableSubset, is.numeric))){
     tableSubset[[i]] <- signif(tableSubset[[i]], nSignif)
   }
-  # TODO 
-  tableSubset <- tableSubset[grep("transfac_pro__", tableSubset[[motifCol]], invert = T),]
 
   # Keep only requested columns
-  colsToShow <- unique(unname(unlist(colsToShow)))
-  colsToShow <- colsToShow[which(colsToShow %in% colnames(tableSubset))]
-  tableSubset <- tableSubset[, colsToShow, with=F]
-  
+  if(!is.null(colsToShow)) {
+    colsToShow <- unique(unname(unlist(colsToShow)))
+    colsToShow <- colsToShow[which(colsToShow %in% colnames(tableSubset))]
+    tableSubset <- tableSubset[, colsToShow, with=F]
+  }
+
   # create...
   DT::datatable(tableSubset, 
               escape=FALSE, filter="top", options=options)#, ...)
+}
+
+#' @export
+viewTable <- function(tableSubset, motifCol=NULL, nSignif=3, colsToShow=NULL, options=list(pageLength=50),...){
+  viewMotifs( tableSubset=tableSubset, motifCol=motifCol, nSignif=nSignif, colsToShow=colsToShow, options=options, ...)  
 }
