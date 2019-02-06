@@ -97,4 +97,5 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   }
   
   finalize(loom=loom)
+  if(getSettings(scenicOptions, "verbose")) message("Loom file saved as:\t", fileName)
 }

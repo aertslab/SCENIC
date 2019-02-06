@@ -372,7 +372,7 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
       s4_binaryActivityHeatmap="output/Step4_BinaryRegulonActivity_Heatmap_",
       s4_binarytSNE_colAct="output/Step4_BinaryRegulonActivity_tSNE_colByActivity",
       s4_binarytSNE_colProps="output/Step4_BinaryRegulonActivity_tSNE_colByCellProps",
-      loomFile="scenic.loom"
+      loomFile="output/scenic.loom"
     ),
     
     int=list(
