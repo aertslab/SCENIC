@@ -89,7 +89,7 @@ install.packages('zoo')
 # Recommended to run AUCell:
 BiocManager::install(c("mixtools", "rbokeh"))
 # To visualize the binary matrices and perform t-SNEs:
-BiocManager::install(c("NMF", "Rtsne", "R2HTML"))
+BiocManager::install(c("NMF", "pheatmap", "Rtsne", "R2HTML"))
 # To support paralell execution (not available in Windows):
 BiocManager::install(c("doMC", "doRNG"))
 # To export/visualize in http://scope.aertslab.org
