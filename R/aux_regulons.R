@@ -84,23 +84,26 @@ onlyNonDuplicatedExtended <- function(regulonNames)
 
 #' @title selectRegulons
 #' @description Selects the regulons for the given TFs
-#' @param regulons All regulons
+#' @param regulons Regulons (list) or regulonAUC object
 #' @param tfs TFs to select
 #' @param onlyNonDuplicatedExtended Whether to filter with the function 'onlyNonDuplicatedExtended'
 #' @return The selected regulons
 #' @examples
 #' selectRegulons(regulons, c("Dlx5", "Olig2"))
+#' selectRegulons(regulonAUC, "Tef")
 #' @export
 selectRegulons <- function(regulons, tfs, onlyNonDuplicatedExtended=FALSE)
 {
-  
   regulonNames <- names(regulons)
+  
   tfs <- c(tfs, paste0(tfs, "_extended"))
   regulonNames <- setNames(getTF(regulonNames), regulonNames)
   selectedRegulons <- names(regulonNames[regulonNames %in%  tfs])
   if(onlyNonDuplicatedExtended) selectedRegulons <- unname(onlyNonDuplicatedExtended(selectedRegulons))
   
-  ret <- regulons[selectedRegulons]
+  if(class(regulons)=="aucellResults") ret <- regulons[selectedRegulons,]
+  if(class(regulons)=="list") ret <- regulons[selectedRegulons]
+  
   return(ret)
 }
 
@@ -131,7 +134,7 @@ selectRegulons <- function(regulons, tfs, onlyNonDuplicatedExtended=FALSE)
 #' @export
 regulon_plotExpression <- function(exprMat, regulonsSelected, nCells=500, 
                                    cellInfo=NULL, colVars=NULL, color=c("black","goldenrod","yellow"), ...)
-{
+{f
   cells2plot <- sample(colnames(exprMat), nCells)
   if(!is.null(cellInfo)) cellInfo <- cellInfo[cells2plot,, drop=FALSE]
   
