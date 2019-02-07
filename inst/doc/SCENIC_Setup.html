@@ -10,7 +10,6 @@
 
 
 
-<meta name="date" content="2019-01-29" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -193,11 +192,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>29 January 2019</em></h4>
+<h4 class="date"><em>7 February 2019</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 1.1.1.1</p>
+<p>SCENIC 1.1.1.9</p>
 
 </div>
 
@@ -261,28 +260,40 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 <li><p><em><a href="http://bioconductor.org/packages/AUCell">AUCell</a></em> to identify cells with active gene sets (gene-network) in scRNA-seq data</p></li>
 </ol>
 <p>Therefore, you will need to install these three packages, and some extra dependencies, to run SCENIC:</p>
-<pre class="r"><code>source(&quot;https://bioconductor.org/biocLite.R&quot;)
-biocLite(c(&quot;GENIE3&quot;, &quot;RcisTarget&quot;, &quot;AUCell&quot;))
+<pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE)) install.packages(&quot;BiocManager&quot;)
+BiocManager::install(c(&quot;GENIE3&quot;, &quot;AUCell&quot;, &quot;RcisTarget&quot;), version = &quot;3.8&quot;)
+# Also required:
+install.packages('zoo')
 
 # Recommended to run AUCell:
-biocLite(c(&quot;mixtools&quot;))
+BiocManager::install(c(&quot;mixtools&quot;, &quot;rbokeh&quot;))
 # To visualize the binary matrices and perform t-SNEs:
-biocLite(c(&quot;NMF&quot;, &quot;Rtsne&quot;, &quot;R2HTML&quot;))
-# To support paralell execution:
-biocLite(c(&quot;doMC&quot;, &quot;doRNG&quot;))
-# To visualize in http://scope.aertslab.org
-install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)</code></pre>
-<p>AUCell and RcisTarget were updated recently (May 2018). Please, make sure you have the correct versions: <strong>AUCell&gt;=1.2.4</strong>, <strong>RcisTarget&gt;=1.0.2</strong>, and <strong>GENIE3&gt;=1.2.1</strong>.</p>
+BiocManager::install(c(&quot;NMF&quot;, &quot;pheatmap&quot;, &quot;Rtsne&quot;, &quot;R2HTML&quot;))
+# To support paralell execution (not available in Windows):
+BiocManager::install(c(&quot;doMC&quot;, &quot;doRNG&quot;))
+# To export/visualize in http://scope.aertslab.org
+if (!requireNamespace(&quot;devtools&quot;, quietly = TRUE)) install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)
+
+# Other dependencies for the examples (lower priority)
+BiocManager::install(c(&quot;SingleCellExperiment&quot;))</code></pre>
+<p>AUCell and RcisTarget were updated recently (May 2018/Jan 2019). Please, make sure you have the recommended versions: <strong>AUCell &gt;=1.4.1</strong> (minimum 1.2.4), <strong>RcisTarget&gt;=1.2.0</strong> (minimum 1.0.2), and <strong>GENIE3&gt;=1.4.0</strong> (minimum 1.2.1).</p>
 <pre class="r"><code>packageVersion(&quot;AUCell&quot;)
-packageVersion(&quot;RcisTarget&quot;)</code></pre>
+packageVersion(&quot;RcisTarget&quot;)
+packageVersion(&quot;GENIE3&quot;)</code></pre>
 <p>In case you have trobule installing the packages with <code>biocLite</code> (for example, if you don’t have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:</p>
-<pre class="r"><code>install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.0.tar.gz&quot;, repos=NULL)</code></pre>
+<pre class="r"><code># Github:
+devtools::install_github(&quot;aertslab/AUCell&quot;)
+devtools::install_github(&quot;aertslab/RcisTarget&quot;)
+devtools::install_github(&quot;aertslab/GENIE3&quot;)
+# Bioconductor
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz&quot;, repos=NULL)
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.1.tar.gz&quot;, repos=NULL)
+install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.3.tar.gz&quot;, repos=NULL)</code></pre>
 <p>You are now ready to install SCENIC:</p>
 <pre class="r"><code># install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCENIC&quot;)</code></pre>
+devtools::install_github(&quot;aertslab/SCENIC&quot;, ref=&quot;v1.1.0&quot;)
+packageVersion(&quot;SCENIC&quot;)</code></pre>
 <div id="species-specific-databases" class="section level2">
 <h2>Species-specific databases</h2>
 <p>In addition to the R-packages, you will also need to download the species-specific databases for RcisTarget (the motif rankings). The links to all the available databases are available in <a href="https://resources.aertslab.org/cistarget/">our website</a>. By default, SCENIC uses the databases that score the motifs in the promoter of the genes (up to 500bp upstream the TSS), and in the 20kb around the TSS (+/-10kbp).</p>
@@ -369,16 +380,18 @@ cellLabels &lt;- read.table(cellLabels, row.names=1, header=TRUE, sep=&quot;\t&q
 cellLabels &lt;- as.data.frame(cellLabels)
 colnames(cellLabels) &lt;- &quot;CellType&quot;</code></pre>
 <p>Finally, this information can be merged into a single Bioconductor object. Here we use a <code>SingleCellExperiment</code>, but a <code>SummarizedExperiment</code>, <code>ExpressionSet</code> or similar classes would also be valid. You might just need to adjust the accessor functions <code>colData()</code>, and <code>counts()</code> in the next steps.</p>
-<pre class="r"><code>exprMatrix &lt;- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
+<pre class="r"><code># TODO: Change to loom file
+exprMatrix &lt;- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
 dim(exprMatrix)
 
+SingleCellExperiment
 library(SingleCellExperiment)
 sceMouseBrain &lt;- SingleCellExperiment(assays = list(counts = exprMatrix),
 colData=data.frame(cellLabels[colnames(exprMatrix),, drop=FALSE]))
 
 # setwd(&quot;SCENIC_MouseBrain&quot;)
 dir.create(&quot;data&quot;)
-save(sceMouseBrain, file=&quot;data/sceMouseBrain.RData&quot;)</code></pre>
+saveRDS(sceMouseBrain, file=&quot;data/sceMouseBrain.Rds&quot;)</code></pre>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>

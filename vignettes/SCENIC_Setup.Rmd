@@ -35,7 +35,7 @@ library(SingleCellExperiment)
 options(stringsAsFactors=FALSE)
 
 # To build a personalized report, update this working directory:
-knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
+# knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
 ```
 
 # Introduction to SCENIC
@@ -245,6 +245,7 @@ colnames(cellLabels) <- "CellType"
 Finally, this information can be merged into a single Bioconductor object.
 Here we use a `SingleCellExperiment`, but a `SummarizedExperiment`, `ExpressionSet` or similar classes would also be valid. You might just need to adjust the accessor functions `colData()`, and `counts()` in the next steps.
 ```{r createEset, warning=FALSE, eval=FALSE}
+# TODO: Change to loom file
 exprMatrix <- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
 dim(exprMatrix)
 

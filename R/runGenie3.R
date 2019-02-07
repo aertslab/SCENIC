@@ -76,6 +76,7 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, ...)
   linkList <- linkList[order(linkList[,"weight"], decreasing=TRUE),]
   saveRDS(linkList, file=getIntName(scenicOptions, "genie3ll"))
   
+  if(getSettings(scenicOptions, "verbose")) message("Finished running GENIE3.")
   invisible(linkList)
 }
 

@@ -61,6 +61,7 @@ viewMotifs <- function(tableSubset,
 }
 
 #' @export
-viewTable <- function(tableSubset, motifCol=NULL, nSignif=3, colsToShow=NULL, options=list(pageLength=50),...){
+viewTable <- function(tableSubset, motifCol=NULL, nSignif=3, colsToShow=NULL, options=list(pageLength=50), ...)
+{
   viewMotifs( tableSubset=tableSubset, motifCol=motifCol, nSignif=nSignif, colsToShow=colsToShow, options=options, ...)  
 }

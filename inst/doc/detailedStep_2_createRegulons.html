@@ -10,7 +10,6 @@
 
 
 
-<meta name="date" content="2019-01-31" />
 
 <title>Code of runSCENIC_2_createRegulons()</title>
 
@@ -183,9 +182,9 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Code of runSCENIC_2_createRegulons()</h1>
 <h3 class="subtitle"><em>Workflow run by runSCENIC_2_createRegulons()</em></h3>
-<h4 class="date"><em>31 January 2019</em></h4>
+<h4 class="date"><em>7 February 2019</em></h4>
 <h4 class="package">Package</h4>
-<p>SCENIC 1.1.1</p>
+<p>SCENIC 1.1.1.9</p>
 
 </div>
 
@@ -221,14 +220,17 @@ $(document).ready(function () {
 <p>scenicOptions:</p>
 <pre class="r"><code>setwd(&quot;SCENIC_MouseBrain&quot;)
 scenicOptions &lt;- readRDS(&quot;int/scenicOptions.Rds&quot;)
-minGenes=20</code></pre>
+minGenes=20
+coexMethod=NULL</code></pre>
 </div>
 <div id="runscenic_2_createregulons-code" class="section level1">
 <h1>runSCENIC_2_createRegulons() code:</h1>
 <div id="load-co-expression-modules-and-databases" class="section level2">
 <h2>Load co-expression modules and databases:</h2>
-<pre class="r"><code>tfModules_asDF &lt;- loadInt(scenicOptions, &quot;tfModules_asDF&quot;)
-nCores &lt;- getSettings(scenicOptions, &quot;nCores&quot;)
+<pre class="r"><code>nCores &lt;- getSettings(scenicOptions, &quot;nCores&quot;)
+tfModules_asDF &lt;- loadInt(scenicOptions, &quot;tfModules_asDF&quot;)
+if(!is.null(coexMethod)) tfModules_asDF &lt;- tfModules_asDF[which(tfModules_asDF$method %in% coexMethod),]
+if(nrow(tfModules_asDF)==0) stop(&quot;The co-expression modules are empty.&quot;)
 
 # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
 if(&quot;BiocParallel&quot; %in% installed.packages()) library(BiocParallel); register(MulticoreParam(nCores), default=TRUE) 
@@ -248,8 +250,13 @@ if(is.null(names(getSettings(scenicOptions, &quot;dbs&quot;))))
   tmp &lt;- sapply(strsplit(getSettings(scenicOptions, &quot;dbs&quot;),&quot;-&quot;, fixed=T), function(x) x[grep(&quot;bp|kb&quot;,x)])
   if(all(lengths(tmp)&gt;0)) names(scenicOptions@settings$&quot;dbs&quot;) &lt;- tmp
 }
-  
-motifRankings &lt;- lapply(getDatabases(scenicOptions), importRankings)</code></pre>
+
+loadAttempt &lt;- sapply(getDatabases(scenicOptions), dbLoadingAttempt)
+if(any(!loadAttempt)) stop(&quot;It is not possible to load the following databses: \n&quot;,
+                           paste(dbs[which(!loadAttempt)], collapse=&quot;\n&quot;))
+
+genesInDb &lt;- unique(unlist(lapply(getDatabases(scenicOptions), function(x)
+  names(feather::feather_metadata(x)[[&quot;types&quot;]]))))</code></pre>
 </div>
 <div id="filter-format-co-expression-modules" class="section level2">
 <h2>Filter &amp; format co-expression modules</h2>
@@ -263,11 +270,11 @@ tfModules_asDF$TF &lt;- as.character(tfModules_asDF$TF)
 tfModules_asDF$Target &lt;- as.character(tfModules_asDF$Target)
 allTFs &lt;- getDbTfs(scenicOptions)
 tfModules_asDF &lt;- tfModules_asDF[which(tfModules_asDF$TF %in% allTFs),]
-geneInDb &lt;- tfModules_asDF$Target %in% colnames(getRanking(motifRankings[[1]]))
-    missingGene &lt;- sort(unique(tfModules_asDF[which(!geneInDb),&quot;Target&quot;]))
-    if(length(missingGene)&gt;0) 
-      warning(paste0(&quot;Genes in co-expression modules not available in RcisTargetDatabases: &quot;, 
-                                             paste(missingGene, collapse=&quot;, &quot;)))
+geneInDb &lt;- tfModules_asDF$Target %in% genesInDb
+missingGene &lt;- sort(unique(tfModules_asDF[which(!geneInDb),&quot;Target&quot;]))
+if(length(missingGene)&gt;0) 
+  warning(paste0(&quot;Genes in co-expression modules not available in RcisTargetDatabases: &quot;, 
+                 paste(missingGene, collapse=&quot;, &quot;)))
 tfModules_asDF &lt;- tfModules_asDF[which(geneInDb),]
 
 # Targets with positive correlation
@@ -275,25 +282,27 @@ tfModules_Selected &lt;- tfModules_asDF[which(tfModules_asDF$corr==1),]
 
 # Add a column with the geneSet name (TF_method)
 tfModules_Selected &lt;- cbind(tfModules_Selected, geneSetName=paste(tfModules_Selected$TF, tfModules_Selected$method, sep=&quot;_&quot;))
+tfModules_Selected$geneSetName &lt;- factor(as.character(tfModules_Selected$geneSetName))
 # head(tfModules_Selected)
+allGenes &lt;- unique(tfModules_Selected$Target)
 
 # Split into tfModules (TF-modules, with several methods)
 tfModules &lt;- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
-
-# Keep gene sets with at least 20 genes
-tfModules &lt;- tfModules[which(lengths(tfModules)&gt;=minGenes)] 
 
 # Add TF to the gene set (used in the following steps, careful if editing)
 tfModules &lt;- setNames(lapply(names(tfModules), function(gsn) {
   tf &lt;- strsplit(gsn, &quot;_&quot;)[[1]][1]
   unique(c(tf, tfModules[[gsn]]))
 }), names(tfModules))
-saveRDS(tfModules, file=getIntName(scenicOptions, &quot;tfModules_forEnrichment&quot;)) 
+
+# Keep gene sets with at least 'minGenes' genes
+tfModules &lt;- tfModules[which(lengths(tfModules)&gt;=minGenes)]
+saveRDS(tfModules, file=getIntName(scenicOptions, &quot;tfModules_forEnrichment&quot;)) #TODO as geneset? &amp; previous step?
 
 if(getSettings(scenicOptions, &quot;verbose&quot;)) {
-    tfModulesSummary &lt;- t(sapply(strsplit(names(tfModules), &quot;_&quot;), function(x) x[1:2]))
-    message(&quot;tfModulesSummary:&quot;)
-    print(sort(table(tfModulesSummary[,2])))
+  tfModulesSummary &lt;- t(sapply(strsplit(names(tfModules), &quot;_&quot;), function(x) x[1:2]))
+  message(&quot;tfModulesSummary:&quot;)
+  print(sort(table(tfModulesSummary[,2])))
 }</code></pre>
 </div>
 <div id="motif-enrichment-analysis-identifying-direct-targets" class="section level2">
@@ -323,7 +332,8 @@ if(getSettings(scenicOptions, &quot;verbose&quot;)) {
 <pre class="r"><code>msg &lt;- paste0(format(Sys.time(), &quot;%H:%M&quot;), &quot;\tRcisTarget: Calculating AUC&quot;)
 if(getSettings(scenicOptions, &quot;verbose&quot;)) message(msg)
 
-motifs_AUC &lt;- lapply(motifRankings, function(ranking) {
+motifs_AUC &lt;- lapply(getDatabases(scenicOptions), function(rnkName) {
+  ranking &lt;- importRankings(rnkName, columns=allGenes)
   message(&quot;Scoring database: &quot;, ranking@description)
   RcisTarget::calcAUC(tfModules, ranking, aucMaxRank=0.03*getNumColsInDB(ranking), nCores=nCores, verbose=FALSE)})
 saveRDS(motifs_AUC, file=getIntName(scenicOptions, &quot;motifs_AUC&quot;))</code></pre>
@@ -370,16 +380,26 @@ if(nrow(motifEnrichment_selfMotifs)==0)
 <h3>2. Prune targets</h3>
 <pre class="r"><code>msg &lt;- paste0(format(Sys.time(), &quot;%H:%M&quot;), &quot;\tRcisTarget: Prunning targets&quot;)
 if(getSettings(scenicOptions, &quot;verbose&quot;)) message(msg)
-motifEnrichment_selfMotifs_wGenes &lt;- lapply(names(motifRankings), function(motifDbName){
+
+dbNames &lt;- getDatabases(scenicOptions)
+motifEnrichment_selfMotifs_wGenes &lt;- lapply(names(dbNames), function(motifDbName){
+  ranking &lt;- importRankings(dbNames[motifDbName], columns=allGenes)
   addSignificantGenes(resultsTable=motifEnrichment_selfMotifs[motifEnrichment_selfMotifs$motifDb==motifDbName,],
                       geneSets=tfModules,
-                      rankings=motifRankings[[motifDbName]],
+                      rankings=ranking,
                       maxRank=5000, method=&quot;aprox&quot;, nCores=nCores)
 })
 
 suppressPackageStartupMessages(library(data.table))
 motifEnrichment_selfMotifs_wGenes &lt;- rbindlist(motifEnrichment_selfMotifs_wGenes)
-saveRDS(motifEnrichment_selfMotifs_wGenes, file=getIntName(scenicOptions, &quot;motifEnrichment_selfMotifs_wGenes&quot;))</code></pre>
+saveRDS(motifEnrichment_selfMotifs_wGenes, file=getIntName(scenicOptions, &quot;motifEnrichment_selfMotifs_wGenes&quot;))
+
+if(getSettings(scenicOptions, &quot;verbose&quot;)) 
+{
+  # TODO messages/print
+  message(format(Sys.time(), &quot;%H:%M&quot;), &quot;\tNumber of motifs that support the regulons: &quot;, nrow(motifEnrichment_selfMotifs_wGenes))
+  motifEnrichment_selfMotifs_wGenes[order(motifEnrichment_selfMotifs_wGenes$NES,decreasing=TRUE),][1:5,(1:ncol(motifEnrichment_selfMotifs_wGenes)-1), with=F] 
+}</code></pre>
 <p>Save motif enrichment results as text and HTML (optional):</p>
 <pre class="r"><code># motifEnrichment_selfMotifs_wGenes &lt;- loadInt(scenicOptions, &quot;motifEnrichment_selfMotifs_wGenes&quot;) # to start from here
 
@@ -392,11 +412,9 @@ write.table(motifEnrichment_selfMotifs_wGenes, file=getOutName(scenicOptions, &q
 if(&quot;DT&quot; %in% installed.packages() &amp;&amp; nrow(motifEnrichment_selfMotifs_wGenes)&gt;0)
 {
   nvm &lt;- tryCatch({
-    motifEnrichment_2html &lt;- RcisTarget::addLogo(motifEnrichment_selfMotifs_wGenes)
     colsToShow &lt;- c(&quot;motifDb&quot;, &quot;logo&quot;, &quot;NES&quot;, &quot;geneSet&quot;, &quot;TF_highConf&quot;, &quot;TF_lowConf&quot;)
-    
-    motifEnrichment_2html &lt;- DT::datatable(motifEnrichment_2html[,colsToShow, with=F], escape=FALSE, filter=&quot;top&quot;)
-    
+    motifEnrichment_2html &lt;- viewMotifs(motifEnrichment_selfMotifs_wGenes, colsToShow=colsToShow, options=list(pageLength=100))
+      
     fileName &lt;- getOutName(scenicOptions, &quot;s2_motifEnrichmentHtml&quot;)
     
     dirName &lt;- dirname(fileName)
@@ -405,12 +423,6 @@ if(&quot;DT&quot; %in% installed.packages() &amp;&amp; nrow(motifEnrichment_self
     file.rename(fileName, file.path(dirName, fileName))
     if(getSettings(scenicOptions, &quot;verbose&quot;)) message(&quot;Preview of motif enrichment saved as: &quot;, file.path(dirName, fileName))
   }, error = function(e) print(e$message))
-}
-
-if(getSettings(scenicOptions, &quot;verbose&quot;)) 
-{
-  message(&quot;Number of motifs that support the regulons: &quot;, nrow(motifEnrichment_selfMotifs_wGenes))
-  motifEnrichment_selfMotifs_wGenes[order(motifEnrichment_selfMotifs_wGenes$NES,decreasing=TRUE),][1:5,(1:ncol(motifEnrichment_selfMotifs_wGenes)-1), with=F] 
 }</code></pre>
 <p>The output of this step is a table containing the information about the motifs significantly enriched, and high-confidence genes (<code>motifEnrichment_selfMotifs_wGenes</code>). This table can be explored now, or saved to trace-back the information about relevant regulons that are revealed in the upcoming steps.</p>
 </div>

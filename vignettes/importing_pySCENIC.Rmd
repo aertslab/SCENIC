@@ -58,7 +58,7 @@ library(SCENIC)
 library(SCopeLoomR)
 
 pyScenicLoomFile <- file.path(pyScenicDir, "SCENIC.loom")
-loom <- open_loom(pyScenicLoomFile)
+loom <- open_loom(pyScenicLoomFile, mode="r")
 
 # Read information from loom file:
 regulons_incidMat <- get_regulons(loom)
@@ -75,6 +75,11 @@ exprMat <- get_dgem(loom)
 cellInfo <- get_cellAnnotation(loom)
 clusterings <- get_clusterings_withName(loom)
 ```
+
+```{r}
+close_loom(loom)
+```
+
 
 
 # Motif enrichment analysis

@@ -27,7 +27,6 @@ suppressPackageStartupMessages({
   library(RcisTarget)
   library(SingleCellExperiment)
 })
-knitr::opts_knit$set(root.dir = 'SCENIC_MouseBrain')
 ```
 
 This tutorial provides the detailed explanation of `runSCENIC_2_createRegulons()`: Using RcisTarget (TF-motif enrichment analysis) to prune the co-expression modules and create regulons. 
