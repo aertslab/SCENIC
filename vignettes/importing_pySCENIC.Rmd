@@ -2,7 +2,7 @@
 title: "Importing pySCENIC results"
 subtitle: Importing pySCENIC output into R
 output:
-  BiocStyle::html_document:
+  html_document:
     number_sections: no
     toc: yes
     toc_float: false
@@ -11,7 +11,6 @@ output:
     toc: yes
   pdf_document:
     toc: yes
-package: '`r pkg_ver("SCENIC")`'
 vignette: >
   %\VignetteIndexEntry{Importing pySCENIC output} 
   %\VignetteEngine{knitr::rmarkdown} 
@@ -44,7 +43,7 @@ The **motif enrichment analysis** and **co-expression modules** (e.g. GRNBoost/G
 
 ```{r setDirectories, message=FALSE, warning=FALSE}
 # Output directories (adjust to yours):
-pyScenicDir <- "pySCENIC_tutorial/output"
+pyScenicDir <- "pySCENIC_example/output"
 
 library(SCENIC)
 ```
@@ -70,7 +69,7 @@ embeddings <- get_embeddings(loom)
 
 In addition, the loom file also stores the expression matrix, and allows to save information about the cells (e.g. cell annotations), or results from previous clustering analyses: 
 
-```{r loomExtra}
+```{r loomExtra, eval=FALSE}
 exprMat <- get_dgem(loom)
 cellInfo <- get_cellAnnotation(loom)
 clusterings <- get_clusterings_withName(loom)
@@ -79,7 +78,6 @@ clusterings <- get_clusterings_withName(loom)
 ```{r}
 close_loom(loom)
 ```
-
 
 
 # Motif enrichment analysis
@@ -94,7 +92,7 @@ maxRows <- 20 # (low value only for the tutorial)
 # Visualize
 tableSubset <- motifsDf[TF=="Dlx5"]
 tableSubset <- tableSubset[1:maxRows,] 
-colsToShow <- colnames(motifsDf)[-c(9:11)]
+colsToShow <- colnames(motifsDf)[-c(2,9:11)]
 viewMotifs(tableSubset, colsToShow=colsToShow)
 ```
 
