@@ -538,16 +538,16 @@ par(mfrow=c(1,2))
 
 regulonNames <- c( "Dlx5","Sox10")
 cellCol <- plotTsne_rgb(scenicOptions, regulonNames, aucType="AUC", aucMaxContrast=0.6)
-text(-30,-25, attr(cellCol,"red"), col="red", cex=.7, pos=4)
-text(-30,-25-4, attr(cellCol,"green"), col="green3", cex=.7, pos=4)
+text(0, 10, attr(cellCol,"red"), col="red", cex=.7, pos=4)
+text(-20,-10, attr(cellCol,"green"), col="green3", cex=.7, pos=4)
 
 regulonNames <- list(red=c("Sox10", "Sox8"),
                      green=c("Irf1"),
                      blue=c( "Tef"))
 cellCol <- plotTsne_rgb(scenicOptions, regulonNames, aucType="Binary")
-text(-30,-25, attr(cellCol,"red"), col="red", cex=.7, pos=4)
-text(-30,-25-4, attr(cellCol,"green"), col="green3", cex=.7, pos=4)
-text(-30,-25-8, attr(cellCol,"blue"), col="blue", cex=.7, pos=4)
+text(5, 15, attr(cellCol,"red"), col="red", cex=.7, pos=4)
+text(5, 15-4, attr(cellCol,"green"), col="green3", cex=.7, pos=4)
+text(5, 15-8, attr(cellCol,"blue"), col="blue", cex=.7, pos=4)
 ```
 
 ## GRN: Regulon targets and motifs
