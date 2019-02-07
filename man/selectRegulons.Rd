@@ -7,7 +7,7 @@
 selectRegulons(regulons, tfs, onlyNonDuplicatedExtended = FALSE)
 }
 \arguments{
-\item{regulons}{All regulons}
+\item{regulons}{Regulons (list) or regulonAUC object}
 
 \item{tfs}{TFs to select}
 
@@ -21,4 +21,5 @@ Selects the regulons for the given TFs
 }
 \examples{
 selectRegulons(regulons, c("Dlx5", "Olig2"))
+selectRegulons(regulonAUC, "Tef")
 }
