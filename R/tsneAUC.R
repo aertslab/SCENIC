@@ -50,9 +50,11 @@ tsneAUC <- function(scenicOptions, aucType=NULL, nPcs=NULL, perpl=NULL, filePref
     }
   }
   
-  suppressMessages(require("doMC", quietly=TRUE))
-  doMC::registerDoMC(cores=getSettings(scenicOptions, "nCores"))
-  
+  if(getSettings(scenicOptions, "nCores")>1){
+    suppressMessages(require("doMC", quietly=TRUE))
+    doMC::registerDoMC(cores=getSettings(scenicOptions, "nCores"))
+  }
+ 
   fileNames <- c()
   fileNames <- foreach(param=allParams) %dopar%
   {
