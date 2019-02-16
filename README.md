@@ -1,3 +1,10 @@
+## Database server temporarily down
+
+We have set up a temporary mirror for the RcisTarget databases at [http://bokeh.aertslab.org/cistarget/](http://bokeh.aertslab.org/cistarget/) (and motif annotation: [http://bokeh.aertslab.org/cistarget/motif2tf/](http://bokeh.aertslab.org/cistarget/motif2tf/)). 
+
+Sorry for the inconvenience!
+
+
 # SCENIC
 
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
