@@ -1,6 +1,8 @@
-## Database server temporarily down
+## Database/web server temporarily down
 
 We have set up a temporary mirror for the RcisTarget databases at [http://bokeh.aertslab.org/cistarget/](http://bokeh.aertslab.org/cistarget/) (and motif annotation: [http://bokeh.aertslab.org/cistarget/motif2tf/](http://bokeh.aertslab.org/cistarget/motif2tf/)). 
+
+A SCope mirror is available at: http://scope-mirror.aertslab.org/ 
 
 Sorry for the inconvenience!
 
