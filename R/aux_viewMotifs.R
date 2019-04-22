@@ -4,6 +4,7 @@
 #' @description Shows the motif information table as HTML using DT::datatable()
 #' @param tableSubset Motif information table to show
 #' @param motifCol Column name containing the motif logo ID (to pass to RcisTarget::addLogo). If NULL the logo is not added.
+#' @param dbVersion Database version (to pass to RcisTarget::addLogo).
 #' @param nSignif Number of significant digits to show for numeric columns
 #' @param colsToShow (No warning is shown for missing columns)
 #' @param options argument to pass to DT::datatable()
@@ -23,7 +24,7 @@
 #' viewMotifs(tableSubset)
 #' @export 
 viewMotifs <- function(tableSubset, 
-                      motifCol=c("motif", "bestMotif", "MotifID"),
+                      motifCol=c("motif", "bestMotif", "MotifID"), dbVersion="v9",
                       nSignif=3,
                       colsToShow=c(motifEnrichment=c("motifDb", "logo", "NES", "geneSet", "TF_highConf"),
                                        regulonTargets=c("TF", "gene", "nMotifs", "bestMotif", "logo", "NES", "highConfAnnot", "Genie3Weight")),
@@ -34,7 +35,7 @@ viewMotifs <- function(tableSubset,
   if(!is.null(motifCol)){
     motifCol <- motifCol[which(motifCol %in% colnames(tableSubset))]
     if(length(motifCol) == 1){
-      tableSubset <- RcisTarget::addLogo(tableSubset, motifCol=motifCol, addHTML = TRUE)
+      tableSubset <- RcisTarget::addLogo(tableSubset, motifCol=motifCol, dbVersion=dbVersion, addHTML=TRUE)
       if(!is.null(colsToShow)) colsToShow <- c("logo", colsToShow)
     }else{
       stop("Please indicate the column containing the motif id (argument 'motifCol') or set it to NULL.")

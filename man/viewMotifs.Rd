@@ -5,15 +5,17 @@
 \title{viewMotifs}
 \usage{
 viewMotifs(tableSubset, motifCol = c("motif", "bestMotif", "MotifID"),
-  nSignif = 3, colsToShow = c(motifEnrichment = c("motifDb", "logo",
-  "NES", "geneSet", "TF_highConf"), regulonTargets = c("TF", "gene",
-  "nMotifs", "bestMotif", "logo", "NES", "highConfAnnot", "Genie3Weight")),
-  options = list(pageLength = 50), ...)
+  dbVersion = "v9", nSignif = 3, colsToShow = c(motifEnrichment =
+  c("motifDb", "logo", "NES", "geneSet", "TF_highConf"), regulonTargets =
+  c("TF", "gene", "nMotifs", "bestMotif", "logo", "NES", "highConfAnnot",
+  "Genie3Weight")), options = list(pageLength = 50), ...)
 }
 \arguments{
 \item{tableSubset}{Motif information table to show}
 
 \item{motifCol}{Column name containing the motif logo ID (to pass to RcisTarget::addLogo). If NULL the logo is not added.}
+
+\item{dbVersion}{Database version (to pass to RcisTarget::addLogo).}
 
 \item{nSignif}{Number of significant digits to show for numeric columns}
 
