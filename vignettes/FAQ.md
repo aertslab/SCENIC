@@ -29,15 +29,14 @@ Therefore, to apply SCENIC to a new organism (such as zebrafrish) would require 
 Yes, AUCell accepts any type of gene set as input (e.g. TFs and potential target genes, pathway... etc). Examples are available in the [AUCell vignette](https://bioconductor.org/packages/release/bioc/vignettes/AUCell/inst/doc/AUCell.html). 
 
 Once you have the AUC matrix, you can decide whether to continue SCENIC's workflow (e.g. binarization, heatmap... etc) or do an independent analysis.
-Of course, you will just need to adjust the interpretation of the results according to the input gene-sets... 
+Note that you will just need to adjust the interpretation of the results according to the input gene-sets... 
 
 ### Is it possible to use another co-expression network tool for the initial TF-target links? 
 
 We chose GENIE3 for building the initial co-expression networks because it was the best peformed in previous benchmarks. 
 However, other tools can also be used instead. Of course, the final network results will be different... but if you prefer to use another tool for any reason, you can certainly give it a try. 
 
-Once you have a co-expression network (sets of co-expressed genes, and/or links between TF-targets), you can perform the motif enrichment analysis and prune it into a GRN.
-start SCENIC on the "create regulons step". Either with the function `runSCENIC_2_createRegulons()` or running it manually ([detailedStep_2_createRegulons.Rmd](https://github.com/aertslab/SCENIC/blob/master/vignettes/detailedStep_2_createRegulons.Rmd)).
+Once you have a co-expression network (sets of co-expressed genes, and/or links between TF-targets), you can start SCENIC on the "create regulons step" to perform the motif enrichment analysis and prune it into a GRN (regulons). Either with the function `runSCENIC_2_createRegulons()` or running it manually ([detailedStep_2_createRegulons.Rmd](https://github.com/aertslab/SCENIC/blob/master/vignettes/detailedStep_2_createRegulons.Rmd)).
 
 An example of the input format is available at: 
 http://scenic.aertslab.org/examples/SCENIC_MouseBrain/int/2.1_tfModules_forMotifEnrichmet.Rds 
