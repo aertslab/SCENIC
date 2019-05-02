@@ -1,4 +1,6 @@
 
+*Frequently asked questions (FAQ):*
+
 ## Interpretation of results
 
 ### What is the meaning of the sufix '_extended' in the regulon name?
