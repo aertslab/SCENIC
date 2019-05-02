@@ -18,6 +18,10 @@ Yes, the regulon activity matrix can be used as input for other methods, such as
 
 However, you should check the assumptions/requirements of the input data of the specific tool (e.g. branches, expectations in regards to distribution and continuous/discrete values, etc...).
 
+### Missing relevant TFs / Known motifs are not annotated to the TF
+
+This thread might be related to your question: https://github.com/aertslab/SCENIC/issues/14#issuecomment-357009514
+
 ## Modifying the pipeline
 
 ### Is it possible to apply SCENIC to other organisms?
