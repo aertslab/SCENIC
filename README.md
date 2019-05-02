@@ -5,9 +5,9 @@ SCENIC is an R package to infer Gene Regulatory Networks and cell types from sin
 
 For more details and installation instructions see the tutorials: [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/a0a00644b2f3589a3e2bc65486fc5f6cc00f48e1/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/a0a00644b2f3589a3e2bc65486fc5f6cc00f48e1/inst/doc/SCENIC_Running.html).
 
+The output from the examples is available at: http://scenic.aertslab.org/examples/ . 
 
-
-The output from the examples is available at: http://scenic.aertslab.org/examples/
+Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master/vignettes/FAQ.md)
 
 ### News
 
