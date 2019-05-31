@@ -10,6 +10,7 @@
 
 
 
+<meta name="date" content="2019-05-31" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -103,9 +104,6 @@ img {
 button.code-folding-btn:focus {
   outline: none;
 }
-summary {
-  display: list-item;
-}
 </style>
 
 
@@ -113,74 +111,14 @@ summary {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
-
-<style type="text/css">
-.tabset-dropdown > .nav-tabs {
-  display: inline-table;
-  max-height: 500px;
-  min-height: 44px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs > li.active {
-  display: block;
-}
-
-.tabset-dropdown > .nav-tabs > li > a,
-.tabset-dropdown > .nav-tabs > li > a:focus,
-.tabset-dropdown > .nav-tabs > li > a:hover {
-  border: none;
-  display: inline-block;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
-  display: block;
-  float: none;
-}
-
-.tabset-dropdown > .nav-tabs > li {
-  display: none;
-}
-</style>
-
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
 </script>
 
 <!-- code folding -->
+
 
 
 
@@ -192,11 +130,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>7 February 2019</em></h4>
+<h4 class="date"><em>31 May 2019</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 1.1.1.9</p>
+<p>SCENIC 1.1.2.1</p>
 
 </div>
 
@@ -210,28 +148,37 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 <li><a href="#species">Species</a></li>
 <li><a href="#input-expression-matrix">Input: expression matrix</a></li>
 </ul></li>
+<li><a href="#availability-r-python">Availability (R / Python)</a></li>
 <li><a href="#installation">Installation</a><ul>
+<li><a href="#for-older-versions-of-rbioconductor">For older versions of R/Bioconductor</a></li>
 <li><a href="#species-specific-databases">Species-specific databases</a></li>
 </ul></li>
 <li><a href="#some-tips">Some tips…</a><ul>
 <li><a href="#template-for-your-own-analysis">Template for your own analysis</a></li>
 <li><a href="#help">Help</a></li>
 </ul></li>
-<li><a href="#sample-dataset-download-format">Sample dataset: Download &amp; format</a></li>
+<li><a href="#sample-dataset">Sample dataset</a></li>
+<li><a href="#formatting-input">Formatting input</a><ul>
+<li><a href="#a-from-.loom-file">a) From .loom file</a></li>
+<li><a href="#b-from-10xcellranger-output-files">b) From 10X/CellRanger output files</a></li>
+<li><a href="#c-from-other-r-objects-e.g.seurat-singlecellexperiment">c) From other R objects (e.g. Seurat, SingleCellExperiment)</a></li>
+<li><a href="#d-from-geo">d) From GEO</a></li>
+<li><a href="#saving-into-loom">Saving into loom</a></li>
+</ul></li>
 <li><a href="#references">References</a></li>
 </ul>
 </div>
 
 <div id="introduction-to-scenic" class="section level1">
 <h1>Introduction to SCENIC</h1>
-<p>SCENIC (Single Cell rEgulatory Network Inference and Clustering) is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. The gene regulatory network is inferred based on co-expression and DNA motif analysis, and then the network activity is analyzed in each cell to identify the recurrent cellular states.</p>
+<p>SCENIC is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. The gene regulatory network is inferred based on co-expression and DNA motif analysis, and then the network activity is analyzed in each cell to identify the recurrent cellular states.</p>
 <div id="more-info-citation" class="section level2">
 <h2>More info &amp; citation</h2>
-<p>SCENIC’s approach and its application to several datasets (e.g. usage examples) was presented in the following article:</p>
+<p>The approach behind SCENIC and its application to several datasets (e.g. usage examples) was presented in the following article:</p>
 <blockquote>
 <p>Aibar et al. (2017) SCENIC: single-cell regulatory network inference and clustering. Nature Methods. doi: <a href="http://dx.doi.org/10.1038/nmeth.4463">10.1038/nmeth.4463</a>.</p>
 </blockquote>
-<p>Please, also cite this article if you use SCENIC in your research.</p>
+<p>Please, cite this article if you use SCENIC in your research.</p>
 </div>
 </div>
 <div id="requirements" class="section level1">
@@ -239,7 +186,7 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 <div id="species" class="section level2">
 <h2>Species</h2>
 <p>The current version of SCENIC supports <em>human</em>, <em>mouse</em> and <em>fly</em> (Drosophila melanogaster).</p>
-<p>To apply SCENIC to other species, it would require adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool).</p>
+<p>To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool).</p>
 </div>
 <div id="input-expression-matrix" class="section level2">
 <h2>Input: expression matrix</h2>
@@ -251,49 +198,59 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 </ul>
 </div>
 </div>
+<div id="availability-r-python" class="section level1">
+<h1>Availability (R / Python)</h1>
+<p>SCENIC is implemented in <strong>R</strong> (this package and tutorial) and <strong>Python</strong> (<a href="https://github.com/aertslab/pySCENIC">pySCENIC</a>).</p>
+<p>The Python implementation is significantly faster to run, so we generally recommend using it for most analyses. We provide containers (in <a href="https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic">Docker</a> and <a href="https://www.singularity-hub.org/collections/2033">Singularity</a>) including all the required dependencies, and a <a href="https://github.com/aertslab/scenic-nf">Nextflow</a> pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.</p>
+<p>The results are equivalent across versions and provide output <code>.loom</code> files that can be explored in <a href="http://scope.aertslab.org">SCope</a> or used as interface between R and Python.</p>
+<p>The rest of this tutorial will continue with the R implementation, but the general concepts behind SCENIC algorithm also apply to the other versions.</p>
+</div>
 <div id="installation" class="section level1">
 <h1>Installation</h1>
-<p>SCENIC is based on three R packages:</p>
+<p>The R implementation of SCENIC is based on three R packages:</p>
 <ol style="list-style-type: decimal">
-<li><p><em><a href="http://bioconductor.org/packages/GENIE3">GENIE3</a></em> to infer the co-expression network</p></li>
-<li><p><em><a href="http://bioconductor.org/packages/RcisTarget">RcisTarget</a></em> for the analysis of transcription factor binding motifs</p></li>
-<li><p><em><a href="http://bioconductor.org/packages/AUCell">AUCell</a></em> to identify cells with active gene sets (gene-network) in scRNA-seq data</p></li>
+<li><p><em><a href="https://bioconductor.org/packages/3.8/GENIE3">GENIE3</a></em> to infer the co-expression network (faster alternative: <a href="https://arboreto.readthedocs.io">GRNBoost2</a>)</p></li>
+<li><p><em><a href="https://bioconductor.org/packages/3.8/RcisTarget">RcisTarget</a></em> for the analysis of transcription factor binding motifs</p></li>
+<li><p><em><a href="https://bioconductor.org/packages/3.8/AUCell">AUCell</a></em> to identify cells with active gene sets (gene-network) in scRNA-seq data</p></li>
 </ol>
-<p>Therefore, you will need to install these three packages, and some extra dependencies, to run SCENIC:</p>
+<p>Therefore, you will need to install these packages, and some extra dependencies, to run SCENIC:</p>
 <pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE)) install.packages(&quot;BiocManager&quot;)
-BiocManager::install(c(&quot;GENIE3&quot;, &quot;AUCell&quot;, &quot;RcisTarget&quot;), version = &quot;3.8&quot;)
+BiocManager::version()
+# If your bioconductor version is previous to 3.9, see the section bellow
+
+BiocManager::install(c(&quot;AUCell&quot;, &quot;RcisTarget&quot;))
+BiocManager::install(c(&quot;GENIE3&quot;)) # Optional
 # Also required:
 install.packages('zoo')
 
 # Recommended to run AUCell:
 BiocManager::install(c(&quot;mixtools&quot;, &quot;rbokeh&quot;))
-# To visualize the binary matrices and perform t-SNEs:
-BiocManager::install(c(&quot;NMF&quot;, &quot;pheatmap&quot;, &quot;Rtsne&quot;, &quot;R2HTML&quot;))
+# For various visualizations and perform t-SNEs:
+BiocManager::install(c(&quot;DT&quot;, &quot;NMF&quot;, &quot;pheatmap&quot;, &quot;R2HTML&quot;, &quot;Rtsne&quot;))
 # To support paralell execution (not available in Windows):
 BiocManager::install(c(&quot;doMC&quot;, &quot;doRNG&quot;))
 # To export/visualize in http://scope.aertslab.org
 if (!requireNamespace(&quot;devtools&quot;, quietly = TRUE)) install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)
-
-# Other dependencies for the examples (lower priority)
-BiocManager::install(c(&quot;SingleCellExperiment&quot;))</code></pre>
-<p>AUCell and RcisTarget were updated recently (May 2018/Jan 2019). Please, make sure you have the recommended versions: <strong>AUCell &gt;=1.4.1</strong> (minimum 1.2.4), <strong>RcisTarget&gt;=1.2.0</strong> (minimum 1.0.2), and <strong>GENIE3&gt;=1.4.0</strong> (minimum 1.2.1).</p>
+devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)</code></pre>
+<p>AUCell and RcisTarget were updated in May 2018 and Jan 2019. Please, make sure you have the recommended versions: <strong>AUCell &gt;=1.4.1</strong> (minimum 1.2.4), <strong>RcisTarget&gt;=1.2.0</strong> (minimum 1.0.2) and <strong>GENIE3&gt;=1.4.0</strong> (minimum 1.2.1).</p>
 <pre class="r"><code>packageVersion(&quot;AUCell&quot;)
 packageVersion(&quot;RcisTarget&quot;)
 packageVersion(&quot;GENIE3&quot;)</code></pre>
-<p>In case you have trobule installing the packages with <code>biocLite</code> (for example, if you don’t have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:</p>
+<p>You are now ready to install SCENIC:</p>
+<pre class="r"><code>if (!requireNamespace(&quot;devtools&quot;, quietly = TRUE)) install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;aertslab/SCENIC&quot;) # To specify a version: ref=&quot;v1.1.0&quot;
+packageVersion(&quot;SCENIC&quot;)</code></pre>
+<div id="for-older-versions-of-rbioconductor" class="section level3">
+<h3>For older versions of R/Bioconductor</h3>
+<p>In case you have trobule installing the packages from Bioconductor (for example, if you don’t have the newest version of R), you may try installing them from Github <em>or</em> directly from the Bioconductor package files:</p>
 <pre class="r"><code># Github:
 devtools::install_github(&quot;aertslab/AUCell&quot;)
 devtools::install_github(&quot;aertslab/RcisTarget&quot;)
 devtools::install_github(&quot;aertslab/GENIE3&quot;)
+
 # Bioconductor
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.1.tar.gz&quot;, repos=NULL)
-install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.3.tar.gz&quot;, repos=NULL)</code></pre>
-<p>You are now ready to install SCENIC:</p>
-<pre class="r"><code># install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCENIC&quot;, ref=&quot;v1.1.0&quot;)
-packageVersion(&quot;SCENIC&quot;)</code></pre>
+# install.packages(&quot;https://bioconductor.org/packages/release/bioc/src/contrib/PACKAGENAME.tar.gz&quot;, repos=NULL)</code></pre>
+</div>
 <div id="species-specific-databases" class="section level2">
 <h2>Species-specific databases</h2>
 <p>In addition to the R-packages, you will also need to download the species-specific databases for RcisTarget (the motif rankings). The links to all the available databases are available in <a href="https://resources.aertslab.org/cistarget/">our website</a>. By default, SCENIC uses the databases that score the motifs in the promoter of the genes (up to 500bp upstream the TSS), and in the 20kb around the TSS (+/-10kbp).</p>
@@ -308,14 +265,12 @@ packageVersion(&quot;SCENIC&quot;)</code></pre>
 <p>For <strong>fly</strong>:</p>
 <pre class="r"><code>dbFiles &lt;- c(&quot;https://resources.aertslab.org/cistarget/databases/drosophila_melanogaster/dm6/flybase_r6.02/mc8nr/gene_based/dm6-5kb-upstream-full-tx-11species.mc8nr.feather&quot;)
 # mc8nr: Motif collection version 8: 20k motifs</code></pre>
-<p>Download the <em>.feather</em> files (and <em>.descr</em>, if available) for the relevant organism. [Aprox file size: 1GB]</p>
-<p><em>To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use <a href="https://resources.aertslab.org/cistarget/help.html">zsync_curl</a>. If you prefer to download directly from R, you can try the following code:</em></p>
+<p>The approximate file size for these databases (<em>.feather</em> files) is 1GB. <em>To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use <a href="https://resources.aertslab.org/cistarget/help.html">zsync_curl</a>.</em></p>
+<p>If you prefer to download directly from R, you can try the following code:*</p>
 <pre class="r"><code># dir.create(&quot;cisTarget_databases&quot;); setwd(&quot;cisTarget_databases&quot;) # if needed
 for(featherURL in dbFiles)
 {
   download.file(featherURL, destfile=basename(featherURL)) # saved in current dir
-  descrURL &lt;- gsub(&quot;.feather$&quot;, &quot;.descr&quot;, featherURL)
-  if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
 }</code></pre>
 <p>To confirm that the databases were downloaded correctly, we recommend to confirm its <code>sha256sum</code>: <a href="https://resources.aertslab.org/cistarget/databases/sha256sum.txt" class="uri">https://resources.aertslab.org/cistarget/databases/sha256sum.txt</a></p>
 <p>After these setup steps, SCENIC is ready to run! To start, see the vignette “SCENIC_Running”.</p>
@@ -331,7 +286,7 @@ file.copy(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)
 # or: 
 vignetteFile &lt;- &quot;https://raw.githubusercontent.com/aertslab/SCENIC/master/vignettes/SCENIC_Running.Rmd&quot;
 download.file(vignetteFile, &quot;SCENIC_myRun.Rmd&quot;)</code></pre>
-<p>Note that some steps of this workflow take considerable time. To avoid re-running these steps when <em>knitting</em> the vignette (i.e. create the HTML report), we have added <code>eval=FALSE</code> to some code chunks and <code>load()</code> its output in the next. Feel free to adapt these to your needs.</p>
+<p>Note that some steps of this workflow can take considerable time. To avoid re-running these steps when <em>knitting</em> the vignette (i.e. create the HTML report), we have added <code>eval=FALSE</code> to some code chunks and <code>load()</code> its output in the next. Feel free to adapt these to your needs.</p>
 </div>
 <div id="help" class="section level2">
 <h2>Help</h2>
@@ -345,18 +300,61 @@ vignette(package=&quot;SCENIC&quot;) # list
 vignette(&quot;SCENIC_Running&quot;) # open</code></pre>
 </div>
 </div>
-<div id="sample-dataset-download-format" class="section level1">
-<h1>Sample dataset: Download &amp; format</h1>
-<p>This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead.</p>
-<p>The output files from this example are available at <a href="http://scenic.aertslab.org/examples/" class="uri">http://scenic.aertslab.org/examples/</a></p>
-<p>As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).</p>
+<div id="sample-dataset" class="section level1">
+<h1>Sample dataset</h1>
+<p>Running SCENIC in a real dataset typically takes a few hours. The <strong>toy example</strong> used in these tutorials (200 cells and &lt;1000 genes) is a subset of a dataset of 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia). The expression values are Unique Molecular Identifier counts.</p>
 <blockquote>
 <p>Zeisel, A., et al. (2015). Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq. Science 347, 1138–1142. doi: <a href="http://dx.doi.org/10.1126/science.aaa1934">10.1126/science.aaa1934</a></p>
 </blockquote>
-<p>The expression matrix can be downloaded from GEO accession number GSE60361 or the author’s website: <a href="http://linnarssonlab.org/cortex/" class="uri">http://linnarssonlab.org/cortex/</a>. The expression is provided as Unique Molecular Identifier counts:</p>
+<p>The output files from the run on the full dataset are available at <a href="http://scenic.aertslab.org/examples/" class="uri">http://scenic.aertslab.org/examples/</a></p>
+</div>
+<div id="formatting-input" class="section level1">
+<h1>Formatting input</h1>
+<p><em>Reminder: SCENIC’s main input is a single-cell expression matrix with <strong>genes-symbols</strong> as row names.</em></p>
+<p>Below there are several options to download and format this dataset (as example to format/import your own data).</p>
+<div id="a-from-.loom-file" class="section level2">
+<h2>a) From .loom file</h2>
+<p><a href="http://linnarssonlab.org/loompy/">.loom files</a> can be directly imported into SCENIC through <code>SCopeLoomR</code>.</p>
+<p>e.g. for the 3005 mouse brain cells dataset:</p>
+<pre class="r"><code>## Download:
+download.file(&quot;http://loom.linnarssonlab.org/clone/Previously%20Published/Cortex.loom&quot;, &quot;Cortex.loom&quot;)
+loomPath &lt;- &quot;Cortex.loom&quot;</code></pre>
+<p>To load the expression matrix and cell annotation:</p>
+<pre class="r"><code>library(SCopeLoomR)
+loom &lt;- open_loom(loomPath, mode=&quot;r&quot;)
+exprMat &lt;- get_dgem(loom)
+cellInfo &lt;- get_cellAnnotation(loom)
+close_loom(loom)</code></pre>
+<pre class="r"><code># or into a SingleCellExperiment object:
+sceMouseBrain &lt;- load_as_sce(loomPath)
+exprMat &lt;- counts(sceMouseBrain)
+cellInfo &lt;- colData(sceMouseBrain)</code></pre>
+</div>
+<div id="b-from-10xcellranger-output-files" class="section level2">
+<h2>b) From 10X/CellRanger output files</h2>
+<p>10X/CellRanger output matrices can be used as input for SCENIC. The tutorials on how to load the CellRanger output into R are available at 10X website (choose the appropriate CellRanger version): <a href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices#r-load-mat" class="uri">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices#r-load-mat</a></p>
+<p>Some packages, such as Seurat, also provide functions to directly import 10X/CellRanger output:</p>
+<pre class="r"><code>singleCellMatrix &lt;- Seurat::Read10X(data.dir=&quot;../data/pbmc3k/filtered_gene_bc_matrices/hg19/&quot;)</code></pre>
+</div>
+<div id="c-from-other-r-objects-e.g.seurat-singlecellexperiment" class="section level2">
+<h2>c) From other R objects (e.g. Seurat, SingleCellExperiment)</h2>
+<p>Many R packages store the expression data in their own data structures (e.g. <code>Seurat</code>) or Bioconductor classes (e.g. <code>SingleCellExperiment</code> <code>SummarizedExperiment</code>, <code>ExpressionSet</code>).</p>
+<p>Most of these objects have data acessors to retrieve the expression matrix and cell metadata (the function name depends on the object type or package).</p>
+<p>For example, for a SingleCellExperiment object the accessors are <code>counts()</code> and <code>colData()</code>:</p>
+<pre class="r"><code>sce &lt;- load_as_sce(loomPath) # any SingleCellExperiment object
+
+exprMat &lt;- counts(sce)
+cellInfo &lt;- colData(sce)</code></pre>
+<p>To use Seurat clusters as cell annotation (e.g. for visualization):</p>
+<pre class="r"><code>cellInfo &lt;- data.frame(seuratCluster=Idents(seuratObject))</code></pre>
+</div>
+<div id="d-from-geo" class="section level2">
+<h2>d) From GEO</h2>
+<p>Example downloading and formatting a dataset from GEO (e.g. the 3005 mouse brain cells dataset is available as GEO accession number GSE60361):</p>
 <pre class="r"><code># dir.create(&quot;SCENIC_MouseBrain&quot;); setwd(&quot;SCENIC_MouseBrain&quot;) # if needed
 
 # (This may take a few minutes)
+if (!requireNamespace(&quot;GEOquery&quot;, quietly = TRUE)) BiocManager::install(&quot;GEOquery&quot;)
 library(GEOquery)
 geoFile &lt;- getGEOSuppFiles(&quot;GSE60361&quot;, makeDirectory=FALSE)
 gzFile &lt;- grep(&quot;Expression&quot;, basename(rownames(geoFile)), value=TRUE)
@@ -370,6 +368,7 @@ exprMatrix &lt;- as.matrix(geoData[,-1, with=FALSE])
 rm(geoData)
 dim(exprMatrix)
 rownames(exprMatrix) &lt;- geneNames
+exprMatrix &lt;- exprMatrix[unique(rownames(exprMatrix)),]
 exprMatrix[1:5,1:4]
 
 # Remove file downloaded:
@@ -377,21 +376,18 @@ file.remove(txtFile)</code></pre>
 <p>The cell types are available at the author’s website. For simplicity, here we will load them from AUCell package:</p>
 <pre class="r"><code>cellLabels &lt;- paste(file.path(system.file('examples', package='AUCell')), &quot;mouseBrain_cellLabels.tsv&quot;, sep=&quot;/&quot;)
 cellLabels &lt;- read.table(cellLabels, row.names=1, header=TRUE, sep=&quot;\t&quot;)
-cellLabels &lt;- as.data.frame(cellLabels)
-colnames(cellLabels) &lt;- &quot;CellType&quot;</code></pre>
-<p>Finally, this information can be merged into a single Bioconductor object. Here we use a <code>SingleCellExperiment</code>, but a <code>SummarizedExperiment</code>, <code>ExpressionSet</code> or similar classes would also be valid. You might just need to adjust the accessor functions <code>colData()</code>, and <code>counts()</code> in the next steps.</p>
-<pre class="r"><code># TODO: Change to loom file
-exprMatrix &lt;- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
-dim(exprMatrix)
-
-SingleCellExperiment
-library(SingleCellExperiment)
-sceMouseBrain &lt;- SingleCellExperiment(assays = list(counts = exprMatrix),
-colData=data.frame(cellLabels[colnames(exprMatrix),, drop=FALSE]))
-
-# setwd(&quot;SCENIC_MouseBrain&quot;)
+cellInfo &lt;- as.data.frame(cellLabels)
+colnames(cellInfo) &lt;- &quot;Class&quot;</code></pre>
+</div>
+<div id="saving-into-loom" class="section level2">
+<h2>Saving into loom</h2>
+<p>To run SCENIC in Python we recommend to save/export the expression matrix and cell metadata into a .loom file (for R, any R/Bioconductor object is also OK):</p>
+<pre class="r"><code># setwd(&quot;SCENIC_MouseBrain&quot;)
 dir.create(&quot;data&quot;)
-saveRDS(sceMouseBrain, file=&quot;data/sceMouseBrain.Rds&quot;)</code></pre>
+loom &lt;- build_loom(&quot;data/mouseBrain.loom&quot;, dgem=exprMatrix)
+loom &lt;- add_cellAnnotation(loom, cellInfo)
+close_loom(loom)</code></pre>
+</div>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>

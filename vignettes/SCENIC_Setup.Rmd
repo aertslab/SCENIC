@@ -40,22 +40,22 @@ options(stringsAsFactors=FALSE)
 
 # Introduction to SCENIC
 
-SCENIC (Single Cell rEgulatory Network Inference and Clustering) is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. The gene regulatory network is inferred based on co-expression and DNA motif analysis, and then the network activity is analyzed in each cell to identify the recurrent cellular states.
+SCENIC is a tool to simultaneously reconstruct gene regulatory networks and identify stable cell states from single-cell RNA-seq data. The gene regulatory network is inferred based on co-expression and DNA motif analysis, and then the network activity is analyzed in each cell to identify the recurrent cellular states.
 
 ## More info & citation
 
-SCENIC's approach and its application to several datasets (e.g. usage examples) was presented in the following article:
+The approach behind SCENIC and its application to several datasets (e.g. usage examples) was presented in the following article:
 
 > Aibar et al. (2017) SCENIC: single-cell regulatory network inference and clustering. Nature Methods. doi: [10.1038/nmeth.4463](http://dx.doi.org/10.1038/nmeth.4463).
 
-Please, also cite this article if you use SCENIC in your research.
+Please, cite this article if you use SCENIC in your research.
 
 # Requirements
 
 ## Species
 The current version of SCENIC supports *human*, *mouse* and *fly* (Drosophila melanogaster).
 
-To apply SCENIC to other species, it would require adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool).
+To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool).
 
 
 ## Input: expression matrix
@@ -68,40 +68,52 @@ The input to SCENIC is the single-cell RNA-seq **expression matrix**:
 - Expression **units**: The preferred expression values are gene-summarized counts (which might or might not use unique molecular identifiers, UMI).
 Other measurements, such as counts or transcripts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (*@crow2016*). Although more work is still needed in order to determine the best normalization approach (*@vallejos2017*), we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and all of them provided reliable results (see *@aibar2017*). The remaining steps of the workflow should not be affected by the expression units/normalization, as the expression is not taken into account for the motif analysis, and AUCell is within-cell ranking-based (wich works as an implicit normalization).
 
+# Availability (R / Python)
+
+SCENIC is implemented in **R** (this package and tutorial) and **Python** ([pySCENIC](https://github.com/aertslab/pySCENIC)). 
+
+The Python implementation is significantly faster to run, so we generally recommend using it for most analyses. 
+We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) and [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a [Nextflow](https://github.com/aertslab/scenic-nf) pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.
+
+The results are equivalent across versions and provide output `.loom` files that can be explored in [SCope](http://scope.aertslab.org) or used as interface between R and Python.
+
+The rest of this tutorial will continue with the R implementation, but the general concepts behind SCENIC algorithm also apply to the other versions.
+
 # Installation
 
-SCENIC is based on three R packages:
+The R implementation of SCENIC is based on three R packages:
 
-1. `r Biocpkg("GENIE3")` to infer the co-expression network
+1. `r Biocpkg("GENIE3")` to infer the co-expression network (faster alternative: [GRNBoost2](https://arboreto.readthedocs.io))
 
 2. `r Biocpkg("RcisTarget")` for the analysis of transcription factor binding motifs
 
 3. `r Biocpkg("AUCell")` to identify cells with active gene sets (gene-network) in scRNA-seq data
 
-Therefore, you will need to install these three packages, and some extra dependencies, to run SCENIC:
+Therefore, you will need to install these packages, and some extra dependencies, to run SCENIC:
 
 ```{r install, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-BiocManager::install(c("GENIE3", "AUCell", "RcisTarget"), version = "3.8")
+BiocManager::version()
+# If your bioconductor version is previous to 3.9, see the section bellow
+
+BiocManager::install(c("AUCell", "RcisTarget"))
+BiocManager::install(c("GENIE3")) # Optional
 # Also required:
 install.packages('zoo')
 
 # Recommended to run AUCell:
 BiocManager::install(c("mixtools", "rbokeh"))
-# To visualize the binary matrices and perform t-SNEs:
-BiocManager::install(c("NMF", "pheatmap", "Rtsne", "R2HTML"))
+# For various visualizations and perform t-SNEs:
+BiocManager::install(c("DT", "NMF", "pheatmap", "R2HTML", "Rtsne"))
 # To support paralell execution (not available in Windows):
 BiocManager::install(c("doMC", "doRNG"))
 # To export/visualize in http://scope.aertslab.org
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
-
-# Other dependencies for the examples (lower priority)
-BiocManager::install(c("SingleCellExperiment"))
 ```
 
-AUCell and RcisTarget were updated recently (May 2018/Jan 2019). Please, make sure you have the recommended versions:
-**AUCell >=1.4.1** (minimum 1.2.4), **RcisTarget>=1.2.0** (minimum 1.0.2), and **GENIE3>=1.4.0** (minimum 1.2.1).
+AUCell and RcisTarget were updated in May 2018 and Jan 2019. Please, make sure you have the recommended versions:
+**AUCell >=1.4.1** (minimum 1.2.4), **RcisTarget>=1.2.0** (minimum 1.0.2) and **GENIE3>=1.4.0** (minimum 1.2.1).
 
 ```{r versions, eval=FALSE}
 packageVersion("AUCell")
@@ -109,23 +121,25 @@ packageVersion("RcisTarget")
 packageVersion("GENIE3")
 ```
 
-In case you have trobule installing the packages with `biocLite` (for example, if you don't have the newest version of R), you may try installing them from Github or directly from the Bioconductor links:
+You are now ready to install SCENIC:
+```{r installSCENIC, eval=FALSE}
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+devtools::install_github("aertslab/SCENIC") # To specify a version: ref="v1.1.0"
+packageVersion("SCENIC")
+```
+
+### For older versions of R/Bioconductor 
+
+In case you have trobule installing the packages from Bioconductor (for example, if you don't have the newest version of R), you may try installing them from Github *or* directly from the Bioconductor package files:
+
 ```{r alternativeDownload, eval=FALSE}
 # Github:
 devtools::install_github("aertslab/AUCell")
 devtools::install_github("aertslab/RcisTarget")
 devtools::install_github("aertslab/GENIE3")
-# Bioconductor
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.1.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.1.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/GENIE3_1.4.3.tar.gz", repos=NULL)
-```
 
-You are now ready to install SCENIC:
-```{r installSCENIC, eval=FALSE}
-# install.packages("devtools")
-devtools::install_github("aertslab/SCENIC", ref="v1.1.0")
-packageVersion("SCENIC")
+# Bioconductor
+# install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/PACKAGENAME.tar.gz", repos=NULL)
 ```
 
 ## Species-specific databases
@@ -154,16 +168,15 @@ dbFiles <- c("https://resources.aertslab.org/cistarget/databases/drosophila_mela
 # mc8nr: Motif collection version 8: 20k motifs
 ```
 
-Download the *.feather* files (and *.descr*, if available) for the relevant organism. [Aprox file size: 1GB]
+The approximate file size for these databases (*.feather* files) is 1GB.
+*To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use [zsync_curl](https://resources.aertslab.org/cistarget/help.html).*
 
-*To avoid problems or incomplete downloads (especially if you have a slow connection), we recommend to use [zsync_curl](https://resources.aertslab.org/cistarget/help.html). If you prefer to download directly from R, you can try the following code:*
+If you prefer to download directly from R, you can try the following code:*
 ```{r downloadDatabases, eval=FALSE}
 # dir.create("cisTarget_databases"); setwd("cisTarget_databases") # if needed
 for(featherURL in dbFiles)
 {
   download.file(featherURL, destfile=basename(featherURL)) # saved in current dir
-  descrURL <- gsub(".feather$", ".descr", featherURL)
-  if(file.exists(descrURL)) download.file(descrURL, destfile=basename(descrURL))
 }
 ```
 
@@ -183,7 +196,7 @@ vignetteFile <- "https://raw.githubusercontent.com/aertslab/SCENIC/master/vignet
 download.file(vignetteFile, "SCENIC_myRun.Rmd")
 ```
 
-Note that some steps of this workflow take considerable time. To avoid re-running these steps when *knitting* the vignette (i.e. create the HTML report), we have added `eval=FALSE` to some code chunks and `load()` its output in the next. Feel free to adapt these to your needs.
+Note that some steps of this workflow can take considerable time. To avoid re-running these steps when *knitting* the vignette (i.e. create the HTML report), we have added `eval=FALSE` to some code chunks and `load()` its output in the next. Feel free to adapt these to your needs.
 
 ## Help
 At any time, you an access the help for any function used in this workflow (i.e. for details on their arguments), and the vignettes of the other steps of the workflow with the following commands:
@@ -198,23 +211,93 @@ vignette(package="SCENIC") # list
 vignette("SCENIC_Running") # open
 ```
 
-# Sample dataset: Download & format
 
-This tutorial is run on a real dataset to illustrate the results obtained at each step. However, keep in mind that some steps of the workflow (i.e. GENIE3, motif enrichment) can take hours to run. Feel free to use your own dataset instead.
+# Sample dataset
 
-The output files from this example are available at http://scenic.aertslab.org/examples/ 
-
-As example, we will use a dataset containing 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia).
+Running SCENIC in a real dataset typically takes a few hours. The **toy example** used in these tutorials (200 cells and <1000 genes) is a subset of a dataset of 3005 cells from the adult mouse brain, including neurons (e.g. pyramidal neurons and interneurons) and glia (oligodendrocytes, astrocytes/ependymal, endothelial/mural and microglia). The expression values are Unique Molecular Identifier counts.
 
 > Zeisel, A., et al. (2015). Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq. Science 347, 1138–1142. doi: [10.1126/science.aaa1934](http://dx.doi.org/10.1126/science.aaa1934)
 
-The expression matrix can be downloaded from GEO accession number GSE60361 or the author's website: http://linnarssonlab.org/cortex/.
-The expression is provided as Unique Molecular Identifier counts:
+The output files from the run on the full dataset are available at http://scenic.aertslab.org/examples/ 
+
+# Formatting input
+
+*Reminder: SCENIC's main input is a single-cell expression matrix with **genes-symbols** as row names.*
+
+Below there are several options to download and format this dataset (as example to format/import your own data). 
+
+## a) From .loom file
+
+[.loom files](http://linnarssonlab.org/loompy/) can be directly imported into SCENIC through `SCopeLoomR`. 
+
+e.g. for the 3005 mouse brain cells dataset:
+
+```{r downloadLoom, eval=FALSE}
+## Download:
+download.file("http://loom.linnarssonlab.org/clone/Previously%20Published/Cortex.loom", "Cortex.loom")
+loomPath <- "Cortex.loom"
+```
+
+To load the expression matrix and cell annotation:
+```{r loadLoom, eval=FALSE}
+library(SCopeLoomR)
+loom <- open_loom(loomPath, mode="r")
+exprMat <- get_dgem(loom)
+cellInfo <- get_cellAnnotation(loom)
+close_loom(loom)
+```
+
+```{r loadLoomSCE, eval=FALSE}
+# or into a SingleCellExperiment object:
+sceMouseBrain <- load_as_sce(loomPath)
+exprMat <- counts(sceMouseBrain)
+cellInfo <- colData(sceMouseBrain)
+```
+
+
+## b) From 10X/CellRanger output files
+
+10X/CellRanger output matrices can be used as input for SCENIC. 
+The tutorials on how to load the CellRanger output into R are available at 10X website (choose the appropriate CellRanger version):
+https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices#r-load-mat
+
+Some packages, such as Seurat, also provide functions to directly import 10X/CellRanger output: 
+
+```{r read10x, eval=FALSE}
+singleCellMatrix <- Seurat::Read10X(data.dir="../data/pbmc3k/filtered_gene_bc_matrices/hg19/")
+```
+
+
+## c) From other R objects (e.g. Seurat, SingleCellExperiment)
+
+Many R packages store the expression data in their own data structures (e.g. `Seurat`) or Bioconductor classes (e.g. `SingleCellExperiment` `SummarizedExperiment`, `ExpressionSet`). 
+
+Most of these objects have data acessors to retrieve the expression matrix and cell metadata (the function name depends on the object type or package). 
+
+For example, for a SingleCellExperiment object the accessors are `counts()` and `colData()`: 
+
+```{r importSCE, eval=FALSE}
+sce <- load_as_sce(loomPath) # any SingleCellExperiment object
+
+exprMat <- counts(sce)
+cellInfo <- colData(sce)
+```
+
+To use Seurat clusters as cell annotation (e.g. for visualization): 
+```{r importSeurat, eval=FALSE}
+cellInfo <- data.frame(seuratCluster=Idents(seuratObject))
+```
+
+
+## d) From GEO
+
+Example downloading and formatting a dataset from GEO (e.g. the 3005 mouse brain cells dataset is available as GEO accession number GSE60361):
 
 ```{r GEOdownload, results='hide', message=FALSE, eval=FALSE}
 # dir.create("SCENIC_MouseBrain"); setwd("SCENIC_MouseBrain") # if needed
 
 # (This may take a few minutes)
+if (!requireNamespace("GEOquery", quietly = TRUE)) BiocManager::install("GEOquery")
 library(GEOquery)
 geoFile <- getGEOSuppFiles("GSE60361", makeDirectory=FALSE)
 gzFile <- grep("Expression", basename(rownames(geoFile)), value=TRUE)
@@ -228,6 +311,7 @@ exprMatrix <- as.matrix(geoData[,-1, with=FALSE])
 rm(geoData)
 dim(exprMatrix)
 rownames(exprMatrix) <- geneNames
+exprMatrix <- exprMatrix[unique(rownames(exprMatrix)),]
 exprMatrix[1:5,1:4]
 
 # Remove file downloaded:
@@ -238,25 +322,21 @@ The cell types are available at the author's website. For simplicity, here we wi
 ```{r cellLabels}
 cellLabels <- paste(file.path(system.file('examples', package='AUCell')), "mouseBrain_cellLabels.tsv", sep="/")
 cellLabels <- read.table(cellLabels, row.names=1, header=TRUE, sep="\t")
-cellLabels <- as.data.frame(cellLabels)
-colnames(cellLabels) <- "CellType"
+cellInfo <- as.data.frame(cellLabels)
+colnames(cellInfo) <- "Class"
 ```
 
-Finally, this information can be merged into a single Bioconductor object.
-Here we use a `SingleCellExperiment`, but a `SummarizedExperiment`, `ExpressionSet` or similar classes would also be valid. You might just need to adjust the accessor functions `colData()`, and `counts()` in the next steps.
-```{r createEset, warning=FALSE, eval=FALSE}
-# TODO: Change to loom file
-exprMatrix <- exprMatrix[unique(rownames(exprMatrix)),] # Remove duplicated rows
-dim(exprMatrix)
+## Saving into loom
 
-SingleCellExperiment
-library(SingleCellExperiment)
-sceMouseBrain <- SingleCellExperiment(assays = list(counts = exprMatrix),
-colData=data.frame(cellLabels[colnames(exprMatrix),, drop=FALSE]))
+To run SCENIC in Python we recommend to save/export the expression matrix and cell metadata into a .loom file (for R, any R/Bioconductor object is also OK): 
 
+```{r saveAsLoom, warning=FALSE, eval=FALSE}
 # setwd("SCENIC_MouseBrain")
 dir.create("data")
-saveRDS(sceMouseBrain, file="data/sceMouseBrain.Rds")
+loom <- build_loom("data/mouseBrain.loom", dgem=exprMatrix)
+loom <- add_cellAnnotation(loom, cellInfo)
+close_loom(loom)
 ```
+
 
 # References

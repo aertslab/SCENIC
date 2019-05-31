@@ -7,6 +7,7 @@ output:
     toc: yes
     toc_float: yes
     css: corrected.css
+    results: hold
   html_notebook:
     toc: yes
   pdf_document:
@@ -137,23 +138,25 @@ The main output (i.e. plots, HTML reports,... ) will be saved into the `output` 
 
 The input for SCENIC is a single-cell RNA-seq expression matrix (with gene-symbol as `rownames`, see the `vignette("SCENIC_Setup")` for details). The first step is to load this matrix.
 
-For tests (quick runs) we provide a toy example only 200 cells and <1000 genes:
+For this tutorial we provide a toy example only 200 cells and <1000 genes from the mouse brain (described in the setup vignette):
 ```{r loadLoom}
 loomPath <- system.file(package="SCENIC", "examples/mouseBrain_toy.loom")
+```
 
+```{r loadExprMat, eval=FALSE, echo=FALSE}
+# This toy example is a subset of the 3005 cell mouse brain dataset by Zeisel et al.:
+download.file("http://loom.linnarssonlab.org/clone/Previously%20Published/Cortex.loom", "Cortex.loom")
+loomPath <- "Cortex.loom"
+```
+
+Open the loom file and load the expression matrix (and cell annotation if available)
+```{r} 
 library(SCopeLoomR)
 loom <- open_loom(loomPath, mode="r")
 exprMat <- get_dgem(loom)
-dim(exprMat)
-```
+cellInfo <- get_cellAnnotation(loom)
+close_loom(loom)
 
-This toy example is a subset of the 3005 cell mouse brain dataset described in the setup vignette:
-```{r loadExprMat, eval=FALSE}
-# TODO: Convert to loom
-exprMatPath <- "data/sceMouseBrain.RData"
-library(SingleCellExperiment)
-sceMouseBrain <- readRDS(exprMatPath)
-exprMat <- counts(sceMouseBrain)
 dim(exprMat)
 ```
 
@@ -162,15 +165,18 @@ dim(exprMat)
 In Step 3-4 (scoring the GRN and clustering), it is interesting to compare the results with known information about the cells. 
 You can already indicate which variables will be to plot, and assign them a specific color (otherwise one will be assigned automatically, e.g. when colloring on on the heatmaps or t-SNE).
 
-```{r cellInfo, fig.height=4, fig.width=4}
-cellInfo <- get_cellAnnotation(loom)
-close_loom(loom)
+```{r cellInfo}
 # cellInfo$nGene <- colSums(exprMat>0)
-# cellInfo <- data.frame(cellInfo)
 head(cellInfo)
+cellInfo <- data.frame(cellInfo)
+cellTypeColumn <- "Class"
+colnames(cellInfo)[which(colnames(cellInfo)==cellTypeColumn)] <- "CellType"
+cbind(table(cellInfo$CellType))
 dir.create("int")
 saveRDS(cellInfo, file="int/cellInfo.Rds")
+```
 
+```{r cellInfoColor, fig.height=4, fig.width=4}
 # Color to assign to the variables (same format as for NMF::aheatmap)
 colVars <- list(CellType=c("microglia"="forestgreen", 
                            "endothelial-mural"="darkorange", 
@@ -243,7 +249,7 @@ To avoid removing small (but potentially interesting) cell populations, we recom
 3. Finally, only the genes that are **available in RcisTarget databases** will be kept. 
 This filter is mostly to save some running time for GENIE3/GRNBoost, since the genes that are not available in the databases will not be used in upcoming steps.
 
-```{r filterGenes}
+```{r filterGenes, results="hold"}
 # (Adjust minimum values according to your dataset)
 genesKept <- geneFiltering(exprMat, scenicOptions=scenicOptions,
                            minCountsPerGene=3*.01*ncol(exprMat),
@@ -293,7 +299,7 @@ Since GENIE3 is based on a Random Forest approach, each time it is run the resul
 GENIE3 will typically take several hours (or days) to run. If you are running this workflow on an RStudio session, we recommend that you stop here and run the next code chunk in an independent R console (i.e. with `screen`/`tmux`) or in an server/HPC (if available). The upcoming code chunks will resume the workflow by loading GENIE3 output.
 
 
-```{r genie3, eval=TRUE}
+```{r genie3, eval=TRUE, results="hold"}
 ## If launched in a new session, you will need to reload...
 # setwd("...")
 # loomPath <- "..."

@@ -2,4 +2,14 @@
 ^\.Rproj\.user$
 .gitignore
 .Rhistory
-.Rbuildignore
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+packrat/lib*/
+packrat/src/
+z_*
+vignettes/SCENIC_MouseBrain
+vignettes/pySCENIC_tutorial

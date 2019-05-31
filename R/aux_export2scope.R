@@ -72,6 +72,12 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   motifEnrichment <- loadInt(scenicOptions, "motifEnrichment_selfMotifs_wGenes")
   motifEnrichment <- motifEnrichment[grep("transfac_pro__", motifEnrichment[["motif"]], invert = T),] #TODO
   regulonThresholds <- loadInt(scenicOptions, "aucell_thresholds")
+  if(!"aucThr" %in% names(regulonThresholds[[1]]))
+  {
+    # regulonThresholds <- lapply(regulonThresholds, function(x) list(selected=x))
+    warning("The binarized regulon activity will not been added to the loom.")
+    regulonThresholds <- NULL
+  }
   add_scenic_regulons(loom=loom
                       , regulons=regulons
                       , regulon.threshold.assignments=regulonThresholds # Optional
