@@ -266,7 +266,7 @@ div.tocify {
 <p>To start this tutorial you should have read the “Introduction and setup” vignette (<code>vignette(&quot;SCENIC_Setup&quot;)</code>) and run the setup steps.</p>
 <div id="command-list" class="section level2">
 <h2>Command list</h2>
-<p>Overview of the main commands used to run the SCENIC workflow. To be used as cheatsheet or template (it is not exhaustive). They are explained in the following sections.</p>
+<p>This is an overview of the main commands used to run the SCENIC workflow. (To be used as cheatsheet or template, it is not exhaustive). They are explained in the following sections.</p>
 <pre class="r"><code>### Load data
 loomPath &lt;- system.file(package=&quot;SCENIC&quot;, &quot;examples/mouseBrain_toy.loom&quot;)
 library(SCopeLoomR)
@@ -392,9 +392,9 @@ plot.new(); legend(0,1, fill=colVars$CellType, legend=names(colVars$CellType))</
 <p>The default settings should be valid for most analyses. The parameters that need to be specified in all runs is the organism (<code>mgi</code> for mouse, <code>hgnc</code> for human, or <code>dmel</code> for fly), and the directory where the RcisTarget databases are stored (you may create a link in the current directory to avoid duplicating them, e.g. in linux: <code>system(&quot;ln -s ~/path/to/dbs databases&quot;)</code>).</p>
 <p>For details on the options that can be modified check the help of <code>?initializeScenic</code> or of the specific function that takes it as input.</p>
 <pre class="r"><code>library(SCENIC)
-org=&quot;mgi&quot; # or hgnc, or dmel
-dbDir=&quot;cisTarget_databases&quot; # RcisTarget databases location
-myDatasetTitle=&quot;SCENIC example on Mouse brain&quot; # choose a name for your analysis
+org &lt;- &quot;mgi&quot; # or hgnc, or dmel
+dbDir &lt;- &quot;cisTarget_databases&quot; # RcisTarget databases location
+myDatasetTitle &lt;- &quot;SCENIC example on Mouse brain&quot; # choose a name for your analysis
 data(defaultDbNames)
 dbs &lt;- defaultDbNames[[org]]
 scenicOptions &lt;- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=10) </code></pre>
@@ -779,7 +779,7 @@ AUCell::AUCell_plotTSNE(dr_coords, cellsAUC=selectRegulons(regulonAUC, tfs), plo
 <div id="sessioninfo" class="section level1">
 <h1>SessionInfo</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Fri May 31 15:18:43 2019&quot;</code></pre>
+<pre><code>## [1] &quot;Fri May 31 17:18:14 2019&quot;</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-pc-linux-gnu (64-bit)

@@ -134,8 +134,9 @@ selectRegulons <- function(regulons, tfs, onlyNonDuplicatedExtended=FALSE)
 #' @export
 regulon_plotExpression <- function(exprMat, regulonsSelected, nCells=500, 
                                    cellInfo=NULL, colVars=NULL, color=c("black","goldenrod","yellow"), ...)
-{f
-  cells2plot <- sample(colnames(exprMat), nCells)
+{
+  cells2plot <- colnames(exprMat)
+  if(nCells < ncol(exprMat)) cells2plot <- sample(cells2plot, nCells)
   if(!is.null(cellInfo)) cellInfo <- cellInfo[cells2plot,, drop=FALSE]
   
   regulons_df <- reshape2::melt(regulonsSelected)

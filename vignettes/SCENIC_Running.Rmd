@@ -60,8 +60,9 @@ To start this tutorial you should have read the "Introduction and setup" vignett
 
 ## Command list
 
-Overview of the main commands used to run the SCENIC workflow. 
-To be used as cheatsheet or template (it is not exhaustive). They are explained in the following sections.
+This is an overview of the main commands used to run the SCENIC workflow.
+(To be used as cheatsheet or template, it is not exhaustive). 
+They are explained in the following sections.
 
 ```{r eval=FALSE}
 ### Load data
@@ -200,9 +201,9 @@ For details on the options that can be modified check the help of `?initializeSc
 
 ```{r chooseOrg}
 library(SCENIC)
-org="mgi" # or hgnc, or dmel
-dbDir="cisTarget_databases" # RcisTarget databases location
-myDatasetTitle="SCENIC example on Mouse brain" # choose a name for your analysis
+org <- "mgi" # or hgnc, or dmel
+dbDir <- "cisTarget_databases" # RcisTarget databases location
+myDatasetTitle <- "SCENIC example on Mouse brain" # choose a name for your analysis
 data(defaultDbNames)
 dbs <- defaultDbNames[[org]]
 scenicOptions <- initializeScenic(org=org, dbDir=dbDir, dbs=dbs, datasetTitle=myDatasetTitle, nCores=10) 
