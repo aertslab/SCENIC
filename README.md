@@ -3,7 +3,7 @@
 
 SCENIC is an R package to infer Gene Regulatory Networks and cell types from single-cell RNA-seq data. 
 
-For more details and installation instructions see the tutorials: [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/a0a00644b2f3589a3e2bc65486fc5f6cc00f48e1/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/a0a00644b2f3589a3e2bc65486fc5f6cc00f48e1/inst/doc/SCENIC_Running.html).
+For more details and installation instructions see the tutorials: [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/SCENIC_Setup.html), and [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/SCENIC_Running.html).
 
 The output from the examples is available at: http://scenic.aertslab.org/examples/ . 
 
@@ -12,7 +12,7 @@ Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master
 ### News
 
 24/01/2019
-- [Tutorial](https://rawcdn.githack.com/aertslab/SCENIC/master/inst/doc/importing_pySCENIC.html) for importing results from [loom](http://scope.aertslab.org/) files/[pySCENIC](http://pyscenic.readthedocs.io)
+- [Tutorial](https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/importing_pySCENIC.html) for importing results from [loom](http://scope.aertslab.org/) files/[pySCENIC](http://pyscenic.readthedocs.io)
 
 20/06/2018
 - Added function `export2scope()` (see http://scope.aertslab.org/). Version bump to 1.0.
