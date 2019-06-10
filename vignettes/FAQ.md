@@ -14,6 +14,7 @@
    *Technical issues:*
    - Errors reading the .feather databases
    - Implementations, versions and dependencies
+   - Other issues
 
 ## Interpretation of results
 
@@ -83,4 +84,8 @@ We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repositor
 The results are equivalent across versions and provide output `.loom` files that can be explored in [SCope](http://scope.aertslab.org) or used as interface between R and Python.
 
 The details and the rationale behind each of the steps in SCENIC are explained in the 'detailed_tutorials' in the R repository (https://github.com/aertslab/SCENIC/tree/master/vignettes). 
+
+### Other issues
+
+You can check whether someone has already had a similar issue in https://github.com/aertslab/SCENIC/issues?q=+is%3Aclosed
 
