@@ -13,7 +13,8 @@
    
    *Technical issues:*
    - Errors reading the .feather databases
-   - Implementations, versions and dependencies
+   - Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
+   - R vs Python version
    - Other issues
 
 ## Interpretation of results
@@ -74,7 +75,13 @@ We recommended to download the databases using zsync_curl (https://resources.aer
 
 You can also check whether you are using the latest R feather package (versions older than 0.3.1 are more likely to crash due to this error).
 
-### Implementations, versions and dependencies
+### Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
+
+You can find previous versions of SCENIC (and which R/Bioconductor version they correspond to) in "releases": https://github.com/aertslab/SCENIC/releases
+
+To install them, just add the tag: `devtools::install_github("aertslab/SCENIC@v1.1.1")`
+
+### R vs Python version
 
 SCENIC is implemented in **R** ([pySCENIC](https://github.com/aertslab/SCENIC)) and **Python** ([pySCENIC](https://github.com/aertslab/pySCENIC)). 
 
