@@ -73,7 +73,7 @@ Errors reading the databases usually happens when the files are incomplete/corru
 
 We recommended to download the databases using zsync_curl (https://resources.aertslab.org/cistarget/help.html). Once you have the files, make sure the sha256sum match the reported ones (https://resources.aertslab.org/cistarget/databases/sha256sum.txt). 
 
-You can also check whether you are using the latest R feather package (versions older than 0.3.1 are more likely to crash due to this error).
+You can also check whether you are using the latest R feather package (versions older than 0.3.1 are more likely to crash due to corrupt downloads).
 
 ### Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
 
