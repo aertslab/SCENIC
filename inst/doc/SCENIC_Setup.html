@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2019-05-31" />
+<meta name="date" content="2019-06-14" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -130,7 +130,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>31 May 2019</em></h4>
+<h4 class="date"><em>14 June 2019</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
@@ -194,7 +194,7 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 <ul>
 <li><p>Each column corresponds to a sample (cell) and each row corresponds to a gene.</p></li>
 <li><p>The gene ID should be the <strong>gene-symbol</strong> and stored as <code>rownames</code> (for compatibility with RcisTarget annotation databases).</p></li>
-<li><p>Expression <strong>units</strong>: The preferred expression values are gene-summarized counts (which might or might not use unique molecular identifiers, UMI). Other measurements, such as counts or transcripts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (<em><span class="citation">Crow et al. (2016)</span></em>). Although more work is still needed in order to determine the best normalization approach (<em><span class="citation">Vallejos et al. (2017)</span></em>), we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and all of them provided reliable results (see <em><span class="citation">Aibar et al. (2017)</span></em>). The remaining steps of the workflow should not be affected by the expression units/normalization, as the expression is not taken into account for the motif analysis, and AUCell is within-cell ranking-based (wich works as an implicit normalization).</p></li>
+<li><p>Expression <strong>units</strong>: The preferred expression values are gene-summarized counts. There is currently not a strong recommendation towards using the <em>raw</em> counts, or counts <em>normalized</em> through single-cell specific methods (e.g. Seurat). Other measurements, such as transcripts/counts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (<em><span class="citation">Crow et al. (2016)</span></em>). The choice of input expression matrix might have some effect in the creation of the regulons (due to the co-expression analysis, the expression is not taken into account for the motif analysis), but not on the scoring of the regulons on the cells (AUCell is cell ranking-based, which works as an implicit normalization). Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and they all provided reliable results (see <em><span class="citation">Aibar et al. (2017)</span></em>).</p></li>
 </ul>
 </div>
 </div>
@@ -232,17 +232,19 @@ BiocManager::install(c(&quot;doMC&quot;, &quot;doRNG&quot;))
 # To export/visualize in http://scope.aertslab.org
 if (!requireNamespace(&quot;devtools&quot;, quietly = TRUE)) install.packages(&quot;devtools&quot;)
 devtools::install_github(&quot;aertslab/SCopeLoomR&quot;, build_vignettes = TRUE)</code></pre>
-<p>AUCell and RcisTarget were updated in May 2018 and Jan 2019. Please, make sure you have the recommended versions: <strong>AUCell &gt;=1.4.1</strong> (minimum 1.2.4), <strong>RcisTarget&gt;=1.2.0</strong> (minimum 1.0.2) and <strong>GENIE3&gt;=1.4.0</strong> (minimum 1.2.1).</p>
+<p>AUCell and RcisTarget were updated in January 2019. Please, make sure you have the recommended versions: <strong>AUCell &gt;=1.4.1</strong> (minimum 1.2.4), <strong>RcisTarget&gt;=1.2.0</strong> (minimum 1.0.2) and <strong>GENIE3&gt;=1.4.0</strong> (minimum 1.2.1).</p>
 <pre class="r"><code>packageVersion(&quot;AUCell&quot;)
 packageVersion(&quot;RcisTarget&quot;)
 packageVersion(&quot;GENIE3&quot;)</code></pre>
 <p>You are now ready to install SCENIC:</p>
 <pre class="r"><code>if (!requireNamespace(&quot;devtools&quot;, quietly = TRUE)) install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;aertslab/SCENIC&quot;) # To specify a version: ref=&quot;v1.1.0&quot;
+devtools::install_github(&quot;aertslab/SCENIC&quot;) 
 packageVersion(&quot;SCENIC&quot;)</code></pre>
 <div id="for-older-versions-of-rbioconductor" class="section level3">
 <h3>For older versions of R/Bioconductor</h3>
-<p>In case you have trobule installing the packages from Bioconductor (for example, if you don’t have the newest version of R), you may try installing them from Github <em>or</em> directly from the Bioconductor package files:</p>
+<p>For older versions of R/Bioconductor, you might need to install a previous <a href="https://github.com/aertslab/SCENIC/releases">version</a> of SCENIC. e.g.:</p>
+<pre class="r"><code>devtools::install_github(&quot;aertslab/SCENIC@v1.1.1&quot;)</code></pre>
+<p>In case you have trobule installing the packages from Bioconductor (for example, for older versions of R), you may try installing them from Github <em>or</em> directly from the Bioconductor package files:</p>
 <pre class="r"><code># Github:
 devtools::install_github(&quot;aertslab/AUCell&quot;)
 devtools::install_github(&quot;aertslab/RcisTarget&quot;)
@@ -397,9 +399,6 @@ close_loom(loom)</code></pre>
 </div>
 <div id="ref-crow2016">
 <p>Crow, Megan, Anirban Paul, Sara Ballouz, Z. Josh Huang, and Jesse Gillis. 2016. “Exploiting Single-Cell Expression to Characterize Co-Expression Replicability.” <em>Genome Biology</em> 17 (May): 101. doi:<a href="https://doi.org/10.1186/s13059-016-0964-6">10.1186/s13059-016-0964-6</a>.</p>
-</div>
-<div id="ref-vallejos2017">
-<p>Vallejos, Catalina A., Davide Risso, Antonio Scialdone, Sandrine Dudoit, and John C. Marioni. 2017. “Normalizing Single-Cell RNA Sequencing Data: Challenges and Opportunities.” <em>Nature Methods</em> 14 (6): 565–71. doi:<a href="https://doi.org/10.1038/nmeth.4292">10.1038/nmeth.4292</a>.</p>
 </div>
 </div>
 </div>

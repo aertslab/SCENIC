@@ -65,8 +65,10 @@ The input to SCENIC is the single-cell RNA-seq **expression matrix**:
 
 - The gene ID should be the **gene-symbol** and stored as `rownames` (for compatibility with RcisTarget annotation databases).
 
-- Expression **units**: The preferred expression values are gene-summarized counts (which might or might not use unique molecular identifiers, UMI).
-Other measurements, such as counts or transcripts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (*@crow2016*). Although more work is still needed in order to determine the best normalization approach (*@vallejos2017*), we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and all of them provided reliable results (see *@aibar2017*). The remaining steps of the workflow should not be affected by the expression units/normalization, as the expression is not taken into account for the motif analysis, and AUCell is within-cell ranking-based (wich works as an implicit normalization).
+- Expression **units**: The preferred expression values are gene-summarized counts. 
+There is currently not a strong recommendation towards using the *raw* counts, or counts *normalized* through single-cell specific methods (e.g. Seurat). 
+Other measurements, such as transcripts/counts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (*@crow2016*).
+The choice of input expression matrix might have some effect in the creation of the regulons (due to the co-expression analysis, the expression is not taken into account for the motif analysis), but not on the scoring of the regulons on the cells (AUCell is cell ranking-based, which works as an implicit normalization). Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and they all provided reliable results (see *@aibar2017*).
 
 # Availability (R / Python)
 
@@ -112,7 +114,7 @@ if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
 ```
 
-AUCell and RcisTarget were updated in May 2018 and Jan 2019. Please, make sure you have the recommended versions:
+AUCell and RcisTarget were updated in January 2019. Please, make sure you have the recommended versions:
 **AUCell >=1.4.1** (minimum 1.2.4), **RcisTarget>=1.2.0** (minimum 1.0.2) and **GENIE3>=1.4.0** (minimum 1.2.1).
 
 ```{r versions, eval=FALSE}
@@ -124,13 +126,19 @@ packageVersion("GENIE3")
 You are now ready to install SCENIC:
 ```{r installSCENIC, eval=FALSE}
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-devtools::install_github("aertslab/SCENIC") # To specify a version: ref="v1.1.0"
+devtools::install_github("aertslab/SCENIC") 
 packageVersion("SCENIC")
 ```
 
 ### For older versions of R/Bioconductor 
 
-In case you have trobule installing the packages from Bioconductor (for example, if you don't have the newest version of R), you may try installing them from Github *or* directly from the Bioconductor package files:
+For older versions of R/Bioconductor, you might need to install a previous [version](https://github.com/aertslab/SCENIC/releases) of SCENIC. e.g.: 
+
+```{r olderVersions, eval=FALSE}
+devtools::install_github("aertslab/SCENIC@v1.1.1")
+```
+
+In case you have trobule installing the packages from Bioconductor (for example, for older versions of R), you may try installing them from Github *or* directly from the Bioconductor package files:
 
 ```{r alternativeDownload, eval=FALSE}
 # Github:
