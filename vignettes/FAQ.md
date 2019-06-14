@@ -1,6 +1,22 @@
 
 *Frequently asked questions (FAQ):*
 
+  *Interpretation of results:*
+   - What is the meaning of the sufix '_extended' in the regulon name?
+   - Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
+   - Missing relevant TFs / Known motifs are not annotated to the TF
+
+  *Modifying the pipeline:*
+   - Is it possible to apply SCENIC to other organisms?
+   - Can I use my own list of TFs and targets (e.g. from an external analysis or resource) with AUCell and skip the network inference steps?
+   - Is it possible to use another co-expression network tool for the initial TF-target links? 
+   
+   *Technical issues:*
+   - Errors reading the .feather databases
+   - Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
+   - R vs Python version
+   - Other issues
+
 ## Interpretation of results
 
 ### What is the meaning of the sufix '_extended' in the regulon name?
@@ -13,7 +29,7 @@ The full explanation is available in the vignette *[detailedStep_2_createRegulon
 ...
 The annotations provided by the cisTarget databases can be divided into high-confidence or low-confidence, depending on the annotation source (annotated in the original database, inferred by orthology, or inferred by motif similarity). The main regulons only use the “high confidence” annotations, which by default are “direct annotation” and “inferred by orthology”. **The sufix _extended** in the regulon name indicates **lower confidence annotations** (by default “inferred by motif similarity”) are also used.
 
-### Is it possible use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
+### Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
 Yes, the regulon activity matrix can be used as input for other methods, such as dimensionality reduction (e.g. t-SNE/UMAP, difussion maps) or pseudotime/trajectory analysis. 
 
 However, you should check the assumptions/requirements of the input data of the specific tool (e.g. branches, expectations in regards to distribution and continuous/discrete values, etc...).
@@ -48,4 +64,35 @@ An example of the input format is available at:
 http://scenic.aertslab.org/examples/SCENIC_MouseBrain/int/2.1_tfModules_forMotifEnrichmet.Rds 
 (e.g. co-expression gene sets as a list, including the candidate TF/regulator in the name).
 
+
+## Technical issues
+
+### Errors reading the .feather databases
+
+Errors reading the databases usually happens when the files are incomplete/corrupt (e.g. by a failed download).
+
+We recommended to download the databases using zsync_curl (https://resources.aertslab.org/cistarget/help.html). Once you have the files, make sure the sha256sum match the reported ones (https://resources.aertslab.org/cistarget/databases/sha256sum.txt). 
+
+You can also check whether you are using the latest R feather package (versions older than 0.3.1 are more likely to crash due to corrupt downloads).
+
+### Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
+
+You can find previous versions of SCENIC (and which R/Bioconductor version they correspond to) in "releases": https://github.com/aertslab/SCENIC/releases
+
+To install them, just add the tag: `devtools::install_github("aertslab/SCENIC@v1.1.1")`
+
+### R vs Python version
+
+SCENIC is implemented in **R** ([pySCENIC](https://github.com/aertslab/SCENIC)) and **Python** ([pySCENIC](https://github.com/aertslab/pySCENIC)). 
+
+The Python implementation is significantly faster to run, so we generally recommend using it for most analyses. 
+We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) and [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a [Nextflow](https://github.com/aertslab/scenic-nf) pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.
+
+The results are equivalent across versions and provide output `.loom` files that can be explored in [SCope](http://scope.aertslab.org) or used as interface between R and Python.
+
+The details and the rationale behind each of the steps in SCENIC are explained in the 'detailed_tutorials' in the R repository (https://github.com/aertslab/SCENIC/tree/master/vignettes). 
+
+### Other issues
+
+You can check whether someone has already had a similar issue in https://github.com/aertslab/SCENIC/issues?q=+is%3Aclosed
 
