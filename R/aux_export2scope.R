@@ -26,6 +26,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   
   if(length(hierarchy) > 3) stop("Maximum three hierarchy levels")
   if(length(hierarchy) < 3) hierarchy <- c(hierarchy, rep("", 5-length(hierarchy)))
+  if(file.exists(fileName)) stop("File '", getOutName(scenicOptions, "loomFile"), "' already exists.")
   
   # TODO: ask max about order of samples tsne-expr-info
   suppressPackageStartupMessages(require(SCopeLoomR))
@@ -34,9 +35,20 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   defaultTsne <- readRDS(tsneFileName(scenicOptions))
   defaultTsne_name <- paste("SCENIC t-SNE:", defaultTsne$type)
   defaultTsne <- defaultTsne$Y
+  cellOrder <- rownames(defaultTsne)
+  if(!all(colnames(dgem) == cellOrder)) warning("tSNE and matrix cell names do not match.")
   
+  # Cell info:
+  cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
+  if(!all(rownames(cellInfo) == cellOrder)) warning("CellInfo cell names (order?) do not match.")
+  for(cn in colnames(cellInfo)) if(is.numeric(cellInfo[,cn]) & is.character(cellInfo[,cn])) stop(paste0(cn, "should be either numeric or character/factor."))
+  if(getSettings(scenicOptions, "verbose")) {
+    message("The folowing cell metadata will be added:")
+    print(data.frame(type=cbind(sapply(cellInfo, class))))
+  }
+  
+  # Start adding...
   fileName <- getOutName(scenicOptions, "loomFile")
-  if(file.exists(fileName)) stop("File '", getOutName(scenicOptions, "loomFile"), "' already exists.")
   loom <- build_loom(file.name=fileName,
                      dgem=dgem,
                      title=getDatasetInfo(scenicOptions,"datasetTitle"),
@@ -49,7 +61,6 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
                                                       level.3.name=hierarchy[3]))
   
   # Known cell information/annotation  
-  cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
   if(!is.null(cellInfo))
   {
     cellInfo <- data.frame(cellInfo)
@@ -59,12 +70,21 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
     # Add annotation
     for(cn in colnames(cellInfo))
     {
-      add_col_attr(loom=loom, key=cn, value=cellInfo[,cn])
+      isMetric <- FALSE
+      isAnnotation <- FALSE
+      if(is.character(cellInfo[,cn]) || is.factor(cellInfo[,cn])) 
+      {
+        isAnnotation <- TRUE
+      }else{
+        if(all(!is.na(as.numeric(as.character(cellInfo[,cn]))))) isMetric <- TRUE
+      }
+      add_col_attr(loom=loom, key=cn, value=cellInfo[,cn], as.annotation=isAnnotation, as.metric=isMetric)
     }
   }
   
   # Regulons AUC matrix
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+  if(!all(colnames(regulonAUC) == cellOrder)) warning("regulonAUC cell names (order?) do not match.")
   add_scenic_regulons_auc_matrix(loom=loom, regulons.AUC=AUCell::getAUC(regulonAUC))
   
   # Regulons (gene list)
@@ -97,7 +117,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
     for(tsneFile in allTsneFiles)
     {
       tryCatch(
-      add_embedding(loom=loom, embedding=readRDS(file.path(tsnePath, tsneFile))$Y, name=paste0("SCENIC: ", file.path(tsneFile)))
+      add_embedding(loom=loom, embedding=readRDS(file.path(tsnePath, tsneFile))$Y, name=paste0("SCENIC: ",  gsub(".Rds","", tsneFile, fixed=TRUE)))
       , error=function(e) print(paste0("Cannot add tsne: ", e$message)))
     }
   }
