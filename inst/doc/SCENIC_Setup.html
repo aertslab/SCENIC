@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2019-06-14" />
+<meta name="date" content="2019-06-20" />
 
 <title>SCENIC: Introduction and setup</title>
 
@@ -130,11 +130,11 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">SCENIC: Introduction and setup</h1>
 <h3 class="subtitle"><em>SCENIC (Single Cell rEgulatory Network Inference and Clustering)</em></h3>
-<h4 class="date"><em>14 June 2019</em></h4>
+<h4 class="date"><em>20 June 2019</em></h4>
 <h4 class="abstract">Abstract</h4>
 SCENIC is a tool to infer Gene Regulatory Networks and their associated cell states from single-cell RNA-seq data. This introductory vignette provides an overview of the steps of the workflow, installation, and source of the dataset used as example.
 <h4 class="package">Package</h4>
-<p>SCENIC 1.1.2.1</p>
+<p>SCENIC 1.1.2.2</p>
 
 </div>
 
@@ -194,7 +194,7 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 <ul>
 <li><p>Each column corresponds to a sample (cell) and each row corresponds to a gene.</p></li>
 <li><p>The gene ID should be the <strong>gene-symbol</strong> and stored as <code>rownames</code> (for compatibility with RcisTarget annotation databases).</p></li>
-<li><p>Expression <strong>units</strong>: The preferred expression values are gene-summarized counts. There is currently not a strong recommendation towards using the <em>raw</em> counts, or counts <em>normalized</em> through single-cell specific methods (e.g. Seurat). Other measurements, such as transcripts/counts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (<em><span class="citation">Crow et al. (2016)</span></em>). The choice of input expression matrix might have some effect in the creation of the regulons (due to the co-expression analysis, the expression is not taken into account for the motif analysis), but not on the scoring of the regulons on the cells (AUCell is cell ranking-based, which works as an implicit normalization). Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and they all provided reliable results (see <em><span class="citation">Aibar et al. (2017)</span></em>).</p></li>
+<li><p>Expression <strong>units</strong>: The preferred expression values are gene-summarized counts. There is currently not a strong recommendation towards using the <em>raw</em> counts, or counts <em>normalized</em> through single-cell specific methods (e.g. Seurat). Other measurements, such as transcripts/counts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (<em><span class="citation">Crow et al. (2016)</span></em>). The choice of input expression matrix might have some effect on the co-expression analysis to create the regulons (step 1). The other steps of the workflow are not directly affected by the input expression values: (2) The expression is not taken into account for the motif analysis, and (3) AUCell, which is used for scoring the regulons on the cells, is cell ranking-based (it works as an implicit normalization). Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and they all provided reliable results (see <em><span class="citation">Aibar et al. (2017)</span></em>).</p></li>
 </ul>
 </div>
 </div>
@@ -218,13 +218,13 @@ SCENIC is a tool to infer Gene Regulatory Networks and their associated cell sta
 BiocManager::version()
 # If your bioconductor version is previous to 3.9, see the section bellow
 
+## Required
 BiocManager::install(c(&quot;AUCell&quot;, &quot;RcisTarget&quot;))
-BiocManager::install(c(&quot;GENIE3&quot;)) # Optional
-# Also required:
-install.packages('zoo')
+BiocManager::install(c(&quot;GENIE3&quot;)) # Optional. Can be replaced by GRNBoost
 
-# Recommended to run AUCell:
-BiocManager::install(c(&quot;mixtools&quot;, &quot;rbokeh&quot;))
+## Optional (but highly recommended):
+# To score the network on cells (i.e. run AUCell):
+BiocManager::install(c(&quot;zoo&quot;, &quot;mixtools&quot;, &quot;rbokeh&quot;))
 # For various visualizations and perform t-SNEs:
 BiocManager::install(c(&quot;DT&quot;, &quot;NMF&quot;, &quot;pheatmap&quot;, &quot;R2HTML&quot;, &quot;Rtsne&quot;))
 # To support paralell execution (not available in Windows):
