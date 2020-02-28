@@ -20,14 +20,14 @@
 #' # scenicOptions@fileNames$output["loomFile",] <- "myAnalysis.loom"
 #' # export2scope(scenicOptions, exprMat, hierarchy=c("SCENIC", "MouseBrain"))
 #' @export 
-export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), addAllTsnes=TRUE)
+export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), addAllTsnes=TRUE, overwrite=FALSE)
 {
+  fileName <- getOutName(scenicOptions, "loomFile")
   # TODO: what about if there is no dgem, but only normalized?
   
   if(length(hierarchy) > 3) stop("Maximum three hierarchy levels")
   if(length(hierarchy) < 3) hierarchy <- c(hierarchy, rep("", 5-length(hierarchy)))
-  if(file.exists(fileName)) stop("File '", getOutName(scenicOptions, "loomFile"), "' already exists.")
-  
+  if(file.exists(fileName)){if(overwrite){file.remove(fileName)}else{stop("File '", fileName,"' already exists.")}  
   # TODO: ask max about order of samples tsne-expr-info
   suppressPackageStartupMessages(require(SCopeLoomR))
 
@@ -48,7 +48,6 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   }
   
   # Start adding...
-  fileName <- getOutName(scenicOptions, "loomFile")
   loom <- build_loom(file.name=fileName,
                      dgem=dgem,
                      title=getDatasetInfo(scenicOptions,"datasetTitle"),
