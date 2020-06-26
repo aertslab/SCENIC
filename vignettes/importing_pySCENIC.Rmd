@@ -63,7 +63,6 @@ regulons_incidMat <- get_regulons(loom) # as incid matrix
 regulons_motif <- regulonsToGeneLists(regulons_incidMat) # convert to list
 
 regulons_ChIP <- regulonsToGeneLists(get_regulons(loom, attrName = "TrackRegulons"))
-close_loom(loom)
 
 # Regulon AUC and thresholds
 regulonsAUC <- get_regulonsAuc(loom)
