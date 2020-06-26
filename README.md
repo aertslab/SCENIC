@@ -5,7 +5,7 @@
 
 The description of the method and some usage examples are available in [Nature Methods (2017)](https://www.nature.com/articles/nmeth.4463).
 
-There are currently implementations of SCENIC in R (this repository), and in Python. If you don't have a strong prefference for running it in R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow DSL1 workflow*, and Jupyter/*Python notebooks* to easily run SCENIC.
+There are currently implementations of SCENIC in R (this repository), and in Python. If you don't have a strong prefference for running it in R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow DSL1 workflow*, and Jupyter/*Python notebooks* to easily run SCENIC (highly recommended for running it in batch or bigger datasets).
 
 For more details and installation instructions on running SCENIC in `R` see the tutorials:
   - [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/701cc7cc4ac762b91479b3bd2eaf5ad5661dd8c2/inst/doc/SCENIC_Setup.html)
