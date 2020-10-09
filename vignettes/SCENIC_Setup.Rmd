@@ -25,10 +25,10 @@ vignette: >
 ```{r libraries, echo=FALSE, message=FALSE, warning=FALSE}
 # Suppress loading messages when building the HTML
 suppressPackageStartupMessages({
-library(GEOquery)
 library(data.table)
 library(Biobase)
 library(SingleCellExperiment)
+library(GEOquery) # Optional
 })
 
 # Do not convert strings to factors
@@ -55,7 +55,7 @@ Please, cite this article if you use SCENIC in your research.
 ## Species
 The current version of SCENIC supports *human*, *mouse* and *fly* (Drosophila melanogaster).
 
-To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool).
+To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool, we are currently working on providing tutorials for doing this).
 
 
 ## Input: expression matrix
@@ -76,7 +76,7 @@ Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datase
 SCENIC is implemented in **R** (this package and tutorial) and **Python** ([pySCENIC](https://github.com/aertslab/pySCENIC)). 
 
 The Python implementation is significantly faster to run, so we generally recommend using it for most analyses. 
-We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) and [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a [Nextflow](https://github.com/aertslab/scenic-nf) pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.
+We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) and [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a **Nextflow pipeline** ([VSN](https://github.com/aertslab/SCENICprotocol), useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.
 
 The results are equivalent across versions and provide output `.loom` files that can be explored in [SCope](http://scope.aertslab.org) or used as interface between R and Python.
 
@@ -97,7 +97,7 @@ Therefore, you will need to install these packages, and some extra dependencies,
 ```{r install, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 BiocManager::version()
-# If your bioconductor version is previous to 3.9, see the section bellow
+# If your bioconductor version is previous to 4.0, see the section bellow
 
 ## Required
 BiocManager::install(c("AUCell", "RcisTarget"))
@@ -107,21 +107,12 @@ BiocManager::install(c("GENIE3")) # Optional. Can be replaced by GRNBoost
 # To score the network on cells (i.e. run AUCell):
 BiocManager::install(c("zoo", "mixtools", "rbokeh"))
 # For various visualizations and perform t-SNEs:
-BiocManager::install(c("DT", "NMF", "pheatmap", "R2HTML", "Rtsne"))
+BiocManager::install(c("DT", "NMF", "ComplexHeatmap", "R2HTML", "Rtsne"))
 # To support paralell execution (not available in Windows):
 BiocManager::install(c("doMC", "doRNG"))
 # To export/visualize in http://scope.aertslab.org
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
-```
-
-AUCell and RcisTarget were updated in January 2019. Please, make sure you have the recommended versions:
-**AUCell >=1.4.1** (minimum 1.2.4), **RcisTarget>=1.2.0** (minimum 1.0.2) and **GENIE3>=1.4.0** (minimum 1.2.1).
-
-```{r versions, eval=FALSE}
-packageVersion("AUCell")
-packageVersion("RcisTarget")
-packageVersion("GENIE3")
 ```
 
 You are now ready to install SCENIC:
@@ -136,10 +127,11 @@ packageVersion("SCENIC")
 For older versions of R/Bioconductor, you might need to install a previous [version](https://github.com/aertslab/SCENIC/releases) of SCENIC. e.g.: 
 
 ```{r olderVersions, eval=FALSE}
-devtools::install_github("aertslab/SCENIC@v1.1.1")
+# For R version 3.6 and Bioconductor 3.9:  
+devtools::install_github("aertslab/SCENIC@v1.1.2")
 ```
 
-In case you have trobule installing the packages from Bioconductor (for example, for older versions of R), you may try installing them from Github *or* directly from the Bioconductor package files:
+In case you have trouble installing the packages from Bioconductor (for example, for older versions of R), you may try installing them from Github *or* directly from the Bioconductor package files:
 
 ```{r alternativeDownload, eval=FALSE}
 # Github:
@@ -250,19 +242,11 @@ loomPath <- "Cortex.loom"
 To load the expression matrix and cell annotation:
 ```{r loadLoom, eval=FALSE}
 library(SCopeLoomR)
-loom <- open_loom(loomPath, mode="r")
+loom <- open_loom(loomPath, mode="r+") # We recommend to open files as read-only (mode="r"). However, since this is an old-format loom file, it needs write access to update it.
 exprMat <- get_dgem(loom)
-cellInfo <- get_cellAnnotation(loom)
+cellInfo <- get_cell_annotation(loom)
 close_loom(loom)
 ```
-
-```{r loadLoomSCE, eval=FALSE}
-# or into a SingleCellExperiment object:
-sceMouseBrain <- load_as_sce(loomPath)
-exprMat <- counts(sceMouseBrain)
-cellInfo <- colData(sceMouseBrain)
-```
-
 
 ## b) From 10X/CellRanger output files
 
@@ -286,8 +270,8 @@ Most of these objects have data acessors to retrieve the expression matrix and c
 For example, for a SingleCellExperiment object the accessors are `counts()` and `colData()`: 
 
 ```{r importSCE, eval=FALSE}
-sce <- load_as_sce(loomPath) # any SingleCellExperiment object
-
+library(SingleCellExperiment)
+## Get data from sce object:
 exprMat <- counts(sce)
 cellInfo <- colData(sce)
 ```
@@ -332,7 +316,7 @@ The cell types are available at the author's website. For simplicity, here we wi
 cellLabels <- paste(file.path(system.file('examples', package='AUCell')), "mouseBrain_cellLabels.tsv", sep="/")
 cellLabels <- read.table(cellLabels, row.names=1, header=TRUE, sep="\t")
 cellInfo <- as.data.frame(cellLabels)
-colnames(cellInfo) <- "Class"
+colnames(cellInfo) <- "CellType"
 ```
 
 ## Saving into loom
@@ -343,7 +327,7 @@ To run SCENIC in Python we recommend to save/export the expression matrix and ce
 # setwd("SCENIC_MouseBrain")
 dir.create("data")
 loom <- build_loom("data/mouseBrain.loom", dgem=exprMatrix)
-loom <- add_cellAnnotation(loom, cellInfo)
+loom <- add_cell_annotation(loom, cellInfo)
 close_loom(loom)
 ```
 

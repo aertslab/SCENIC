@@ -11,6 +11,8 @@
 \alias{getDatasetInfo,ScenicOptions-method}
 \alias{getDatabases}
 \alias{getDatabases,ScenicOptions-method}
+\alias{getStatus}
+\alias{getStatus,ScenicOptions-method}
 \alias{getSettings}
 \alias{getSettings,ScenicOptions-method}
 \alias{getOutName}
@@ -23,6 +25,7 @@
 \alias{initializeScenic}
 \alias{dbVersion}
 \alias{dbLoadingAttempt}
+\alias{checkAnnots}
 \title{Object to store SCENIC settings}
 \usage{
 \S4method{show}{ScenicOptions}(object)
@@ -34,6 +37,10 @@ getDatasetInfo(object, ...)
 getDatabases(object, ...)
 
 \S4method{getDatabases}{ScenicOptions}(object)
+
+getStatus(object, ...)
+
+\S4method{getStatus}{ScenicOptions}(object, asID = FALSE)
 
 getSettings(object, ...)
 
@@ -49,19 +56,31 @@ getIntName(object, ...)
 
 loadFile(object, ...)
 
-\S4method{loadFile}{ScenicOptions}(object, fileName, verbose = FALSE,
-  ifNotExists = c("error", "null"), ...)
+\S4method{loadFile}{ScenicOptions}(
+  object,
+  fileName,
+  verbose = FALSE,
+  ifNotExists = c("error", "null"),
+  ...
+)
 
 loadInt(object, ...)
 
 \S4method{loadInt}{ScenicOptions}(object, int_type = NULL, ...)
 
-initializeScenic(org = NULL, dbDir = "databases", dbs = NULL,
-  datasetTitle = "", nCores = 4)
+initializeScenic(
+  org = NULL,
+  dbDir = "databases",
+  dbs = NULL,
+  datasetTitle = "",
+  nCores = 4
+)
 
 dbVersion(dbs)
 
 dbLoadingAttempt(dbFilePath)
+
+checkAnnots(object, motifAnnot)
 }
 \value{
 \itemize{
