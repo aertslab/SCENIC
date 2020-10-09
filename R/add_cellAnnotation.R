@@ -1,23 +1,10 @@
-
-#' @import SingleCellExperiment
-#' @import SingleCellExperiment
-load_as_sce <- function(loomPath)
-{
-  loom <- open_loom(loomPath, mode="r")
-  dgem <- get_dgem(loom)
-  cellAnnot <- get_cellAnnotation(loom)
-  embeddings <- get_embeddings(loom)
-  close_loom(loom)
-
-  sce <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=dgem),
-                                                    colData=data.frame(cellAnnot[colnames(dgem),, drop=FALSE]),
-                                                    reducedDims=S4Vectors::SimpleList(embeddings))
-
-  return(sce)
-}
-
-
-add_cellAnnotation <- function(loom, cellAnnotation)
+#' @title add_cell_annotation
+#' @description Adds the data.frame with cell information to the loom file
+#' @param loom loom file handler
+#' @param cellAnnotation data.frame with the cell information
+#' @return The .loom file
+#' @export 
+add_cell_annotation <- function(loom, cellAnnotation)
 {
   cellAnnotation <- data.frame(cellAnnotation)
   if(any(c("nGene", "nUMI") %in% colnames(cellAnnotation)))
