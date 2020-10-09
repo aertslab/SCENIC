@@ -6,6 +6,7 @@
 #' @param aucMaxContrast To increase the AUC contrast decrease the value.
 #' @param offColor Color por the cells completelly off. To deactivate (color as black), set to NULL.
 #' @param showPlot Whether to plot the coloured t-SNE.
+#' @param showPlot Whether to plot add a legend to the plot.
 #' @param tSNE_fileName tSNE file name. If null, the default t-SNE is used.
 #' @param ... Other arguments to pass to the \code{plot} function.
 #' @return The cell colors (invisible)
@@ -23,7 +24,9 @@
 #' cellCol <- plotTsne_rgb(scenicOptions, regulonNames, aucType="Binary")
 #'
 #' @export
-plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContrast=0.8, offColor="#c0c0c030", showPlot=TRUE, tSNE_fileName=NULL, ...)
+plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", 
+                         aucMaxContrast=0.8, offColor="#c0c0c030", 
+                         showPlot=TRUE, showLegend=TRUE, tSNE_fileName=NULL, ...)
 {
   # Check format
   if(length(regulonNames)>3) stop("To plot more than three regulons, group them by color.")
@@ -40,7 +43,11 @@ plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContr
   tSNE <- readRDS(tSNE_fileName)
   
   mat4col <- mat4col[onlyNonDuplicatedExtended(rownames(mat4col)),,drop=FALSE]
-  reguCols <- lapply(regulonNames, function(x) unlist(sapply(x, function(tf) rownames(mat4col)[which(gsub("_extended","",getTF(rownames(mat4col))) %in% tf)])))
+  reguCols <- lapply(regulonNames, function(x) unlist(sapply(x, function(tf) {
+    rownames(mat4col)[which(gsub("_extended","",getTF(rownames(mat4col))) %in% tf)] 
+    }
+    )))
+  reguCols <- reguCols[lengths(reguCols)>0]
   
   # Average of binary...
   if(aucType=="binary")
@@ -49,11 +56,13 @@ plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContr
   # cellColChan <- sapply(reguCols, function(modsCol) apply(mat4col[modsCol,, drop=FALSE], 2, function(x) as.numeric(sum(x)==length(x))))
   
   # AUC
-  if(aucType=="auc") 
+  if(aucType=="auc") {
     cellColChan <- sapply(reguCols, function(regCol) {
       aucAvg <- colMeans(mat4col[regCol,, drop=FALSE])
-      sapply(as.numeric(aucAvg/(max(aucAvg)*aucMaxContrast)), min, 1)
+      setNames(sapply(as.numeric(aucAvg/(max(aucAvg)*aucMaxContrast)), min, 1), names(aucAvg))
     })
+  }
+    
   
   # Apply color
   missingCol <- setdiff(c("red","green", "blue"), colnames(cellColChan))
@@ -73,6 +82,17 @@ plotTsne_rgb <- function(scenicOptions, regulonNames, aucType="AUC", aucMaxContr
   {
     plot(tSNE$Y, col=cellCol[rownames(tSNE$Y)], pch=16, 
          sub=attr(cellCol, "Description"), axes=FALSE, ...)
+    
+    if(showLegend)
+    {
+      cellColChan[which(cellColChan < (aucMaxContrast/2), arr.ind = T)] <- 0
+      cellColChan <- cellColChan[which(apply(cellColChan, 1, function(x) any(x>0))),]
+      cellLabels <- setNames(colnames(cellColChan)[apply(cellColChan, 1, function(x) which.max(x))], rownames(cellColChan))
+      labsCoords <- t(sapply(split(data.frame(tSNE$Y), as.character(cellLabels[rownames(tSNE$Y)])), colMeans));
+      
+      regulonNames[rownames(labsCoords)] <- sapply(regulonNames[rownames(labsCoords)], paste, collapse=", ")
+      for(i in rownames(labsCoords)) text(mean(labsCoords[i,1]), mean(labsCoords[i,2]), regulonNames[i], cex=1, col="black")
+    }
   }
   invisible(cellCol)
 }
