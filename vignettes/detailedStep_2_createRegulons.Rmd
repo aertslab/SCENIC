@@ -387,3 +387,9 @@ if(getSettings(scenicOptions, "verbose"))
   summary(lengths(regulons))
 }
 ```
+
+```{r, eval=FALSE}
+# Finished. Update status.
+scenicOptions@status$current <- 2
+```
+

@@ -173,6 +173,9 @@ if(length(missingTFs) >0 )
   tfModules_withCorr <- rbind(tfModules_withCorr, data.frame(tfModules[tfModules$TF %in% missingTFs,], corr=NA))
 }
 saveRDS(tfModules_withCorr, file=getIntName(scenicOptions, "tfModules_asDF"))
+
+# Finished. Update status.
+object@status$current <- 1
 ```
 
 From this table, we can easily select gene-sets associated to each TF (i.e. `split(tfModules_withCorr$Target, tfModules_withCorr$TF)`).

@@ -7,7 +7,10 @@
 #' @description Step 2: RcisTarget (prune co-expression modules using TF-motif enrichment analysis)
 #' @param scenicOptions Fields used: TODO
 #' @param minGenes Minimum size of co-expression gene set (default: 20 genes)
-#' @param coexMethod Allows to select the method(s) used to generate the co-expression modules
+#' @param signifGenesMethod Method for 'addSignificantGenes'
+#' @param coexMethods Allows to select the method(s) used to generate the co-expression modules
+#' @param minJakkardInd Merge overlapping modules (with Jakkard index >=minJakkardInd; reduces running time).
+#' @param onlyPositiveCorr Whether to include only positive-correlated targets in the regulons (default: TRUE).
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -18,11 +21,25 @@
 #' 
 #' runSCENIC_2_createRegulons(scenicOptions)
 #' @export
-runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NULL)
+runSCENIC_2_createRegulons <- function(scenicOptions, 
+                                       minGenes=20, 
+                                       coexMethods=NULL, 
+                                       minJakkardInd=0.8,
+                                       signifGenesMethod="aprox", 
+                                       onlyPositiveCorr=TRUE,
+                                       onlyBestGsPerMotif=TRUE)
 {
   nCores <- getSettings(scenicOptions, "nCores")
-  tfModules_asDF <- loadInt(scenicOptions, "tfModules_asDF")
-  if(!is.null(coexMethod)) tfModules_asDF <- tfModules_asDF[which(tfModules_asDF$method %in% coexMethod),]
+  
+  tfModules_asDF <- tryCatch(loadInt(scenicOptions, "tfModules_asDF"),
+                       error = function(e) {
+                         if(getStatus(scenicOptions, asID=TRUE) < 2) 
+                           e$message <- paste0("It seems the co-expression modules have not been built yet. Please, run runSCENIC_1_coexNetwork2modules() first.\n", 
+                                               e$message)
+                         stop(e)
+                       })
+  if(!is.null(coexMethods)) tfModules_asDF <- tfModules_asDF[which(tfModules_asDF$method %in% coexMethods),]
+  if(!is.null(minJakkardInd)) tfModules_asDF <- mergeOverlappingModules(tfModules_asDF, minJakkardInd=minJakkardInd) # New
   if(nrow(tfModules_asDF)==0) stop("The co-expression modules are empty.")
   
   # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
@@ -31,8 +48,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tStep 2. Identifying regulons")
   if(getSettings(scenicOptions, "verbose")) message(msg)
 
-  ### Check org and load DBs
-  if(is.na(getDatasetInfo(scenicOptions, "org"))) stop('Please provide an organism (scenicOptions@inputDatasetInfo$org).')
+  ### Check load DBs
   library(AUCell)
   library(RcisTarget)
   motifAnnot <- getDbAnnotations(scenicOptions)
@@ -51,6 +67,10 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   genesInDb <- unique(unlist(lapply(getDatabases(scenicOptions), function(x)
     names(feather::feather_metadata(x)[["types"]]))))
   
+  ## Check if annotation and rankings (potentially) match:
+  featuresWithAnnot <- checkAnnots(scenicOptions, motifAnnot)
+  if(any(featuresWithAnnot == 0)) warning("Missing annotations\n", names(which(rankingsInDb==0)))
+  
   ### Filter & format co-expression modules
   # Remove genes missing from RcisTarget databases
   #  (In case the input matrix wasn't already filtered)
@@ -65,15 +85,39 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
                                                paste(missingGene, collapse=", ")))
   tfModules_asDF <- tfModules_asDF[which(geneInDb),]
 
+  ######
   # Targets with positive correlation
-  tfModules_Selected <- tfModules_asDF[which(tfModules_asDF$corr==1),]
-
-  # Add a column with the geneSet name (TF_method)
-  tfModules_Selected <- cbind(tfModules_Selected, geneSetName=paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_"))
+  if(all(is.na(tfModules_asDF$corr)))
+  {
+    warning("no correlation info available") 
+    tfModules_Selected <- tfModules_asDF
+    tfModules_Selected$geneSetName <- paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_")
+  }else{
+    tfModules_Selected <- tfModules_asDF[which(tfModules_asDF$corr==1),]
+    tfModules_Selected$geneSetName <- paste(tfModules_Selected$TF, tfModules_Selected$method, sep="_")
+    
+    if(!onlyPositiveCorr)
+    {
+      tfModules_IgnCorr <- tfModules_asDF[which(tfModules_asDF$corr!=1),]
+      tfModules_IgnCorr$geneSetName <- paste0(tfModules_IgnCorr$TF,"_", tfModules_IgnCorr$method)
+      
+      # Include positive corrs for these geneSets: 
+      # gplots::venn(list(pos=unique(tfModules_Selected$geneSetName), ign=unique(tfModules_IgnCorr$geneSetName)))
+      posCorr <- tfModules_Selected[which(tfModules_Selected$geneSetName %in% unique(tfModules_IgnCorr$geneSetName)),]
+      
+      tfModules_IgnCorr <- rbind(tfModules_IgnCorr, posCorr)
+      tfModules_IgnCorr$geneSetName <- paste0(tfModules_IgnCorr$geneSetName, "IgnCorr")
+      
+      tfModules_Selected <- rbind(tfModules_Selected, tfModules_IgnCorr)
+    }
+  }
+  
   tfModules_Selected$geneSetName <- factor(as.character(tfModules_Selected$geneSetName))
   # head(tfModules_Selected)
   allGenes <- unique(tfModules_Selected$Target)
 
+  
+  #####
   # Split into tfModules (TF-modules, with several methods)
   tfModules <- split(tfModules_Selected$Target, tfModules_Selected$geneSetName)
 
@@ -90,7 +134,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   if(getSettings(scenicOptions, "verbose")) {
       tfModulesSummary <- t(sapply(strsplit(names(tfModules), "_"), function(x) x[1:2]))
       message("tfModulesSummary:")
-      print(sort(table(tfModulesSummary[,2])))
+      print(cbind(sort(table(tfModulesSummary[,2]))))
   }
 
   ################################################################
@@ -142,6 +186,26 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   if(nrow(motifEnrichment_selfMotifs)==0) 
     stop("None of the co-expression modules present enrichment of the TF motif: There are no regulons.")
   
+  ####
+  if(onlyBestGsPerMotif)
+  {
+    met_byDb <- split(motifEnrichment_selfMotifs, motifEnrichment_selfMotifs$motifDb)
+    for(db in names(met_byDb))
+    {
+      met <- met_byDb[[db]]
+      met <- split(met, factor(met$highlightedTFs))
+      met <- lapply(met, function(x){
+        rbindlist(lapply(split(x, x$motif), function(y) y[which.max(y$NES),]))
+      })
+      # sapply(met, nrow)
+      met_byDb[[db]] <- rbindlist(met)
+    }
+    motifEnrichment_selfMotifs <- rbindlist(met_byDb)
+    rm(met_byDb); rm(met)
+  }
+  ####
+  
+  
   ################################################################
   # 2. Prune targets
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Prunning targets")
@@ -152,8 +216,12 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
     ranking <- importRankings(dbNames[motifDbName], columns=allGenes)
     addSignificantGenes(resultsTable=motifEnrichment_selfMotifs[motifEnrichment_selfMotifs$motifDb==motifDbName,],
                         geneSets=tfModules,
-                        rankings=ranking,
-                        maxRank=5000, method="aprox", nCores=nCores)
+                        rankings=ranking, 
+                        plotCurve = FALSE,
+                        maxRank=5000, 
+                        method=signifGenesMethod, 
+                        nMean=100,
+                        nCores=nCores)
   })
   
   suppressPackageStartupMessages(library(data.table))
@@ -192,10 +260,14 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
   motifEnrichment.asIncidList <- apply(motifEnrichment_selfMotifs_wGenes, 1, function(oneMotifRow) {
     genes <- strsplit(oneMotifRow["enrichedGenes"], ";")[[1]]
     oneMotifRow <- data.frame(rbind(oneMotifRow), stringsAsFactors=FALSE)
-    data.frame(oneMotifRow[rep(1, length(genes)),c("NES", "motif", "highlightedTFs", "TFinDB")], genes, stringsAsFactors = FALSE)
+    data.frame(oneMotifRow[rep(1, length(genes)),c("NES", "motif", "highlightedTFs", "TFinDB", "geneSet", "motifDb")], genes, stringsAsFactors = FALSE)
   })
   motifEnrichment.asIncidList <- rbindlist(motifEnrichment.asIncidList)
-  colnames(motifEnrichment.asIncidList) <- c("NES", "motif", "TF", "annot", "gene")
+  # colnames(motifEnrichment.asIncidList) <- c("NES", "motif", "TF", "annot", "gene", "motifDb", "geneSet")
+  colnames(motifEnrichment.asIncidList)[which(colnames(motifEnrichment.asIncidList)=="highlightedTFs")] <- "TF"
+  colnames(motifEnrichment.asIncidList)[which(colnames(motifEnrichment.asIncidList)=="TFinDB")] <- "annot"
+  colnames(motifEnrichment.asIncidList)[which(colnames(motifEnrichment.asIncidList)=="genes")] <- "gene"
+  
   motifEnrichment.asIncidList <- data.frame(motifEnrichment.asIncidList, stringsAsFactors = FALSE)
 
   # Get targets for each TF, but keep info about best motif/enrichment
@@ -208,16 +280,33 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
       if(highConfAnnot) enrOneGeneByAnnot <- enrOneGeneByAnnot[which(enrOneGene$annot == "**"),]
       bestMotif <- which.max(enrOneGeneByAnnot$NES)
 
-      cbind(TF=unique(enrOneGene$TF), gene=unique(enrOneGene$gene), nMotifs=nrow(enrOneGene),
-            bestMotif=as.character(enrOneGeneByAnnot[bestMotif,"motif"]), NES=as.numeric(enrOneGeneByAnnot[bestMotif,"NES"]),
-            highConfAnnot=highConfAnnot)
+      tf <- unique(enrOneGene$TF)
+      cbind(TF=tf, 
+            gene=unique(enrOneGene$gene), 
+            highConfAnnot=highConfAnnot,
+            nMotifs=nrow(enrOneGene),
+            bestMotif=as.character(enrOneGeneByAnnot[bestMotif,"motif"]), NES=as.numeric(enrOneGeneByAnnot[bestMotif,"NES"]), 
+              motifDb=as.character(enrOneGeneByAnnot[bestMotif,"motifDb"]), coexModule=gsub(paste0(tf,"_"), "", as.character(enrOneGeneByAnnot[bestMotif,"geneSet"]), fixed=TRUE)
+            )
     })), stringsAsFactors=FALSE)
     tfTable[order(tfTable$NES, decreasing = TRUE),]
   })
   rm(motifEnrichment.asIncidList)
   regulonTargetsInfo <- rbindlist(regulonTargetsInfo)
-  colnames(regulonTargetsInfo) <- c("TF", "gene", "nMotifs", "bestMotif", "NES", "highConfAnnot")
 
+  
+  # Optional: Add correlation
+  corrMat <- loadInt(scenicOptions, "corrMat", ifNotExists="null")
+  if(!is.null(corrMat))
+  {
+    regulonTargetsInfo$spearCor <- NA_real_
+    for(tf in unique(regulonTargetsInfo$TF))
+    {
+      regulonTargetsInfo[which(regulonTargetsInfo$TF==tf),"spearCor"] <- corrMat[tf, unlist(regulonTargetsInfo[which(regulonTargetsInfo$TF==tf),"gene"])]
+    }
+  }else warning("It was not possible to add the correlation to the regulonTargetsInfo table.")
+  
+  
   # Optional: Add Genie3 score
   linkList <- loadInt(scenicOptions, "genie3ll", ifNotExists="null")
   if(!is.null(linkList) & ("weight" %in% colnames(linkList)))
@@ -228,7 +317,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
     if(uniquePairs == nrow(linkList)) {
       linkList <- linkList[which(linkList$weight>=getSettings(scenicOptions, "modules/weightThreshold")),]  # TODO: Will not work with GRNBOOST!
       rownames(linkList) <- paste(linkList$TF, linkList$Target,sep="__")
-      regulonTargetsInfo <- cbind(regulonTargetsInfo, Genie3Weight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep="__"),"weight"])
+      regulonTargetsInfo <- cbind(regulonTargetsInfo, CoexWeight=linkList[paste(regulonTargetsInfo$TF, regulonTargetsInfo$gene,sep="__"),"weight"])
     }else {
       warning("There are duplicated regulator-target (gene id/name) pairs in the co-expression link list.",
               "\nThe co-expression weight was not added to the regulonTargetsInfo table.")
@@ -271,31 +360,54 @@ runSCENIC_2_createRegulons <- function(scenicOptions, minGenes=20, coexMethod=NU
     length(regulons) # TODO
     summary(lengths(regulons))
   }
+  
+  # Finished. Update status.
+  scenicOptions@status$current <- 2
+  invisible(scenicOptions)
 }
 
 #' @title getDbAnnotations
-#' @description Loads the motif annotation for the given organism and database version.
-#' @param scenicOptions Fields used: 'scenicOptions@inputDatasetInfo$org', and 'scenicOptions@settings$db_mcVersion'
+#' @description Loads the motif annotation
+#' @param scenicOptions Fields used: 
+#' If scenicOptions@settings$db_annotFiles is set, it will load these files.
+#' Otherwise, will load the default RcisTarget annotations based on 'scenicOptions@inputDatasetInfo$org', and 'scenicOptions@settings$db_mcVersion'
 #' @return The motif annotations
 #' @examples 
 #' getDbAnnotations(scenicOptions)
 #' @export 
 getDbAnnotations <- function(scenicOptions)
 {
-  org <- getDatasetInfo(scenicOptions, "org")
-  if(is.na(org)) stop("Please provide an organism (scenicOptions@inputDatasetInfo$org).")
-  if(!org %in% c("hgnc", "mgi", "dmel")) stop("Organism not recognized (scenicOptions@inputDatasetInfo$org).")
-  
-  if(org=="hgnc") motifAnnotName <- "motifAnnotations_hgnc"
-  if(org=="mgi") motifAnnotName <- "motifAnnotations_mgi"
-  if(org=="dmel") motifAnnotName <- "motifAnnotations_dmel"
-  
-  if(scenicOptions@settings$db_mcVersion=="v8") motifAnnotName <- paste0(motifAnnotName, "_v8")
-  
-  library(RcisTarget) # Lazyload
-  #data(package="RcisTarget", verbose = T)
-  data(list=motifAnnotName, package="RcisTarget", verbose = FALSE)
-  motifAnnotations <- eval(as.name(motifAnnotName))
+  dbAnnotFiles <- scenicOptions@settings$db_annotFiles
+  if(!is.null(dbAnnotFiles))
+  {
+    motifAnnotations <- NULL
+    for(annotPath in dbAnnotFiles)
+    {
+      motifAnnot <- data.table::fread(annotPath) #; head(motifAnnot)
+      motifAnnot$annotationSource <- factor(motifAnnot$annotationSource)
+      colnames(motifAnnot)[1]<- "motif" # TEMP for now...
+      levels(motifAnnot$annotationSource) <- c(levels(motifAnnot$annotationSource), c("directAnnotation","inferredBy_Orthology","inferredBy_MotifSimilarity","inferredBy_MotifSimilarity_n_Orthology")) # TEMP for now...
+      motifAnnotations <- rbind(motifAnnotations, motifAnnot)
+    }
+  } else { # Default RcisTarget annotations
+    if(is.na(getDatasetInfo(scenicOptions, "org"))) stop('Please provide an organism (scenicOptions@inputDatasetInfo$org).')
+    org <- getDatasetInfo(scenicOptions, "org")
+    if(is.na(org)) stop("Please provide an organism (scenicOptions@inputDatasetInfo$org).")
+    if(!org %in% c("hgnc", "mgi", "dmel")) stop("Organism not recognized (scenicOptions@inputDatasetInfo$org).")
+    
+    if(org=="hgnc") motifAnnotName <- "motifAnnotations_hgnc"
+    if(org=="mgi") motifAnnotName <- "motifAnnotations_mgi"
+    if(org=="dmel") motifAnnotName <- "motifAnnotations_dmel"
+    
+    if(!is.null(scenicOptions@settings$db_mcVersion))
+    {
+      if(scenicOptions@settings$db_mcVersion=="v8") motifAnnotName <- paste0(motifAnnotName, "_v8")
+    }
+    
+    library(RcisTarget) # Lazyload
+    data(list=motifAnnotName, package="RcisTarget", verbose = FALSE)
+    motifAnnotations <- eval(as.name(motifAnnotName))
+  }
   
   return(motifAnnotations)
 }

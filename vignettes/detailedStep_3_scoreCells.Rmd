@@ -215,3 +215,8 @@ if(!skipTsne){
   dev.off()
 }
 ```
+
+```{r eval=FALSE}
+# Finished. Update status.
+object@status$current <- 3
+```

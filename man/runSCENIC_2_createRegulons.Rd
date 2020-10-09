@@ -4,15 +4,28 @@
 \alias{runSCENIC_2_createRegulons}
 \title{runSCENIC_2_createRegulons}
 \usage{
-runSCENIC_2_createRegulons(scenicOptions, minGenes = 20,
-  coexMethod = NULL)
+runSCENIC_2_createRegulons(
+  scenicOptions,
+  minGenes = 20,
+  coexMethods = NULL,
+  minJakkardInd = 0.8,
+  signifGenesMethod = "aprox",
+  onlyPositiveCorr = TRUE,
+  onlyBestGsPerMotif = TRUE
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}
 
 \item{minGenes}{Minimum size of co-expression gene set (default: 20 genes)}
 
-\item{coexMethod}{Allows to select the method(s) used to generate the co-expression modules}
+\item{coexMethods}{Allows to select the method(s) used to generate the co-expression modules}
+
+\item{minJakkardInd}{Merge overlapping modules (with Jakkard index >=minJakkardInd; reduces running time).}
+
+\item{signifGenesMethod}{Method for 'addSignificantGenes'}
+
+\item{onlyPositiveCorr}{Whether to include only positive-correlated targets in the regulons (default: TRUE).}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'

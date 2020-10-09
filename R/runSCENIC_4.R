@@ -14,7 +14,13 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions,
                                         skipBoxplot=FALSE, skipHeatmaps=FALSE, skipTsne=FALSE, exprMat=NULL)
 {
   nCores <- getSettings(scenicOptions, "nCores")
-  regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+  regulonAUC <- tryCatch(loadInt(scenicOptions, "aucell_regulonAUC"),
+                         error = function(e) {
+                           if(getStatus(scenicOptions, asID=TRUE) < 3) 
+                           e$message <- paste0("It seems the regulons have not been scored on the cells yet. Please, run runSCENIC_3_scoreCells() first.\n", 
+                                               e$message)
+                           stop(e)
+  })
   thresholds <- loadInt(scenicOptions, "aucell_thresholds")
   thresholds <- getThresholdSelected(thresholds)
   
@@ -108,20 +114,27 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions,
   if(!skipTsne)
   {
     tSNE_fileName <- tsneAUC(scenicOptions, aucType="Binary", filePrefix=getIntName(scenicOptions, "tsne_prefix"), onlyHighConf=FALSE) # default: nPcs, perpl, seed
-    tSNE <- readRDS(tSNE_fileName)
-    
-    # AUCell (activity) as html: 
-    fileName <- getOutName(scenicOptions, "s4_binarytSNE_colAct")
-    plotTsne_AUCellHtml(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
-    
-    # Plot cell properties:
-    sub <- ""; if("type" %in% names(tSNE)) sub <- paste0("t-SNE on ", tSNE$type)
-    cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
-    colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"), ifNotExists="null")
-    pdf(paste0(getOutName(scenicOptions, "s4_binarytSNE_colProps"),".pdf"))
-    plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, cex=1, sub=sub)
-    dev.off()
+    if(!is.null(tSNE_fileName))
+    {
+      tSNE <- readRDS(tSNE_fileName)
+      
+      # AUCell (activity) as html: 
+      fileName <- getOutName(scenicOptions, "s4_binarytSNE_colAct")
+      plotTsne_AUCellHtml(scenicOptions, exprMat, fileName, tSNE) #open the resulting html locally
+      
+      # Plot cell properties:
+      sub <- ""; if("type" %in% names(tSNE)) sub <- paste0("t-SNE on ", tSNE$type)
+      cellInfo <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "cellInfo"), ifNotExists="null")
+      colVars <- loadFile(scenicOptions, getDatasetInfo(scenicOptions, "colVars"), ifNotExists="null")
+      pdf(paste0(getOutName(scenicOptions, "s4_binarytSNE_colProps"),".pdf"))
+      plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, cex=1, sub=sub)
+      dev.off()
+    }
   }
+  
+  # Finished. Update status.
+  scenicOptions@status$current <- 4
+  invisible(scenicOptions)
 }
 
 

@@ -4,8 +4,13 @@
 \alias{runSCENIC_4_aucell_binarize}
 \title{runSCENIC_4_aucell_binarize}
 \usage{
-runSCENIC_4_aucell_binarize(scenicOptions, skipBoxplot = FALSE,
-  skipHeatmaps = FALSE, skipTsne = FALSE, exprMat = NULL)
+runSCENIC_4_aucell_binarize(
+  scenicOptions,
+  skipBoxplot = FALSE,
+  skipHeatmaps = FALSE,
+  skipTsne = FALSE,
+  exprMat = NULL
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}

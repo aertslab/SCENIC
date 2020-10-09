@@ -29,7 +29,13 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   
   ################################################################
   ## Prepare regulons
-  regulons <- loadInt(scenicOptions, "regulons")
+  regulons <- tryCatch(loadInt(scenicOptions, "regulons"),
+                         error = function(e) {
+                           if(getStatus(scenicOptions, asID=TRUE) < 2) 
+                             e$message <- paste0("It seems the regulons have not been built yet. Please, run runSCENIC_2_createRegulons() first.\n", 
+                                                 e$message)
+                           stop(e)
+                         })
   regulons <- regulons[order(lengths(regulons), decreasing=TRUE)]
   regulons <- regulons[lengths(regulons)>=10]
   if(length(regulons) <2)  stop("Not enough regulons with at least 10 genes.")
@@ -42,9 +48,11 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tStep 3. Analyzing the network activity in each individual cell")
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
+  biggestRegulons <- grep("_extended",names(regulons),invert = T, value = T)
+  biggestRegulons <- biggestRegulons[1:min(length(biggestRegulons),10)]
   msg <- paste0("\tNumber of regulons to evaluate on cells: ", length(regulons),
                 "\nBiggest (non-extended) regulons: \n",
-                paste("\t", grep("_extended",names(regulons),invert = T, value = T)[1:min(length(regulons),10)], collapse="\n")) # TODO maxlen?
+                paste("\t", biggestRegulons, collapse="\n")) # TODO maxlen?
   if(getSettings(scenicOptions, "verbose")) message(msg)
   
   ################################################################
@@ -157,5 +165,9 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
     plotTsne_cellProps(tSNE$Y, cellInfo=cellInfo, colVars=colVars, cex=1, sub=sub)
     dev.off()
   }
+  
+  # Finished. Update status.
+  scenicOptions@status$current <- 3
+  invisible(scenicOptions)
 }
 

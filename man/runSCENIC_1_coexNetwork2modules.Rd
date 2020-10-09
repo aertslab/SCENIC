@@ -4,10 +4,24 @@
 \alias{runSCENIC_1_coexNetwork2modules}
 \title{runSCENIC_1_coexNetwork2modules}
 \usage{
-runSCENIC_1_coexNetwork2modules(scenicOptions)
+runSCENIC_1_coexNetwork2modules(
+  scenicOptions,
+  weightThreshold = getSettings(scenicOptions, "modules/weightThreshold"),
+  topThr = c(0.005),
+  nTopTfs = c(5, 10, 50),
+  nTopTargets = 50,
+  aFun = topPerTf,
+  corrThr = 0.03,
+  linkList = NULL,
+  corrMat = NULL,
+  weightCol = "weight",
+  verbose = getSettings(scenicOptions, "verbose")
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used: TODO}
+
+\item{weightThreshold}{Global weight threshold. Links with lower weight will be ignored in ALL modules.}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'
