@@ -98,8 +98,9 @@ tsneAUC <- function(scenicOptions, aucType=NULL, nPcs=NULL, perpl=NULL, filePref
       }
       return(fileName)
     }, error = function(e) {
-      msg <- paste0("Couldn't create tSNE for: ", aucType,", ", dimsAsText,", ", perplexity, "perpl. Error msg:", e)
-      return(msg)
+      msg <- paste0("Couldn't create tSNE for: ", aucType,", ", dimsAsText,", ", perplexity, "perpl.\nError msg:", e)
+      warning(msg)
+      return(NULL)
     })
   }
   return(unlist(fileNames))
