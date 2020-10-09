@@ -4,8 +4,13 @@
 \alias{importAUCfromText}
 \title{importAUCfromText}
 \usage{
-importAUCfromText(fileName, rows = "regulons", columns = "cells",
-  transpose = TRUE, newNames = NULL)
+importAUCfromText(
+  fileName,
+  rows = "regulons",
+  columns = "cells",
+  transpose = TRUE,
+  newNames = NULL
+)
 }
 \arguments{
 \item{fileName}{File name of the AUC scores (transposed: gene-sets in rows, cells in columns)}

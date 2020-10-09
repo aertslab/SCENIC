@@ -4,7 +4,9 @@
 \name{defaultDbNames}
 \alias{defaultDbNames}
 \title{Default databases by organism}
-\format{Named character vector}
+\format{
+Named character vector
+}
 \source{
 GEO number
 }

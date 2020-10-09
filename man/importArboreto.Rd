@@ -4,7 +4,12 @@
 \alias{importArboreto}
 \title{importArboreto}
 \usage{
-importArboreto(fileName, reorder = FALSE)
+importArboreto(
+  fileName,
+  reorder = TRUE,
+  normalizeImportance = TRUE,
+  lapplyFun = BiocParallel::bplapply
+)
 }
 \arguments{
 \item{fileName}{File name of the link/adjacency list}

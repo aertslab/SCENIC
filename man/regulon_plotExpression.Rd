@@ -4,9 +4,15 @@
 \alias{regulon_plotExpression}
 \title{regulon_plotExpression}
 \usage{
-regulon_plotExpression(exprMat, regulonsSelected, nCells = 500,
-  cellInfo = NULL, colVars = NULL, color = c("black", "goldenrod",
-  "yellow"), ...)
+regulon_plotExpression(
+  exprMat,
+  regulonsSelected,
+  nCells = 500,
+  cellInfo = NULL,
+  colVars = NULL,
+  color = c("black", "goldenrod", "yellow"),
+  ...
+)
 }
 \arguments{
 \item{exprMat}{Expression matrix}

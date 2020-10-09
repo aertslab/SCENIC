@@ -4,11 +4,17 @@
 \alias{viewMotifs}
 \title{viewMotifs}
 \usage{
-viewMotifs(tableSubset, motifCol = c("motif", "bestMotif", "MotifID"),
-  dbVersion = "v9", nSignif = 3, colsToShow = c(motifEnrichment =
-  c("motifDb", "logo", "NES", "geneSet", "TF_highConf"), regulonTargets =
-  c("TF", "gene", "nMotifs", "bestMotif", "logo", "NES", "highConfAnnot",
-  "Genie3Weight")), options = list(pageLength = 50), ...)
+viewMotifs(
+  tableSubset,
+  motifCol = c("motif", "bestMotif", "MotifID"),
+  dbVersion = "v9",
+  nSignif = 3,
+  colsToShow = c(motifEnrichment = c("motifDb", "logo", "NES", "geneSet",
+    "TF_highConf"), regulonTargets = c("TF", "gene", "nMotifs", "bestMotif", "logo",
+    "NES", "highConfAnnot", "Genie3Weight")),
+  options = list(pageLength = 50),
+  ...
+)
 }
 \arguments{
 \item{tableSubset}{Motif information table to show}

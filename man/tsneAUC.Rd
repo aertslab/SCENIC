@@ -4,8 +4,16 @@
 \alias{tsneAUC}
 \title{tsneAUC}
 \usage{
-tsneAUC(scenicOptions, aucType = NULL, nPcs = NULL, perpl = NULL,
-  filePrefix = NULL, seed = NULL, onlyHighConf = FALSE, ...)
+tsneAUC(
+  scenicOptions,
+  aucType = NULL,
+  nPcs = NULL,
+  perpl = NULL,
+  filePrefix = NULL,
+  seed = NULL,
+  onlyHighConf = FALSE,
+  ...
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used:}

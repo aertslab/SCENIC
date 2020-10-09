@@ -4,8 +4,12 @@
 \alias{plotTsne_AUCellApp}
 \title{plotTsne_AUCellApp}
 \usage{
-plotTsne_AUCellApp(scenicOptions, exprMat, tSNE_fileName = NULL,
-  skipDuplicatedExtended = TRUE)
+plotTsne_AUCellApp(
+  scenicOptions,
+  exprMat,
+  tSNE_fileName = NULL,
+  skipDuplicatedExtended = TRUE
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used: aucell_regulonAUC, aucell_thresholds, cellInfo, and default tSNE}

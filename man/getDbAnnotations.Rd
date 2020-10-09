@@ -7,13 +7,15 @@
 getDbAnnotations(scenicOptions)
 }
 \arguments{
-\item{scenicOptions}{Fields used: 'scenicOptions@inputDatasetInfo$org', and 'scenicOptions@settings$db_mcVersion'}
+\item{scenicOptions}{Fields used: 
+If scenicOptions@settings$db_annotFiles is set, it will load these files.
+Otherwise, will load the default RcisTarget annotations based on 'scenicOptions@inputDatasetInfo$org', and 'scenicOptions@settings$db_mcVersion'}
 }
 \value{
 The motif annotations
 }
 \description{
-Loads the motif annotation for the given organism and database version.
+Loads the motif annotation
 }
 \examples{
 getDbAnnotations(scenicOptions)

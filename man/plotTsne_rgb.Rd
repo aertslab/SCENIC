@@ -4,9 +4,17 @@
 \alias{plotTsne_rgb}
 \title{plotTsne_rgb}
 \usage{
-plotTsne_rgb(scenicOptions, regulonNames, aucType = "AUC",
-  aucMaxContrast = 0.8, offColor = "#c0c0c030", showPlot = TRUE,
-  tSNE_fileName = NULL, ...)
+plotTsne_rgb(
+  scenicOptions,
+  regulonNames,
+  aucType = "AUC",
+  aucMaxContrast = 0.8,
+  offColor = "#c0c0c030",
+  showPlot = TRUE,
+  showLegend = TRUE,
+  tSNE_fileName = NULL,
+  ...
+)
 }
 \arguments{
 \item{scenicOptions}{Fields used: AUC matrix (continuous or binary), default t-SNE.}
@@ -19,7 +27,7 @@ plotTsne_rgb(scenicOptions, regulonNames, aucType = "AUC",
 
 \item{offColor}{Color por the cells completelly off. To deactivate (color as black), set to NULL.}
 
-\item{showPlot}{Whether to plot the coloured t-SNE.}
+\item{showPlot}{Whether to plot add a legend to the plot.}
 
 \item{tSNE_fileName}{tSNE file name. If null, the default t-SNE is used.}
 

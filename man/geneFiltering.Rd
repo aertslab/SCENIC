@@ -4,8 +4,12 @@
 \alias{geneFiltering}
 \title{geneFiltering}
 \usage{
-geneFiltering(exprMat, scenicOptions, minCountsPerGene = 3 * 0.01 *
-  ncol(exprMat), minSamples = ncol(exprMat) * 0.01)
+geneFiltering(
+  exprMat,
+  scenicOptions,
+  minCountsPerGene = 3 * 0.01 * ncol(exprMat),
+  minSamples = ncol(exprMat) * 0.01
+)
 }
 \arguments{
 \item{exprMat}{Expression matrix}
