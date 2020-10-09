@@ -35,6 +35,7 @@ export2loom <- export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC
   suppressPackageStartupMessages(require(SCopeLoomR))
 
   # Default embedding (e.g. t-SNE or PCA coordinates)
+  if(!file.exists(tsneFileName(scenicOptions))) stop(paste("Default 2D projection is not available:", tsneFileName(scenicOptions)))
   defaultTsne <- readRDS(tsneFileName(scenicOptions))
   defaultTsne_name <- paste("SCENIC t-SNE:", defaultTsne$type)
   defaultTsne <- defaultTsne$Y
