@@ -1,4 +1,4 @@
-#' @title export2scope
+#' @title export2loom
 #' @description Create .loom file with the results of the analysis to visualize them in http://scope.aertslab.org
 #' @param scenicOptions scenicOptions object
 #' @param dgem Digital expression matrix
@@ -20,13 +20,16 @@
 #' # scenicOptions@fileNames$output["loomFile",] <- "myAnalysis.loom"
 #' # export2scope(scenicOptions, exprMat, hierarchy=c("SCENIC", "MouseBrain"))
 #' @export 
-export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), addAllTsnes=TRUE)
+export2loom <- export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), 
+                                        addAllTsnes=TRUE)
 {
+  regulonType="Motif" # TODO
   # TODO: what about if there is no dgem, but only normalized?
   
   if(length(hierarchy) > 3) stop("Maximum three hierarchy levels")
   if(length(hierarchy) < 3) hierarchy <- c(hierarchy, rep("", 5-length(hierarchy)))
-  if(file.exists(fileName)) stop("File '", getOutName(scenicOptions, "loomFile"), "' already exists.")
+  fileName <- getOutName(scenicOptions, "loomFile")
+  if(file.exists(fileName)) stop("File '", fileName, "' already exists.")
   
   # TODO: ask max about order of samples tsne-expr-info
   suppressPackageStartupMessages(require(SCopeLoomR))
@@ -85,7 +88,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
   # Regulons AUC matrix
   regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
   if(!all(colnames(regulonAUC) == cellOrder)) warning("regulonAUC cell names (order?) do not match.")
-  add_scenic_regulons_auc_matrix(loom=loom, regulons.AUC=AUCell::getAUC(regulonAUC))
+  add_scenic_regulons_auc_matrix(loom=loom, regulons.AUC=AUCell::getAUC(regulonAUC), column.attr.name=paste0(regulonType, "RegulonsAUC"))
   
   # Regulons (gene list)
   regulons <- loadInt(scenicOptions, "aucell_regulons")
@@ -102,6 +105,7 @@ export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC", "", ""), add
                       , regulons=regulons
                       , regulon.threshold.assignments=regulonThresholds # Optional
                       , regulon.enrichment.table=motifEnrichment # Optional
+                      , column.attr.name=paste0(regulonType, "Regulons")
                       )
   
   # # Alternative t-SNE #TODO
