@@ -74,6 +74,7 @@ ScenicOptions <- setClass(
   
   slots = c(
     inputDatasetInfo="list",
+    status="list",
     settings="list",
     fileNames="list"
   )
@@ -89,7 +90,6 @@ setMethod("show",
              message <- paste("SCENIC settings object \n",
                               "\t Dataset title: ",getDatasetInfo(scenicOptions, "datasetTitle"), "\n",
                               "\t Organism: ", getDatasetInfo(scenicOptions, "org"), "\n", sep="")
-                              
              message <- paste(message,
                               "\t Cell info and colvars files: ",
                               getDatasetInfo(scenicOptions, "cellInfo"),", ",
@@ -103,11 +103,17 @@ setMethod("show",
                                "\t Databases for this analysis: ",
                                paste0(getDatabases(scenicOptions), collapse=", "), "\n", sep="") 
             }
+            
+            message <- paste0(message,
+                              "Current status: ",
+                             "(",getStatus(scenicOptions, asID=TRUE),") " ,
+                             getStatus(scenicOptions)) 
+             
             cat(message) 
           }
 )
 
-##### Get dataset info
+##### Get dataset info ----
 #' @name getDatasetInfo
 #' @rdname ScenicOptions-class
 #' @export getDatasetInfo 
@@ -133,7 +139,7 @@ setMethod("getDatasetInfo",
             invisible(NULL)
           })
 
-##### Get the path to the databases
+##### Get the path to the databases ----
 # setGeneric
 #' @name getDatabases
 #' @rdname ScenicOptions-class
@@ -151,7 +157,28 @@ setMethod("getDatabases",
             fullPath <- sapply(getSettings(object, "dbs"),function(x) file.path(getSettings(object, "dbDir"), x))
             return(fullPath)
           })
-##### Get setting
+
+##### Get status ----
+#' @name getStatus
+#' @rdname ScenicOptions-class
+#' @export getStatus 
+setGeneric(name="getStatus", def=function(object, ...) standardGeneric("getStatus"))
+
+#' @rdname ScenicOptions-class
+#' @aliases getStatus,ScenicOptions-method
+#' @exportMethod getStatus
+setMethod("getStatus",
+          signature="ScenicOptions",
+          definition = function(object, asID=FALSE)
+          {
+            ret <- object@status$values[object@status$current]
+            
+            if(asID) ret <- object@status$current
+            
+            return(ret)
+          })
+
+##### Get settings ----
 #' @name getSettings
 #' @rdname ScenicOptions-class
 #' @export getSettings 
@@ -188,7 +215,7 @@ setMethod("getSettings",
           })
 
 
-##### Get the file name for an output
+##### Get the file name for an output ----
 # setGeneric
 #' @name getOutName
 #' @rdname ScenicOptions-class
@@ -207,8 +234,8 @@ setMethod("getOutName",
             object@fileNames$output[out_type,1]
           })
 
-##### Get the file name for an intermediate step
-# setGeneric
+##### Get the file name for an intermediate step ----
+# setGeneric 
 #' @name getIntName
 #' @rdname ScenicOptions-class
 #' @export getIntName 
@@ -231,7 +258,7 @@ setMethod("getIntName",
               })
 
 
-##### Load item from scenicOptions
+##### Load item from scenicOptions ----
 # setGeneric
 # @method test data.frame
 #' @name loadFile
@@ -277,7 +304,7 @@ setMethod("loadFile",
           }
 )
 
-##### Load intermediate result
+##### Load intermediate result ----
 # setGeneric
 # @method test data.frame
 #' @name loadInt
@@ -301,7 +328,7 @@ setMethod("loadInt",
 )
 
 
-########################################################
+################## Functions ######################################
 #' @rdname ScenicOptions-class
 #' @export 
 initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle="", nCores=4)
@@ -338,14 +365,13 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
   if(any(!loadAttempt)) warning("It was not possible to load the following databses; check whether they are downloaded correctly: \n",
                                 paste(dbs[which(!loadAttempt)], collapse="\n"))
   
-  
   db_mcVersion <- dbVersion(dbs)
-  #####
   
   scenicSettings=list(
     dbs=dbs,
     dbDir=dbDir,
     db_mcVersion=db_mcVersion,
+    db_annotFiles=NULL,
     verbose=TRUE,
     nCores=nCores,
     seed=123,
@@ -354,7 +380,7 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
     regulons=list(),
     aucell=list(smallestPopPercent=0.25),
     defaultTsne=list(dims=50,
-                perpl=50,
+                perpl=30,
                 aucType="AUC"),
     tSNE_filePrefix="int/tSNE"
   )
@@ -415,8 +441,21 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
   dir.create("output", showWarnings=FALSE)
   object <- new("ScenicOptions",
                 inputDatasetInfo=inputDataset,
+                status=list(current=0, values=c("0"="SCENIC initialized", 
+                                                "1"="Co-expression modules", 
+                                                "2"="Regulons", 
+                                                "3"="Cells scored", 
+                                                "4"="SCENIC run completed")),
                 settings=scenicSettings,
                 fileNames=scenicFiles)
+  
+  
+  ## Check if motif annotation and rankings potentially match
+  motifAnnot <- getDbAnnotations(object)
+  featuresWithAnnot <- checkAnnots(object, motifAnnot)
+  if(any(featuresWithAnnot == 0)) message("Missing annotations for: \n", paste("\t", names(which(featuresWithAnnot==0))))
+  
+  ## Return
   return(object)
 }
 
@@ -439,8 +478,8 @@ dbLoadingAttempt <- function(dbFilePath){
     md$path
     md$dim[2] == length(md$types)
     randomCol <- sample(names(md$types),1)
-    rnk <- RcisTarget::importRankings(dbFilePath, randomCol)
-    TRUE
+    rnk <- RcisTarget::importRankings(dbFilePath, columns=randomCol)
+    return(TRUE)
   }
   , error=function(e){
     print(e$message)
@@ -450,4 +489,18 @@ dbLoadingAttempt <- function(dbFilePath){
 
   return(ret)
 }
+
+#' @rdname ScenicOptions-class
+#' @export 
+checkAnnots <- function(object, motifAnnot)
+{
+  allFeaturesInAnnot <- unlist(motifAnnot[,1]) # motif or track
+  featuresWithAnnot <-  lapply(getDatabases(object), function(dbFile) 
+  {
+    nRnks <- unlist(feather::read_feather(dbFile, columns="features")[,1])
+    length(intersect(allFeaturesInAnnot,nRnks))/length(unique(c(allFeaturesInAnnot,nRnks)))
+  })
+  return(featuresWithAnnot)
+}
+
 
