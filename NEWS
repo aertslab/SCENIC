@@ -1,4 +1,12 @@
 
+Version 1.2
+---------------
+- New function calcRSS(): to calculate the regulon specificity score
+- Renamed export2scope -> export2loom()
+- The scenicSettings object can now store the current status (e.g. last step run)
+- New function getStatus(): to know the last step run
+- Minor updates for compatibility with dependencies
+
 Version 1.0
 ---------------
 Version bump. Added export2scope() and the detailed tutorials for each of the step wrappers.
