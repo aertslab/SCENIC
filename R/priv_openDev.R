@@ -4,7 +4,7 @@
     pdf(paste0(fileName, ".pdf"), ...)
   
   if(devType=="png")
-    png(paste0(fileName, ".png"), ...)
+    png(paste0(fileName, ".png", type="cairo"), ...)
   
   if(devType=="cairo_pfd") # similar to Cairo::CairoPDF?
     grDevices::cairo_pdf(paste0(fileName, ".pdf"), ...)
