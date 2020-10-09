@@ -1,8 +1,8 @@
 Package: SCENIC
 Type: Package
 Title: SCENIC (Single Cell rEgulatory Network Inference and Clustering)
-Version: 1.1.3
-Date: 2020-06-27
+Version: 1.1.5
+Date: 2020-10-09
 Author: Sara Aibar, Carmen Bravo, Stein Aerts. 
   Laboratory of Computational Biology, KU Leuven Center for Human Genetics. 
   Leuven, Belgium.
@@ -11,9 +11,9 @@ Description: SCENIC workflow
 URL: http://scenic.aertslab.org
 Imports:
   data.table, 
-  GENIE3 (>= 1.2.1), 
-  RcisTarget (>= 1.0.2), 
-  AUCell (>= 1.2.4), 
+  GENIE3 (>= 1.10.0), 
+  RcisTarget (>= 1.8.0), 
+  AUCell (>= 1.10.0), 
   NMF, 
   dynamicTreeCut,
   mixtools, 
@@ -23,7 +23,7 @@ Suggests:
   SingleCellExperiment, 
   GEOquery,
   R2HTML,
-  SCopeLoomR (>= 0.3.4),
+  SCopeLoomR (>= 0.10.1),
   hdf5r,
   rbokeh,
   DT,
@@ -36,5 +36,5 @@ License: file LICENSE
 biocViews: SingleCell
 LazyData: TRUE
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Encoding: UTF-8
