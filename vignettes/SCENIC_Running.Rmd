@@ -167,7 +167,7 @@ loomPath <- "Cortex.loom"
 ```
 
 Open the loom file and load the expression matrix (and cell annotation if available)
-```{r loom,} 
+```{r loom} 
 library(SCopeLoomR)
 loom <- open_loom(loomPath)
 exprMat <- get_dgem(loom)
@@ -379,6 +379,8 @@ scenicOptions@settings$dbs <- scenicOptions@settings$dbs["10kb"] # For toy run
 scenicOptions <- runSCENIC_1_coexNetwork2modules(scenicOptions)
 scenicOptions <- runSCENIC_2_createRegulons(scenicOptions, coexMethod=c("top5perTarget")) #** Only for toy run!!
 scenicOptions <- runSCENIC_3_scoreCells(scenicOptions, exprMat_log)
+
+saveRDS(scenicOptions, file="int/scenicOptions.Rds") # To save status
 ```
 
 ** *For a **quick run**, using the 'toy dataset', you may set `runSCENIC_2_createRegulons(scenicOptions, coexMethod="top5perTarget")` and only one of the RcisTarget databases. These results will not be as comprehensive as the full run, but might be enough for getting a feel of the interface.*
@@ -590,7 +592,7 @@ Details on the TF-target links: For each TF-target pair, the stats from the inte
 ```{r motifEnrichmentDT}
 regulonTargetsInfo <- loadInt(scenicOptions, "regulonTargetsInfo")
 tableSubset <- regulonTargetsInfo[TF=="Stat6" & highConfAnnot==TRUE]
-viewMotifs(tableSubset) 
+viewMotifs(tableSubset, options=list(pageLength=5)) 
 ```
 
 
@@ -656,6 +658,11 @@ rss <- calcRSS(AUC=getAUC(regulonAUC), cellAnnotation=cellInfo[colnames(regulonA
 rssPlot <- plotRSS(rss)
 plotly::ggplotly(rssPlot$plot)
 ```
+
+```{r RSS_one}
+plotRSS_oneSet(rss, setName = "interneurons")
+```
+
 
 - Visualizing the regulon activities on **embeddings/trajectories** calculated with other methods...
 ```{r Seurat, eval=FALSE}
