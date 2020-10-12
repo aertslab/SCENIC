@@ -8,8 +8,8 @@ The description of the method and some usage examples are available in [Nature M
 There are currently implementations of SCENIC in R (this repository), and in Python. If you don't have a strong prefference for running it in R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow workflow*, and *Python/Jupyter notebooks* to easily run SCENIC (highly recommended for running it in batch or bigger datasets).
 
 For more details and installation instructions on running SCENIC in `R` see the tutorials:
-  - [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/701cc7cc4ac762b91479b3bd2eaf5ad5661dd8c2/inst/doc/SCENIC_Setup.html)
-  - [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/SCENIC_Running.html)
+  - [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/66656c71f99000a67d3f25e8b811e18338ff8270/inst/doc/SCENIC_Setup.html)
+  - [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/66656c71f99000a67d3f25e8b811e18338ff8270/inst/doc/SCENIC_Running.html)
 
 The output from the examples is available at: [http://scenic.aertslab.org/examples/](http://scenic.aertslab.org/examples/)
 
@@ -18,7 +18,7 @@ Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master
 ### News
 
 2020/06/26:
-- The **SCENICprotocol** including the Nextflow DSL1 workflow, and `pySCENIC` notebooks are now officially released. For details see the [Github repository](https://github.com/aertslab/SCENICprotocol/), and the associated publication in [Nature Protocols](https://doi.org/10.1038/s41596-020-0336-2).
+- The **SCENICprotocol** including the Nextflow workflow, and `pySCENIC` notebooks are now officially released. For details see the [Github repository](https://github.com/aertslab/SCENICprotocol/), and the associated publication in [Nature Protocols](https://doi.org/10.1038/s41596-020-0336-2).
 
 2019/01/24:
   - [Tutorial](https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/importing_pySCENIC.html)
