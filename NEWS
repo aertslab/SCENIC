@@ -6,6 +6,9 @@ Version 1.2
 - The scenicSettings object can now store the current status (e.g. last step run)
 - New function getStatus(): to know the last step run
 - Minor updates for compatibility with dependencies
+- Deprecated functions (will be removed in upcoming versions: 
+importAUCfromText(), importModulesGmt()  and the vignette "importing_pySCENIC.Rmd". 
+The results from pySCENIC/VSN can now be saved/loaded directly from a .loom file.
 
 Version 1.0
 ---------------

@@ -488,7 +488,7 @@ export2loom(scenicOptions, exprMat)
 
 To add extra data (e.g. embeddings or clusters), see `help(package="SCopeLoomR")`.
 
-## Loading results in a .loom file
+## Loading results from a .loom file
 
 `SCopeLoomR` also provides functions to import the regulons, AUC, and embeddings back from the loom file. e.g.: 
 

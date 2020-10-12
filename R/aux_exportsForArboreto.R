@@ -17,7 +17,6 @@ exportsForArboreto <- exportsForGRNBoost <- function(exprMat, scenicOptions, dir
   write.table(inputTFs, file=file.path(dir,"1.1_inputTFs.txt"), sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
   message("TF list written as: ", file.path(dir,"1.1_inputTFs.txt"))
   
-  
   exprMat_t <- t(exprMat)
   write.table(exprMat_t, file=file.path(dir,"1.1_exprMatrix_filtered_t.txt"), sep="\t",quote=FALSE, row.names=FALSE, col.names=TRUE)
   message("Transposed expression matrix written as: ", file.path(dir,"1.1_exprMatrix_filtered_t.txt"))

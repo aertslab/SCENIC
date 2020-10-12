@@ -28,6 +28,10 @@ suppressPackageStartupMessages({
 })
 ```
 
+This vignette is deprecated. pySCENIC (VSN) results are now saved into a loom file by default. 
+See section **Loading results from a .loom file** from the main vignette.
+
+
 **pySCENIC** (https://pyscenic.readthedocs.io/) provides a faster implementation of SCENIC (in Python) that can be easily paralelized with Dask (e.g. to take advantage distributed systems). The results of pySCENIC can easily be imported into R.
 
 The main results of SCENIC analysis are stored in the loom file:
