@@ -146,8 +146,12 @@ dir.create("SCENIC_MouseBrain")
 setwd("SCENIC_MouseBrain") # Or `knitr::opts_knit$set(root.dir = 'example_results/SCENIC_MouseBrain')` in the first chunk if running a notebook
 ```
 
-By default, the intermediate files and plots will be saved into the `int` folder, with a numbered prefix to keep them in order. You may use these files to check details about each step, or re-run parts of the analysis with different settings.
-The main output (i.e. plots, HTML reports,... ) will be saved into the `output` folder.
+The main outputs of scenic are stored into a `loom file`, in the the `output` folder, 
+which also includes some automatically generated plots and reports which you can use to have an overview of the results.
+
+In addition, some intermediate/temporary files will be saved into the `int` folder, 
+with a numbered prefix to keep them in order. 
+You may use these files to check details about each step, or re-run parts of the analysis with different settings.
 
 # Input
 
@@ -180,7 +184,7 @@ dim(exprMat)
 
 ## Cell info/phenodata
 In Step 3-4 (scoring the GRN and clustering), it is interesting to compare the results with known information about the cells. 
-You can already indicate which variables will be to plot, and assign them a specific color (otherwise one will be assigned automatically, e.g. when colloring on on the heatmaps or t-SNE).
+You can already indicate which variables to plot, and assign them a specific color (otherwise one will be assigned automatically).
 
 ```{r cellInfo}
 # cellInfo$nGene <- colSums(exprMat>0)
@@ -245,6 +249,8 @@ However, GENIE3 is very time- and computationally-consuming (it will take severa
 *Subsampling cells*: When there is a high proportion of low-quality cells, or if the computation time is an issue, it is also possible to infer the regulatory network using a subset of cells (e.g. selecting random or high-quality cells as input to the co-expression analysis). The activity of the regulatory network, *trained* on this subset of cells, can then be evaluated on all the cells in the dataset with AUCell (Step 3).
 Note that to avoid loss of resolution, the subset of cells should be representative of the whole dataset (e.g. contain sufficient representation of all the cell types).
 Examples of this approach are presented in [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463) (i.e. subsampling this mouse brain dataset, and the analysis of 49k cells from mouse retina).
+
+
 
 ## Gene filter/selection
 
@@ -475,11 +481,11 @@ The `.loom` file can be created with the function `export2loom()` (requires the 
 The **motif enrichment analysis** and **co-expression modules** (e.g. GRNBoost/GENIE3 output) are stored in independent text files (mostly due to their bigger size).
 
 ```{r eval=FALSE}
-# DGEM (Digital gene expression matrix)
-# (non-normalized counts)
-# exprMat <- get_dgem(open_loom(loomPath))
-# dgem <- exprMat
-# head(colnames(dgem))  #should contain the Cell ID/name
+DGEM (Digital gene expression matrix)
+(non-normalized counts)
+exprMat <- get_dgem(open_loom(loomPath))
+dgem <- exprMat
+head(colnames(dgem))  #should contain the Cell ID/name
 
 # Export:
 scenicOptions@fileNames$output["loomFile",] <- "output/mouseBrain_SCENIC.loom"
