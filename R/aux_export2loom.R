@@ -79,6 +79,7 @@ export2loom <- export2scope <- function(scenicOptions, dgem, hierarchy=c("SCENIC
       if(is.character(cellInfo[,cn]) || is.factor(cellInfo[,cn])) 
       {
         isAnnotation <- TRUE
+        cellInfo[,cn] <- as.character(cellInfo[,cn])
       }else{
         if(all(!is.na(as.numeric(as.character(cellInfo[,cn]))))) isMetric <- TRUE
       }
