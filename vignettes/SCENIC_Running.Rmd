@@ -250,8 +250,6 @@ However, GENIE3 is very time- and computationally-consuming (it will take severa
 Note that to avoid loss of resolution, the subset of cells should be representative of the whole dataset (e.g. contain sufficient representation of all the cell types).
 Examples of this approach are presented in [*@aibar2017*](http://dx.doi.org/10.1038/nmeth.4463) (i.e. subsampling this mouse brain dataset, and the analysis of 49k cells from mouse retina).
 
-
-
 ## Gene filter/selection
 
 To run GENIE3/GRNBoost we recommend to apply soft gene filter, to remove genes that are expressed either at very low levels or in too few cells. 
