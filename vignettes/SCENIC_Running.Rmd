@@ -585,7 +585,7 @@ regulons <- loadInt(scenicOptions, "regulons")
 regulons[c("Dlx5", "Irf1")]
 ```
 
-Note than only regulons with 10 genes or more are scored with AUCell: 
+Note than only regulons with 10 genes or more are scored with AUCell (the numbers in brackets in the regulon names indicate the number of genes in the regulon): 
 ```{r seeRegulons2}
 regulons <- loadInt(scenicOptions, "aucell_regulons")
 head(cbind(onlyNonDuplicatedExtended(names(regulons))))

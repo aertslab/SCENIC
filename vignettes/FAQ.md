@@ -2,7 +2,7 @@
 *Frequently asked questions (FAQ):*
 
   *Interpretation of results:*
-   - What is the meaning of the sufix '_extended' in the regulon name?
+   - What is the meaning of the sufix '_extended' and the number in parenthesis in the regulon name?
    - Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
    - Missing relevant TFs / Known motifs are not annotated to the TF
 
@@ -20,7 +20,9 @@
 
 ## Interpretation of results
 
-### What is the meaning of the sufix '_extended' in the regulon name?
+### What is the meaning of the sufix '_extended' and the number in parenthesis in the regulon name?
+
+The numbers in parenthesis in the regulon names indicate the number of genes in the regulon (i.e. "Dlx (35g)").
 
 The "extended" regulons include motifs that have been linked to the TF by lower confidence annotations (e.g. inferred by motif similarity). 
 
