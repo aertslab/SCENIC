@@ -4,12 +4,16 @@
 \alias{runGenie3}
 \title{runGenie3}
 \usage{
-runGenie3(exprMat, scenicOptions, nParts = 10, ...)
+runGenie3(exprMat, scenicOptions, nParts = 10, resumePreviousRun = FALSE, ...)
 }
 \arguments{
 \item{exprMat}{Expression matrix}
 
 \item{scenicOptions}{Fields used: genie3wm, genie3ll (int)}
+
+\item{nParts}{Number of pieces to fragment the partial results into (to check progress or in case the job gets interrupted). Default: 10}
+
+\item{resumePreviousRun}{Reload partial results from a previous (interrupted) run and resume execution (default: FALSE). Warning: Experimental feature.}
 
 \item{...}{Other arguments to pass to GENIE3 (e.g. ntrees=500)}
 }
