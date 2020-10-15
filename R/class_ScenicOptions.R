@@ -201,7 +201,7 @@ setMethod("getSettings",
               if(slotName=="seed") return(object@settings$seed)
               if(slotName=="dbs") return(object@settings$dbs)
               if(slotName=="db") return(object@settings$dbs)
-              if(slotName=="dbDir") return(object@settings$dbDir)
+              if(slotName=="dbDir") return(path.expand(object@settings$dbDir))
               if(slotName=="modules/weightThreshold") return(object@settings$modules$weightThreshold)
               if(slotName=="aucell/smallestPopPercent") return(object@settings$aucell$smallestPopPercent)
               if(slotName=="defaultTsne/perpl") return(object@settings$defaultTsne$perpl)
