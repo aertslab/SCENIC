@@ -76,7 +76,7 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, resumePreviousRun=FALSE
   if(length(genesLeft) > 0)
   {
     partNames <- as.character(seq_len(nParts))
-    partNames <- setdiff(names(weightMatrices), partNames)
+    partNames <- setdiff(partNames, names(weightMatrices))
     if(length(partNames)==0) {
       warning("Splitting the ", length(genesLeft), " genes left into ", nParts, " parts." )
       partNames <- as.character(max(as.numeric(names(weightMatrices))) + seq_len(nParts))
