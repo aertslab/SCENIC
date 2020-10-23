@@ -5,6 +5,9 @@
 #' @param scenicOptions Fields used: genie3wm, genie3ll (int)
 #' @param nParts Number of pieces to fragment the partial results into (to check progress or in case the job gets interrupted). Default: 10
 #' @param resumePreviousRun Reload partial results from a previous (interrupted) run and resume execution (default: FALSE). 
+#' @param allTFs List of all TFs for the organism. The default value is all genes annotated as 'TFs' in the database, which is appropriate for most analyses.
+#' (This argument allows to modify this list, for example removing genes that might be wrongly annotated as TF in some organisms/database versions).
+#' Note that selecting only a small subset of TFs for the analysis will modify the output, and therefore the interpretation of the results!
 #' @param ... Other arguments to pass to GENIE3 (e.g. ntrees=500)
 #' @return Writes the output as \code{getIntName(scenicOptions, "genie3ll")}
 #' @examples 
@@ -20,7 +23,7 @@
 #' 
 #' runGenie3(exprMat_filtered, scenicOptions)
 #' @export 
-runGenie3 <- function(exprMat, scenicOptions, nParts=10, resumePreviousRun=FALSE, ...)
+runGenie3 <- function(exprMat, scenicOptions, nParts=10, resumePreviousRun=FALSE, allTFs=getDbTfs(scenicOptions), ...)
 {
   nCores <- getSettings(scenicOptions, "nCores")
   
@@ -36,9 +39,7 @@ runGenie3 <- function(exprMat, scenicOptions, nParts=10, resumePreviousRun=FALSE
   if(any(table(rownames(exprMat))>1))
     stop("The rownames (gene id/name) in the expression matrix should be unique.")
   
-  # Check TFs
-  allTFs <- getDbTfs(scenicOptions)
-  
+  # Select TFs
   inputTFs <- allTFs[allTFs %in% rownames(exprMat)] 
   percMatched <- length(inputTFs)/length(allTFs)
   if(getSettings(scenicOptions, "verbose")) message("Using ", length(inputTFs), " TFs as potential regulators...")
