@@ -86,7 +86,11 @@ plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
   # dim(rss.df)
   
   rss.df[,"Topic"] <- factor(rss.df[,"Topic"], levels=rowOrder)
+<<<<<<< HEAD
   p <- dotHeatmap(rss.df, 
+=======
+  p <- dotheatmap(rss.df, 
+>>>>>>> 611f9c2f9f3102623721ea5077ed74d3c709f6a7
              var.x=varName, var.y="Topic", 
              var.size=varSize, min.size=.5, max.size=5,
              var.col=varCol, col.low=col.low, col.mid=col.mid, col.high=col.high)
