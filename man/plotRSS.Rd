@@ -14,7 +14,8 @@ plotRSS(
   varName = "cellType",
   col.low = "grey90",
   col.mid = "darkolivegreen3",
-  col.high = "darkgreen"
+  col.high = "darkgreen",
+  revCol = FALSE
 )
 }
 \arguments{

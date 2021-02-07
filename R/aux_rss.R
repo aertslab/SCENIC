@@ -55,8 +55,16 @@ calcRSS <- function(AUC, cellAnnotation, cellTypes=NULL)
 #' @export
 plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
                     cluster_columns=FALSE, order_rows=TRUE, trh=0.01, varName="cellType",
-                    col.low="grey90", col.mid="darkolivegreen3", col.high="darkgreen")
+                    col.low="grey90", col.mid="darkolivegreen3", col.high="darkgreen",
+                    revCol=FALSE)
 {
+  varSize="RSS"
+  varCol="Z"
+  if(revCol) {
+    varSize="Z"
+    varCol="RSS"
+  }
+  
   rssNorm <- scale(rss) # scale the full matrix...
   rssNorm[rssNorm < zThreshold] <- 0
   rssNorm <- rssNorm[,which(!colnames(rssNorm) %in% labelsToDiscard)] # remove after calculating...
@@ -78,12 +86,10 @@ plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
   # dim(rss.df)
   
   rss.df[,"Topic"] <- factor(rss.df[,"Topic"], levels=rowOrder)
-  source('/ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/aux_scripts/dotheatmap.R')
-  source('/ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/aux_scripts/pdfDims.R')
-  p <- dotheatmap(rss.df, 
+  p <- dotHeatmap(rss.df, 
              var.x=varName, var.y="Topic", 
-             var.size="Z", min.size=.5, max.size=5,
-             var.col="RSS", col.low=col.low, col.mid=col.mid, col.high=col.high)
+             var.size=varSize, min.size=.5, max.size=5,
+             var.col=varCol, col.low=col.low, col.mid=col.mid, col.high=col.high)
   
   invisible(list(plot=p, df=rss.df, rowOrder=rowOrder))
 }
