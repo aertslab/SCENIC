@@ -15,7 +15,7 @@
 #' @examples 
 #' # TODO
 #' @export
-dotHeatmap <- dotheatmap <- function (enrichmentDf,
+dotHeatmap <- function (enrichmentDf,
                         var.x="Topic", var.y="ID", 
                         var.col="FC", col.low="dodgerblue", col.mid="floralwhite", col.high="brown1", 
                         var.size="p.adjust", min.size=1, max.size=8,
@@ -35,3 +35,7 @@ dotHeatmap <- dotheatmap <- function (enrichmentDf,
           ...)
   return(p)
 }
+
+# temporary- TODO:delete
+#' @export
+dotheatmap <- dotHeatmap
