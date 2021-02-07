@@ -15,7 +15,7 @@
 #' @examples 
 #' # TODO
 #' @export
-dotHeatmap <- function (enrichmentDf,
+dotHeatmap <- dotheatmap <- function (enrichmentDf,
                         var.x="Topic", var.y="ID", 
                         var.col="FC", col.low="dodgerblue", col.mid="floralwhite", col.high="brown1", 
                         var.size="p.adjust", min.size=1, max.size=8,
