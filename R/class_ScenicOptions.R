@@ -472,12 +472,14 @@ dbVersion <- function(dbs)
 #' @rdname ScenicOptions-class
 #' @export 
 dbLoadingAttempt <- function(dbFilePath){
-  ret <- FALSE
-  ret <- tryCatch({
-    md <- feather::feather_metadata(dbFilePath)
-    md$path
-    md$dim[2] == length(md$types)
-    randomCol <- sample(names(md$types),1)
+    ret <- FALSE
+    ret <- tryCatch({
+    rf <- arrow::ReadableFile$create(dbFilePath)
+    fr <- arrow::FeatherReader$create(rf)
+    fr$version
+    genesInDb <- names(fr)
+    randomCol <- sample(genesInDb, 1)
+    fr$Read(randomCol)
     rnk <- RcisTarget::importRankings(dbFilePath, columns=randomCol)
     return(TRUE)
   }
@@ -497,10 +499,12 @@ checkAnnots <- function(object, motifAnnot)
   allFeaturesInAnnot <- unlist(motifAnnot[,1]) # motif or track
   featuresWithAnnot <-  lapply(getDatabases(object), function(dbFile) 
   {
-    nRnks <- unlist(feather::read_feather(dbFile, columns="features")[,1])
+    rnktype = "features"	#TODO: add as option for custom dbs
+    nRnks <- getRanking(RcisTarget::importRankings(dbFile, columns = rnktype))
+    nRnks <- dplyr::pull(nRnks, rnktype)
+
     length(intersect(allFeaturesInAnnot,nRnks))/length(unique(c(allFeaturesInAnnot,nRnks)))
   })
   return(featuresWithAnnot)
 }
-
 

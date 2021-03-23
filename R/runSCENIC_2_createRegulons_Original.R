@@ -144,7 +144,7 @@
 #'   
 #'   ################################################################
 #'   # 2. Prune targets
-#'   msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Prunning targets")
+#'   msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Pruning targets")
 #'   if(getSettings(scenicOptions, "verbose")) message(msg)
 #'     
 #'   dbNames <- getDatabases(scenicOptions)
