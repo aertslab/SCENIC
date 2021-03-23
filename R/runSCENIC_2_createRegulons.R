@@ -64,8 +64,13 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
   if(any(!loadAttempt)) stop("It is not possible to load the following databses: \n",
                                 paste(dbs[which(!loadAttempt)], collapse="\n"))
   
-  genesInDb <- unique(unlist(lapply(getDatabases(scenicOptions), function(x)
-    names(feather::feather_metadata(x)[["types"]]))))
+  genesInDb <- unique(unlist(lapply(getDatabases(scenicOptions), function(dbFilePath) {
+	rf <- arrow::ReadableFile$create(dbFilePath)
+	fr <- arrow::FeatherReader$create(rf)
+	genesInDb <- names(fr)
+	rnktype <- "features"        #TODO: add as option for custom dbs
+	genesInDb <- genesInDb[genesInDb != rnktype]
+	})))
   
   ## Check if annotation and rankings (potentially) match:
   featuresWithAnnot <- checkAnnots(scenicOptions, motifAnnot)
@@ -208,7 +213,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
   
   ################################################################
   # 2. Prune targets
-  msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Prunning targets")
+  msg <- paste0(format(Sys.time(), "%H:%M"), "\tRcisTarget: Pruning targets")
   if(getSettings(scenicOptions, "verbose")) message(msg)
     
   dbNames <- getDatabases(scenicOptions)
