@@ -11,7 +11,7 @@ For more details and installation instructions on running SCENIC in `R` see the 
   - [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/66656c71f99000a67d3f25e8b811e18338ff8270/inst/doc/SCENIC_Setup.html)
   - [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/6aed5ef0b0386a87982ba4cc7aa13db0444263a6/inst/doc/SCENIC_Running.html)
 
-The output from the examples is available at: [http://scenic.aertslab.org/examples/](http://scenic.aertslab.org/examples/)
+The output from the examples is available at: [https://scenic.aertslab.org/scenic_paper/examples/](https://scenic.aertslab.org/scenic_paper/examples/)
 
 Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master/vignettes/FAQ.md)
 
