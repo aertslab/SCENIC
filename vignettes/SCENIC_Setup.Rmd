@@ -55,7 +55,7 @@ Please, cite this article if you use SCENIC in your research.
 ## Species
 The current version of SCENIC supports *human*, *mouse* and *fly* (Drosophila melanogaster).
 
-To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. new RcisTarget databases or using a diferent motif-enrichment-analysis tool, we are currently working on providing tutorials for doing this).
+To apply SCENIC to other species, it would require manual adjustments on the second step (e.g. [create new RcisTarget databases](https://github.com/aertslab/create_cisTarget_databases) or using a diferent motif-enrichment-analysis tool).
 
 
 ## Input: expression matrix
