@@ -18,8 +18,10 @@ Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master
 
 2021/03/26:
 
-- New tutorials to [run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC tutorial 1 - Running VSN.html) 
-and [explore its output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC tutorial 2 - Exploring output.html)
+- New tutorials to [run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) 
+and [explore its output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_2-ExploringOutput.html)
+
+- Tutorial to [create new databases](https://github.com/aertslab/create_cisTarget_databases)
 
 
 2020/06/26:
