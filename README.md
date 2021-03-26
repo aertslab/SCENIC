@@ -5,13 +5,12 @@
 
 The description of the method and some usage examples are available in [Nature Methods (2017)](https://www.nature.com/articles/nmeth.4463).
 
-There are currently implementations of SCENIC in R (this repository), and in Python. If you don't have a strong prefference for running it in R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow workflow*, and *Python/Jupyter notebooks* to easily run SCENIC (highly recommended for running it in batch or bigger datasets).
+There are currently implementations of SCENIC in R (this repository), and in Python. If you don't have a strong prefference for running it in R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow workflow*, and *Python/Jupyter notebooks* to easily run SCENIC (highly recommended for running it in batch or bigger datasets). The output from any of the implementations can then be explored either in R, Python or [SCope](http://scope.aerslab.org) (a web interface).
 
-For more details and installation instructions on running SCENIC in `R` see the tutorials:
-  - [Introduction and setup](https://rawcdn.githack.com/aertslab/SCENIC/66656c71f99000a67d3f25e8b811e18338ff8270/inst/doc/SCENIC_Setup.html)
-  - [running SCENIC](https://rawcdn.githack.com/aertslab/SCENIC/6aed5ef0b0386a87982ba4cc7aa13db0444263a6/inst/doc/SCENIC_Running.html)
-
-The output from the examples is available at: [https://scenic.aertslab.org/scenic_paper/examples/](https://scenic.aertslab.org/scenic_paper/examples/)
+For more details and installation instructions on running SCENIC in `R` see the **tutorials**:
+  - [Introduction and setup](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html)
+  - [Running SCENIC](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html)
+  - The output from these examples is available at: [https://scenic.aertslab.org/scenic_paper/examples/](https://scenic.aertslab.org/scenic_paper/examples/)
 
 Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master/vignettes/FAQ.md)
 
