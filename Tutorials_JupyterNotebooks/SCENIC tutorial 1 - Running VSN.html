@@ -13112,18 +13112,18 @@ and exploring the results...</p>
 </li>
 </ol>
 <p>For more details on how and why SCENIC folows these steps, and some usage examples, you can check the original <a href="https://www.nature.com/articles/nmeth.4463">paper</a>.</p>
-<p>To run SCENIC on a new dataset, we would recommend you to check the <a href="https://rawcdn.githack.com/aertslab/SCENIC/66656c71f99000a67d3f25e8b811e18338ff8270/inst/doc/SCENIC_Setup.html">requirements</a> (for example, at the moment it is only available for mouse, human and fly).</p>
-<h3 id="Implementation:">Implementation:<a class="anchor-link" href="#Implementation:">&#182;</a></h3><p>There are currently implementations of SCENIC in <a href="https://github.com/aertslab/SCENIC/">R</a> and in <a href="https://github.com/aertslab/pySCENIC">Python</a>. For running it in batch  on multiple datasets, or on big datasets, we normally recommend to use <strong><a href="https://github.com/vib-singlecell-nf/vsn-pipelines">VSN</a></strong> (a <em>Nextflow workflow</em>), which highly automates and simplifies the analysis, as explained in the <a href="https://doi.org/10.1038/s41596-020-0336-2">SCENIC protocol paper</a> and <a href="https://github.com/aertslab/SCENICprotocol/">examples</a>. 
+<p>Note that by default SCENIC is only available for three speciess: human, mouse and fly. For other species (or personalized motif collections) you would need to <a href="https://github.com/aertslab/create_cisTarget_databases">create your own databases</a>).</p>
+<h3 id="Implementation:">Implementation:<a class="anchor-link" href="#Implementation:">&#182;</a></h3><p>There are currently implementations of <a href="https://scenic.aertslab.org">SCENIC</a> in <a href="https://github.com/aertslab/SCENIC/">R</a> and in <a href="https://github.com/aertslab/pySCENIC">Python</a>. For running it in batch  on multiple datasets, or on big datasets, we normally recommend to use <strong><a href="https://github.com/vib-singlecell-nf/vsn-pipelines">VSN</a></strong> (a <em>Nextflow workflow</em>), which highly automates and simplifies the analysis, as explained in the <a href="https://doi.org/10.1038/s41596-020-0336-2">SCENIC protocol paper</a> and <a href="https://github.com/aertslab/SCENICprotocol/">examples</a>. 
 The output from VSN can be explored from either R or Python, and the web browser (SCope).</p>
 <p>In this workshop, we will run SCENIC using <strong>VSN</strong> (Notebook 1), and explore the output in <strong>SCope and R</strong> (Notebook 2):</p>
 <ul>
 <li><p>Notebook 1: Running SCENIC (VSN: includes Steps 1-4)</p>
 </li>
-<li><p>Notebook 2: Exploring SCENIC's output (R)</p>
+<li><p>Notebook 2: Exploring SCENIC's output (R &amp; SCope)</p>
 </li>
 </ul>
 <p>For advanced users who might want more details, modify the algorithm, or run only parts of it, detailed tutorials explaining each step in deatail are avilable in R (e.g. 
-<a href="https://rawcdn.githack.com/aertslab/SCENIC/6aed5ef0b0386a87982ba4cc7aa13db0444263a6/inst/doc/SCENIC_Running.html">step by step</a> and explanation of source code for <a href="https://github.com/aertslab/SCENIC/blob/master/vignettes/detailedStep_2_createRegulons.Rmd">regulons</a>).</p>
+<a href="http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html">step by step</a> and explanation of source code for <a href="https://github.com/aertslab/SCENIC/blob/master/vignettes/detailedStep_2_createRegulons.Rmd">regulons</a>).</p>
 <hr>
 <p><em>Where to find help:</em></p>
 <p>When you are doing your own analysis, you will likely bump into problems. In that case:</p>
@@ -13131,7 +13131,7 @@ The output from VSN can be explored from either R or Python, and the web browser
 <li><strong>Read the error message</strong>: most of the time they are self-explanatory</li>
 <li>Check the <strong>help page of the function</strong> you're using (e.g. <code>?get_regulons</code>)</li>
 <li>Google that error message: if it's not clear to you what the problem is, just Google it; scRNA-seq community is very active (e.g. on BioStars or on stackoverflow).</li>
-<li>Find and follow the package <a href="https://github.com/aertslab/SCENIC"><strong>tutorials</strong></a> (in R they are called "vignettes"). </li>
+<li>Find and follow the package <a href="https://github.com/aertslab/SCENIC">tutorials</a> (in R they are called "vignettes") and the links we have left along this notebook.  </li>
 </ul>
 
 </div>
@@ -13140,7 +13140,15 @@ The output from VSN can be explored from either R or Python, and the web browser
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Notebook-1:-Running-SCENIC">Notebook 1: Running SCENIC<a class="anchor-link" href="#Notebook-1:-Running-SCENIC">&#182;</a></h2><h3 id="Running-SCENIC-through-VSN">Running SCENIC through VSN<a class="anchor-link" href="#Running-SCENIC-through-VSN">&#182;</a></h3><p>This part of the workshop is based on the
+<h2 id="Notebook-1:-Running-SCENIC">Notebook 1: Running SCENIC<a class="anchor-link" href="#Notebook-1:-Running-SCENIC">&#182;</a></h2><p>The <strong>input</strong> to SCENIC is the single-cell RNA-seq expression matrix (i.e. the value of each field in the matrix corressponds to the expression of a gene in a cell):</p>
+<ul>
+<li><p>The gene/feature ID should be the gene-symbol (for compatibility with cisTarget annotation databases).</p>
+</li>
+<li><p>Expression units: The preferred expression values are gene-summarized counts. There is currently not a strong consensus towards using the raw counts (e.g. from CellRanger), or counts normalized through single-cell specific methods (e.g. Seurat). 
+Other measurements, such as transcripts/counts per million (TPM) and FPKM/RPKM, are also accepted as input. However, note that some authors recommend avoiding within sample normalization (i.e. TPM) for co-expression analysis (first step of SCENIC) because they may induce artificial co-variation (Crow et al. (2016)). The choice of input expression matrix might have some effect on the co-expression analysis to create the regulons (step 1). The other steps of the workflow are not directly affected by the input expression values: (2) The expression is not taken into account for the motif analysis, and (3) AUCell, which is used for scoring the regulons on the cells, is cell ranking-based (it works as an implicit normalization). Overall, SCENIC is quite robust to this choice, we have applied SCENIC to datasets using raw (logged) UMI counts, normalized UMI counts, and TPM and they all provided reliable results (see Aibar et al. (2017)).</p>
+</li>
+</ul>
+<h3 id="Running-SCENIC-through-VSN">Running SCENIC through VSN<a class="anchor-link" href="#Running-SCENIC-through-VSN">&#182;</a></h3><p>This part of the workshop is based on the
 <a href="https://vsn-pipelines-examples.readthedocs.io/en/latest/PBMC10k.html">VSN pipeline tutorial</a>.</p>
 <p>For more complex examples, i.e. explaing gene filtering, see the SCENIC <a href="https://htmlpreview.github.io/?https://github.com/aertslab/SCENICprotocol/blob/master/notebooks/PBMC10k_SCENIC-protocol-CLI.html">protocol example</a></p>
 
@@ -13169,7 +13177,7 @@ and <code>VSN 0.25.0 -&gt; Nextflow 20.10.1+</code></p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-bash"><pre><span></span>date
@@ -13189,19 +13197,8 @@ and <code>VSN 0.25.0 -&gt; Nextflow 20.10.1+</code></p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>date
-Tue Feb  9 13:19:06 CET 2021
+<pre>Fri Mar 26 12:00:49 CET 2021
 </pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_text output_error">
-<pre></pre>
 </div>
 </div>
 
@@ -13620,6 +13617,7 @@ done - revision: 721c42f889 [v0.25.0]
 <li><code>params.sc.scanpy.filter</code></li>
 <li><code>params.sc.scanpy.feature_selection</code></li>
 <li><code>params.sc.scanpy.clustering</code></li>
+<li><code>compute_resources__</code></li>
 </ul>
 
 </div>
@@ -16082,20 +16080,32 @@ Succeeded   : 39
 
 </div>
 </div>
-</div>nextflow -C pbmc10k.vsn-pipelines.complete.config \
-    run vib-singlecell-nf/vsn-pipelines \
-    -entry single_sample_scenic \
-     -r v0.25.0 \
-    -resume
-    
-# Convert this field to "code" to run it. Note: it will probably take several hours.
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-bash"><pre><span></span><span class="c1">### Uncomment this field to run it. Note: it will probably take several hours.</span>
+<span class="c1"># nextflow -C pbmc10k.vsn-pipelines.complete.config \</span>
+<span class="c1">#     run vib-singlecell-nf/vsn-pipelines \</span>
+<span class="c1">#     -entry single_sample_scenic \</span>
+<span class="c1">#      -r v0.25.0 \</span>
+<span class="c1">#     -resume</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="Results-&amp;-output">Results &amp; output<a class="anchor-link" href="#Results-&amp;-output">&#182;</a></h4><p>The main SCENIC outputs (including regulons and cell projections based on regulon activity) are packaged into a <strong>loom file</strong>. The loom file also includes the results of the parallel expression analysis.</p>
 <ul>
 <li>The loom file can be found at <code>out/loom/pbmc10k.SCENIC_SCope_output.loom</code>, and is ready to be uploaded to a <a href="http://scope.aertslab.org/">SCope</a> session. 
-(The loom file from this analysis can be found on the <a href="https://scope.aertslab.org/#/Protocol_Cases/">SCENIC protocol SCope session</a> (DSL2 &gt; pbmc10k.SCENIC_SCope_output.loom).</li>
+The loom file from this analysis can be found on the <a href="https://scope.aertslab.org/#/Protocol_Cases/">SCENIC protocol SCope session</a> (DSL2 &gt; pbmc10k.SCENIC_SCope_output.loom).</li>
 </ul>
 <p>Other relevant output files include:</p>
 <ul>
@@ -16123,134 +16133,13 @@ Succeeded   : 39
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-bash"><pre><span></span>tree out
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>tree out
-out
-|-- data
-|   |-- intermediate
-|   |   |-- pbmc10k_data.10x_PBMC.single_sample.final_output.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc_10k_run2/work/34/43391af2c86d9fddfb1a066811bd8b/pbmc10k_data.10x_PBMC.single_sample.final_output.h5ad
-|   |   |-- pbmc10k_data.SCANPY.hvg_scaled_output.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/e9/30e3fd13ffa8c31a6fbed9d7497598/pbmc10k_data.SCANPY.hvg_scaled_output.h5ad
-|   |   |-- pbmc10k_data.SCANPY.normalized_output.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/43/13ba9c99b8e9e3ca9ac11adf5f5d9e/pbmc10k_data.SCANPY.normalized_output.h5ad
-|   |   |-- pbmc10k_data.SC__FILE_CONVERTER.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/de/71393df76480af5321b896bd2a4a34/pbmc10k_data.SC__FILE_CONVERTER.h5ad
-|   |   |-- pbmc10k_data.SC__H5AD_MERGE.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/e2/116a1d3e8536958d92d5ea39519c50/pbmc10k_data.SC__H5AD_MERGE.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__CELL_FILTER.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/bf/0e7f5ad42080f81f967a4396bb3175/pbmc10k_data.SC__SCANPY__CELL_FILTER.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__CLUSTERING.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/a8/987dec8e88caaf9b166edf720144f1/pbmc10k_data.SC__SCANPY__CLUSTERING.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__COMPUTE_QC_STATS.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/d2/bb98ce91a0763f18d21f5cf116df40/pbmc10k_data.SC__SCANPY__COMPUTE_QC_STATS.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__DATA_TRANSFORMATION.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/ca/923abbcadb0413d693b53dcdff51d1/pbmc10k_data.SC__SCANPY__DATA_TRANSFORMATION.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__DIM_REDUCTION_PCA.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/35/1cec9ca7d6d99b32595ef2da86707d/pbmc10k_data.SC__SCANPY__DIM_REDUCTION_PCA.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__DIM_REDUCTION_TSNE.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/0f/01a3086afa4db90fb0c13397becd9c/pbmc10k_data.SC__SCANPY__DIM_REDUCTION_TSNE.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__DIM_REDUCTION_UMAP.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/47/8c47e79a0b1e5ad781fbaa2b4a7b6b/pbmc10k_data.SC__SCANPY__DIM_REDUCTION_UMAP.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__FEATURE_SCALING.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/b1/a3a833ebba3c2e220168ceacaa2404/pbmc10k_data.SC__SCANPY__FEATURE_SCALING.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__FIND_HIGHLY_VARIABLE_GENES.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/79/0be5a44419d119004a2ba16949008d/pbmc10k_data.SC__SCANPY__FIND_HIGHLY_VARIABLE_GENES.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__GENE_FILTER.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/c2/6c05bdfcb68dadc626dcfcd93c58cc/pbmc10k_data.SC__SCANPY__GENE_FILTER.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__MARKER_GENES.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/c0/986e46752a70656e045d818f3f2ccf/pbmc10k_data.SC__SCANPY__MARKER_GENES.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__NORMALIZATION.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/01/531e4308376ca3750dd949aa2c2d81/pbmc10k_data.SC__SCANPY__NORMALIZATION.h5ad
-|   |   |-- pbmc10k_data.SC__SCANPY__SUBSET_HIGHLY_VARIABLE_GENES.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/fe/0cffe79e1e2837d8c617bf67880a39/pbmc10k_data.SC__SCANPY__SUBSET_HIGHLY_VARIABLE_GENES.h5ad
-|   |   |-- pbmc10k_data.SINGLE_SAMPLE.h5ad -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/26/ae7a338e3677751f541a48643283f4/pbmc10k_data.SINGLE_SAMPLE.h5ad
-|   |   |-- pbmc10k_data.SINGLE_SAMPLE.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/79/6ec1eeaf3e718d351321da47ad68be/pbmc10k_data.SINGLE_SAMPLE.loom
-|   |   |-- pbmc10k_data.SINGLE_SAMPLE_SCENIC.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc_10k_run2/work/d6/51aee2be044ec606281ef3bcb70185/pbmc10k_data.SINGLE_SAMPLE_SCENIC.loom
-|   |   `-- pbmc10k_data.filtered.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc/work/5c/236f50b47ed10a740337932d58c992/pbmc10k_data.filtered.loom
-|   |-- pbmc10k_data.10x_PBMC.single_sample.final_output.h5ad
-|   |-- pbmc10k_data.SINGLE_SAMPLE.h5ad
-|   |-- pbmc10k_data.SINGLE_SAMPLE.loom
-|   |-- pbmc10k_data.SINGLE_SAMPLE_SCENIC.loom
-|   `-- scanpy
-|       |-- pbmc10k_data.SCANPY.hvg_scaled_output.h5ad
-|       `-- pbmc10k_data.SCANPY.normalized_output.h5ad
-|-- loom
-|   |-- pbmc10k_data.SCENIC_SCope_output.loom
-|   `-- pbmc10k_data.SCope_output.loom
-|-- nextflow_reports
-|   |-- execution_report.html
-|   |-- execution_report.html.1
-|   |-- execution_report.html.2
-|   |-- execution_report.html.3
-|   |-- execution_report.html.4
-|   |-- execution_report.html.5
-|   |-- execution_timeline.html
-|   |-- execution_timeline.html.1
-|   |-- execution_timeline.html.2
-|   |-- execution_timeline.html.3
-|   |-- execution_timeline.html.4
-|   |-- execution_timeline.html.5
-|   |-- execution_trace.txt
-|   |-- execution_trace.txt.1
-|   |-- execution_trace.txt.2
-|   |-- execution_trace.txt.3
-|   |-- execution_trace.txt.4
-|   |-- execution_trace.txt.5
-|   |-- execution_trace.txt.6
-|   |-- execution_trace.txt.7
-|   |-- execution_trace.txt.8
-|   |-- execution_trace.txt.9
-|   `-- pipeline_dag.dot
-|-- notebooks
-|   |-- intermediate
-|   |   |-- pbmc10k_data.SC_QC_filtering_report.html
-|   |   |-- pbmc10k_data.SC_QC_filtering_report.ipynb
-|   |   |-- pbmc10k_data.SC_Scanpy_clustering_report.html
-|   |   |-- pbmc10k_data.SC_Scanpy_clustering_report.ipynb
-|   |   |-- pbmc10k_data.SC_Scanpy_dimensionality_reduction_report.html
-|   |   |-- pbmc10k_data.SC_Scanpy_dimensionality_reduction_report.ipynb
-|   |   |-- pbmc10k_data.SC_Scanpy_hvg_report.html
-|   |   |-- pbmc10k_data.SC_Scanpy_hvg_report.ipynb
-|   |   |-- pbmc10k_data.merged_report.html
-|   |   |-- pbmc10k_data.merged_report.ipynb
-|   |   `-- workflow_configuration_report.ipynb
-|   |-- pbmc10k_data.merged_report.html
-|   `-- pbmc10k_data.merged_report.ipynb
-`-- scenic
-    `-- pbmc10k_data
-        |-- SCENIC_SCope_output.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc_10k_run2/work/95/3f8fcf28765206be3d791a0f3e8e5c/scenic_visualize.loom
-        |-- SCENIC_output.loom
-        |-- arboreto_with_multiprocessing
-        |   `-- pbmc10k_data__adj.tsv
-        |-- aucell
-        |   |-- pbmc10k_data.filtered.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc_10k_run2/work/1a/c253187342768bf1cd8379f745bb0b/pbmc10k_data.filtered.loom
-        |   |-- pbmc10k_data__auc_mtf.loom
-        |   `-- pbmc10k_data__auc_trk.loom
-        |-- cistarget
-        |   |-- pbmc10k_data.filtered.loom -&gt; /ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/Tutorials/SCENIC_pbmc_10k_run2/work/1a/c253187342768bf1cd8379f745bb0b/pbmc10k_data.filtered.loom
-        |   |-- pbmc10k_data__reg_mtf.csv.gz
-        |   `-- pbmc10k_data__reg_trk.csv.gz
-        `-- notebooks
-            |-- SCENIC_report.html
-            `-- SCENIC_report.ipynb
-
-13 directories, 77 files
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_text output_error">
-<pre></pre>
-</div>
-</div>
-
 </div>
 </div>
 

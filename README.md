@@ -16,6 +16,12 @@ Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master
 
 ### News
 
+2021/03/26:
+
+- New tutorials to [run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC tutorial 1 - Running VSN.html) 
+and [explore its output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC tutorial 2 - Exploring output.html)
+
+
 2020/06/26:
 - The **SCENICprotocol** including the Nextflow workflow, and `pySCENIC` notebooks are now officially released. For details see the [Github repository](https://github.com/aertslab/SCENICprotocol/), and the associated publication in [Nature Protocols](https://doi.org/10.1038/s41596-020-0336-2).
 
