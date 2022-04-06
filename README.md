@@ -27,6 +27,8 @@ If you prefer to use **R** for the whole analysis, these are the main tutorials:
 
 Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master/vignettes/FAQ.md)
 
+---
+
 ### News
 
 2021/03/26:
