@@ -14,8 +14,8 @@ The **output** from any of the implementations can be explored either in R, Pyth
 If you have access to Nextflow and a container system (e.g. Docker or Singularity), we **recommend** to run SCENIC through the VSN-pipeline. 
 > This option is specially useful for running SCENIC on large datasets, or in batch on multiple samples. 
 
-- 1. [Run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) 
-- 2. [Explore SCENIC output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_2-ExploringOutput.html)
+- [1. Run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) 
+- [2. Explore SCENIC output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_2-ExploringOutput.html)
 
 If you prefer to use **R** for the whole analysis, these are the main tutorials:
 > The tutorials in R include a more detailed explanation of the workflow and source code. 
