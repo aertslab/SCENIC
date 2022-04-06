@@ -47,7 +47,7 @@ This thread might be related to your question: https://github.com/aertslab/SCENI
 At the moment we only provide the motif databases (required for the standard pipeline) for human, mouse and fruit fly.
 
 The second step in SCENIC's workflow is to perform motif enrichment analysis on the co-expression modules to prune them into regulons. The standard SCENIC pipeline uses RcisTarget to perform this analysis, and RcisTarget requires species-specific databases.
-Therefore, to apply SCENIC to a new organism (such as zebrafrish) would require some modifications on this step. Either creating the RcisTarget motif databases for the new organism (which implies defining regulatory regions and scoring thousands of motifs PWM), or using an alternative tool (i.e. instead of RcisTarget) for the motif analysis.
+Therefore, to apply SCENIC to a new organism (such as zebrafrish) would require some modifications on this step. Either [creating the RcisTarget motif databases](https://github.com/aertslab/create_cisTarget_databases) for the new organism (which implies defining regulatory regions and scoring thousands of motifs PWM), or using an alternative tool (i.e. instead of RcisTarget) for the motif analysis.
 
 ### Can I use my own list of TFs and targets (e.g. from an external analysis or resource) with AUCell and skip the network inference steps?
 
@@ -95,13 +95,15 @@ To install them, just add the tag: `devtools::install_github("aertslab/SCENIC@v1
 SCENIC is implemented in **R** ([pySCENIC](https://github.com/aertslab/SCENIC)) and **Python** ([pySCENIC](https://github.com/aertslab/pySCENIC)). 
 
 The Python implementation is significantly faster to run, so we generally recommend using it for most analyses. 
-We provide containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) and [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a [Nextflow](https://github.com/aertslab/scenic-nf) pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python.
+We provide a [tutorial](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) that uses containers (in [Docker](https://cloud.docker.com/u/aertslab/repository/docker/aertslab/pyscenic) or [Singularity](https://www.singularity-hub.org/collections/2033)) including all the required dependencies, and a [Nextflow](https://github.com/aertslab/scenic-nf) pipeline (useful to run SCENIC in batch on multiple datasets). This should make it very easy to install and run (py)SCENIC, even for users with limited experience in Python or R.
 
 The results are equivalent across versions and provide output `.loom` files that can be explored in [SCope](http://scope.aertslab.org) or used as interface between R and Python.
 
 The details and the rationale behind each of the steps in SCENIC are explained in the 'detailed_tutorials' in the R repository (https://github.com/aertslab/SCENIC/tree/master/vignettes). 
 
-### Other issues
+### Other issues or questions
 
-You can check whether someone has already had a similar issue in https://github.com/aertslab/SCENIC/issues?q=+is%3Aclosed
+You can check whether someone has already had a similar question in the [Discussions]().
+
+If you find a bug or you have a feature request, you can post it in the appropriate Github repo: [R](https://github.com/aertslab/SCENIC/issues?q=+is%3Aclosed) or [Python]([R](https://github.com/aertslab/pySCENIC/issues?q=+is%3Aclosed)) (please, before posting, check that it has not been already posted/solved).
 
