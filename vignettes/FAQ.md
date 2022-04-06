@@ -16,7 +16,7 @@
    - Cannot download the databases (webserver is down)
    - Previous versions of SCENIC & SCENIC for previous versions of R/Bioconductor
    - R vs Python version
-   - Other issues
+   - Other issues or questions
 
 ## Interpretation of results
 
