@@ -5,12 +5,25 @@
 
 The description of the method and some usage examples are available in [Nature Methods (2017)](https://www.nature.com/articles/nmeth.4463).
 
-There are currently **implementations** of SCENIC in R (this repository), and in Python. If you don't have a strong preference for using R, we would recommend to check out the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/), which contains the *Nextflow workflow*, and *Python/Jupyter notebooks* to easily run SCENIC (highly recommended for running it in batch or bigger datasets). The **output** from any of the implementations can then be explored either in R, Python or SCope (a web interface).
+There are currently **implementations** of SCENIC in R (this repository), in Python ([pySCENIC](https://github.com/aertslab/pySCENIC)), as well as wrappers to automate analyses with Nextflow ([VSN-pipelines](https://vsn-pipelines.readthedocs.io/en/latest/))).
 
-For more details and installation instructions on running SCENIC in `R` see the **tutorials**:
+The **output** from any of the implementations can be explored either in R, Python or [SCope](https://scope.aertslab.org) (a web interface).
+
+### Tutorials
+
+If you have access to Nextflow and a container system (e.g. Docker or Singularity), we would **recommend** to run SCENIC through the VSN-pipeline. 
+> This option is specially useful for running SCENIC on large datasets, or in batch on multiple samples. 
+
+- 1. [Run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) 
+- 2. [Explore SCENIC output (with SCope and R)](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_2-ExploringOutput.html)
+
+If you prefer to use **R** for the whole analysis, these are the main tutorials:
+> The tutorials in R include a more detailed explanation of the workflow and source code. 
   - [Introduction and setup](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Setup.html)
   - [Running SCENIC](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/inst/doc/SCENIC_Running.html)
   - The output from these examples is available at: [https://scenic.aertslab.org/scenic_paper/examples/](https://scenic.aertslab.org/scenic_paper/examples/)
+
+**Python/Jupyter notebooks** with examples running SCENIC in different settings are available in the [SCENIC protocol repository](https://github.com/aertslab/SCENICprotocol/).
 
 Frequently asked questions: [FAQ](https://github.com/aertslab/SCENIC/blob/master/vignettes/FAQ.md)
 
