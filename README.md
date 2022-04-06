@@ -5,13 +5,13 @@
 
 The description of the method and some usage examples are available in [Nature Methods (2017)](https://www.nature.com/articles/nmeth.4463).
 
-There are currently **implementations** of SCENIC in R (this repository), in Python ([pySCENIC](https://github.com/aertslab/pySCENIC)), as well as wrappers to automate analyses with Nextflow ([VSN-pipelines](https://vsn-pipelines.readthedocs.io/en/latest/))).
+There are currently **implementations** of SCENIC in R (this repository), in Python ([pySCENIC](https://github.com/aertslab/pySCENIC)), as well as wrappers to automate analyses with Nextflow ([VSN-pipelines](https://vsn-pipelines.readthedocs.io/en/latest/)).
 
 The **output** from any of the implementations can be explored either in R, Python or [SCope](https://scope.aertslab.org) (a web interface).
 
 ### Tutorials
 
-If you have access to Nextflow and a container system (e.g. Docker or Singularity), we would **recommend** to run SCENIC through the VSN-pipeline. 
+If you have access to Nextflow and a container system (e.g. Docker or Singularity), we **recommend** to run SCENIC through the VSN-pipeline. 
 > This option is specially useful for running SCENIC on large datasets, or in batch on multiple samples. 
 
 - 1. [Run SCENIC from VSN](http://htmlpreview.github.io/?https://github.com/aertslab/SCENIC/blob/master/Tutorials_JupyterNotebooks/SCENIC_tutorial_1-RunningVSN.html) 
