@@ -63,7 +63,7 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
   tryCatch({
     .openDev(fileName=getIntName(scenicOptions, "aucell_genesStatsPlot"),
             devType=getSettings(scenicOptions, "devType"))
-      aucellRankings <- AUCell_buildRankings(exprMat, nCores=nCores, 
+      aucellRankings <- AUCell_buildRankings(exprMat, 
                             plotStats=TRUE, verbose=getSettings(scenicOptions, "verbose"))
       abline(v=aucellRankings@nGenesDetected["1%"], col="skyblue3", lwd=5, lty=3)
     dev.off()
@@ -74,11 +74,11 @@ runSCENIC_3_scoreCells <- function(scenicOptions, exprMat,
     
   # 2. Calculate AUC
   regulonAUC <- AUCell_calcAUC(regulons, aucellRankings, 
-              aucMaxRank=aucellRankings@nGenesDetected["1%"], nCores=nCores)
+              aucMaxRank=aucellRankings@nGenesDetected["1%"], nCores=nCores) 
     
   # Order the modules by similarity, for easier exploration in the upcoming steps & save
   variableRegulons <- names(which(apply(getAUC(regulonAUC), 1, sd) > 0))
-  reguDist <-as.dist(1-cor(t(getAUC(regulonAUC)[variableRegulons,]), method="spear"))
+  reguDist <- as.dist(1-cor(t(getAUC(regulonAUC)[variableRegulons,]), method="spear"))
   reguClust <- hclust(reguDist, method="ward.D2")
   regulonClusters <- setNames(dynamicTreeCut::cutreeDynamic(reguClust, distM=as.matrix(reguDist), verbose = FALSE), reguClust$labels)
   regulonOrder <- reguClust$labels[reguClust$order]

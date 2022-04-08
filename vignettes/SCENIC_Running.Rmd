@@ -479,8 +479,8 @@ The `.loom` file can be created with the function `export2loom()` (requires the 
 The **motif enrichment analysis** and **co-expression modules** (e.g. GRNBoost/GENIE3 output) are stored in independent text files (mostly due to their bigger size).
 
 ```{r eval=FALSE}
-DGEM (Digital gene expression matrix)
-(non-normalized counts)
+# DGEM (Digital gene expression matrix)
+# (non-normalized counts)
 exprMat <- get_dgem(open_loom(loomPath))
 dgem <- exprMat
 head(colnames(dgem))  #should contain the Cell ID/name
@@ -568,12 +568,12 @@ Show several regulons simultaneously:
 par(mfrow=c(1,2))
 
 regulonNames <- c( "Dlx5","Sox10")
-cellCol <- plotTsne_rgb(scenicOptions, regulonNames, aucType="AUC", aucMaxContrast=0.6)
+cellCol <- SCENIC::plotEmb_rgb(scenicOptions, regulonNames, aucType="AUC", aucMaxContrast=0.6)
 
 regulonNames <- list(red=c("Sox10", "Sox8"),
                      green=c("Irf1"),
                      blue=c( "Tef"))
-cellCol <- plotTsne_rgb(scenicOptions, regulonNames, aucType="Binary")
+cellCol <- SCENIC::plotEmb_rgb(scenicOptions, regulonNames, aucType="Binary")
 ```
 
 ## GRN: Regulon targets and motifs

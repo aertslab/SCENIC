@@ -10,12 +10,13 @@ plotRSS(
   zThreshold = 1,
   cluster_columns = FALSE,
   order_rows = TRUE,
-  trh = 0.01,
+  thr = 0.01,
   varName = "cellType",
   col.low = "grey90",
   col.mid = "darkolivegreen3",
   col.high = "darkgreen",
-  revCol = FALSE
+  revCol = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -29,7 +30,7 @@ plotRSS(
 
 \item{order_rows}{}
 
-\item{trh}{}
+\item{thr}{}
 
 \item{varName}{}
 
@@ -38,6 +39,8 @@ plotRSS(
 \item{col.mid}{}
 
 \item{col.high}{}
+
+\item{verbose}{}
 
 \item{setName}{Gene-set or cell type name to plot with plotRSS_oneSet()}
 

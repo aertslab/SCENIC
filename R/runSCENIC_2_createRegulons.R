@@ -11,6 +11,7 @@
 #' @param coexMethods Allows to select the method(s) used to generate the co-expression modules
 #' @param minJakkardInd Merge overlapping modules (with Jakkard index >=minJakkardInd; reduces running time).
 #' @param onlyPositiveCorr Whether to include only positive-correlated targets in the regulons (default: TRUE).
+#' @param dbIndexCol Column containing the feature name in the database (default: 'features')
 #' @return The output is written in the folders 'int' and 'ouput'
 #' @details See the detailed vignette explaining the internal steps.
 #' @examples 
@@ -27,7 +28,9 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
                                        minJakkardInd=0.8,
                                        signifGenesMethod="aprox", 
                                        onlyPositiveCorr=TRUE,
-                                       onlyBestGsPerMotif=TRUE)
+                                       onlyBestGsPerMotif=TRUE,
+                                       dbIndexCol='features'
+                                       )
 {
   nCores <- getSettings(scenicOptions, "nCores")
   
@@ -60,7 +63,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
     if(all(lengths(tmp)>0)) names(scenicOptions@settings$"dbs") <- tmp
   }
   
-  loadAttempt <- sapply(getDatabases(scenicOptions), dbLoadingAttempt)
+  loadAttempt <- sapply(getDatabases(scenicOptions), dbLoadingAttempt, dbIndexCol=indexCol)
   if(any(!loadAttempt)) stop("It is not possible to load the following databses: \n",
                                 paste(dbs[which(!loadAttempt)], collapse="\n"))
   

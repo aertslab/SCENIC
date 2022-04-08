@@ -11,7 +11,8 @@ runSCENIC_2_createRegulons(
   minJakkardInd = 0.8,
   signifGenesMethod = "aprox",
   onlyPositiveCorr = TRUE,
-  onlyBestGsPerMotif = TRUE
+  onlyBestGsPerMotif = TRUE,
+  dbIndexCol = "features"
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ runSCENIC_2_createRegulons(
 \item{signifGenesMethod}{Method for 'addSignificantGenes'}
 
 \item{onlyPositiveCorr}{Whether to include only positive-correlated targets in the regulons (default: TRUE).}
+
+\item{dbIndexCol}{Column containing the feature name in the database (default: 'features')}
 }
 \value{
 The output is written in the folders 'int' and 'ouput'

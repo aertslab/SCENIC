@@ -331,7 +331,7 @@ setMethod("loadInt",
 ################## Functions ######################################
 #' @rdname ScenicOptions-class
 #' @export 
-initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle="", nCores=4)
+initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle="", nCores=4, dbIndexCol='features')
 {
   inputDataset<- list(
     org=org,
@@ -361,7 +361,7 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
     message("Motif databases selected: ", 
             paste(paste0("\n  ", dbs, collapse=" ")))  
   }
-  loadAttempt <- sapply(dbs,function(x) dbLoadingAttempt(file.path(dbDir, x)))
+  loadAttempt <- sapply(dbs,function(x) dbLoadingAttempt(file.path(dbDir, x), indexCol=dbIndexCol))
   if(any(!loadAttempt)) warning("It was not possible to load the following databses; check whether they are downloaded correctly: \n",
                                 paste(dbs[which(!loadAttempt)], collapse="\n"))
   
@@ -471,7 +471,7 @@ dbVersion <- function(dbs)
 
 #' @rdname ScenicOptions-class
 #' @export 
-dbLoadingAttempt <- function(dbFilePath){
+dbLoadingAttempt <- function(dbFilePath, indexCol='features'){
     ret <- FALSE
     ret <- tryCatch({
     rf <- arrow::ReadableFile$create(dbFilePath)
@@ -480,7 +480,7 @@ dbLoadingAttempt <- function(dbFilePath){
     genesInDb <- names(fr)
     randomCol <- sample(genesInDb, 1)
     fr$Read(randomCol)
-    rnk <- RcisTarget::importRankings(dbFilePath, columns=randomCol)
+    rnk <- RcisTarget::importRankings(dbFilePath, columns=randomCol, indexCol=indexCol)
     return(TRUE)
   }
   , error=function(e){

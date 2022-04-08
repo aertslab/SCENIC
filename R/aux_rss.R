@@ -42,21 +42,22 @@ calcRSS <- function(AUC, cellAnnotation, cellTypes=NULL)
 #' @param zThreshold 
 #' @param cluster_columns 
 #' @param order_rows 
-#' @param trh 
+#' @param thr 
 #' @param varName 
 #' @param col.low 
 #' @param col.mid 
 #' @param col.high 
 #' @param setName Gene-set or cell type name to plot with plotRSS_oneSet()
 #' @param n Number of top regulons to label in plotRSS_oneSet(). Default: 5
+#' @param verbose 
 #' @return Matrix with the regulon specificity scores
 #' @examples 
 #' # TODO
 #' @export
 plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
-                    cluster_columns=FALSE, order_rows=TRUE, trh=0.01, varName="cellType",
+                    cluster_columns=FALSE, order_rows=TRUE, thr=0.01, varName="cellType",
                     col.low="grey90", col.mid="darkolivegreen3", col.high="darkgreen",
-                    revCol=FALSE)
+                    revCol=FALSE, verbose=TRUE)
 {
   varSize="RSS"
   varCol="Z"
@@ -66,12 +67,16 @@ plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
   }
   
   rssNorm <- scale(rss) # scale the full matrix...
-  rssNorm[rssNorm < zThreshold] <- 0
   rssNorm <- rssNorm[,which(!colnames(rssNorm) %in% labelsToDiscard)] # remove after calculating...
+  rssNorm[rssNorm < 0] <- 0
   
-  ## to get topic order (easier...)
-  tmp <- .plotRSS_heatmap(rssNorm, trh=trh, cluster_columns=cluster_columns, order_rows=order_rows)
+  ## to get row order (easier...)
+  rssSubset <- rssNorm
+  if(!is.null(zThreshold)) rssSubset[rssSubset < zThreshold] <- 0
+  tmp <- .plotRSS_heatmap(rssSubset, thr=thr, cluster_columns=cluster_columns, order_rows=order_rows, verbose=verbose)
   rowOrder <- rev(tmp@row_names_param$labels)
+  rm(tmp)
+  
   
   ## Dotplot
   rss.df <- reshape2::melt(rss)
@@ -79,12 +84,12 @@ plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
   colnames(rss.df) <- c("Topic", varName, "RSS")
   rssNorm.df <- reshape2::melt(rssNorm)
   colnames(rssNorm.df) <- c("Topic", varName, "Z")
-  rss.df <- merge(rss.df, rssNorm.df)
+  rss.df <- base::merge(rss.df, rssNorm.df)
   
-  rss.df <- rss.df[which(rss.df$Z >= 1.5),]
   rss.df <- rss.df[which(!rss.df[,varName] %in% labelsToDiscard),] # remove after calculating...
-  # dim(rss.df)
+  if(nrow(rss.df)<2) stop("Insufficient rows left to plot RSS.")
   
+  rss.df <- rss.df[which(rss.df$Topic %in% rowOrder),]
   rss.df[,"Topic"] <- factor(rss.df[,"Topic"], levels=rowOrder)
   p <- dotHeatmap(rss.df, 
              var.x=varName, var.y="Topic", 
@@ -95,6 +100,8 @@ plotRSS <- function(rss, labelsToDiscard=NULL, zThreshold=1,
 }
 
 #' @aliases plotRSS
+#' @import ggplot2
+#' @importFrom ggrepel geom_label_repel
 #' @export 
 plotRSS_oneSet <- function(rss, setName, n=5)
 {
@@ -137,14 +144,15 @@ calcJSD <- function(pRegulon, pCellType)
   1 - sqrt(jsd)
 }
 
-.plotRSS_heatmap <- plotRSS_heatmap <- function(rss, trh=NULL, row_names_gp=gpar(fontsize=5), order_rows=TRUE, cluster_rows=FALSE, name="RSS", ...)
+.plotRSS_heatmap <- plotRSS_heatmap <- function(rss, thr=NULL, row_names_gp=gpar(fontsize=5), order_rows=TRUE, cluster_rows=FALSE, name="RSS", verbose=TRUE, ...)
 {
-  if(is.null(trh)) trh <- signif(quantile(rss, p=.97),2)
+  if(is.null(thr)) thr <- signif(quantile(rss, p=.97),2)
   
   library(ComplexHeatmap)
-  rssSubset <- rss[rowSums(rss > trh)>0,]
-  rssSubset <- rssSubset[,colSums(rssSubset > trh)>0]
-  message("Showing regulons and cell types with any RSS > ", trh, " (dim: ", nrow(rssSubset), "x", ncol(rssSubset),")")
+  rssSubset <- rss[rowSums(rss > thr)>0,]
+  rssSubset <- rssSubset[,colSums(rssSubset > thr)>0]
+  
+  if(verbose) message("Showing regulons and cell types with any RSS > ", thr, " (dim: ", nrow(rssSubset), "x", ncol(rssSubset),")")
   
   if(order_rows)
   {

@@ -97,7 +97,6 @@ Therefore, you will need to install these packages, and some extra dependencies,
 ```{r install, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 BiocManager::version()
-# If your bioconductor version is previous to 4.0, see the section bellow
 
 ## Required
 BiocManager::install(c("AUCell", "RcisTarget"))
@@ -108,7 +107,7 @@ BiocManager::install(c("GENIE3")) # Optional. Can be replaced by GRNBoost
 BiocManager::install(c("zoo", "mixtools", "rbokeh"))
 # For various visualizations and perform t-SNEs:
 BiocManager::install(c("DT", "NMF", "ComplexHeatmap", "R2HTML", "Rtsne"))
-# To support paralell execution (not available in Windows):
+# To support paralell execution in tSNE (not available in Windows):
 BiocManager::install(c("doMC", "doRNG"))
 # To export/visualize in http://scope.aertslab.org
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
@@ -175,6 +174,7 @@ The approximate file size for these databases (*.feather* files) is 1GB.
 If you prefer to download directly from R, you can try the following code:*
 ```{r downloadDatabases, eval=FALSE}
 # dir.create("cisTarget_databases"); setwd("cisTarget_databases") # if needed
+options(timeout = max(300, getOption("timeout")))
 for(featherURL in dbFiles)
 {
   download.file(featherURL, destfile=basename(featherURL)) # saved in current dir

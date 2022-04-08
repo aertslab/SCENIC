@@ -35,6 +35,7 @@ runSCENIC_4_aucell_binarize <- function(scenicOptions,
   binaryRegulonActivity <- t(table(regulonActivity[,1], regulonActivity[,2]))
   class(binaryRegulonActivity) <- "matrix"
   saveRDS(binaryRegulonActivity, file=getIntName(scenicOptions, "aucell_binary_full"))
+  if(nrow(binaryRegulonActivity)==0) stop("No cells passed the binarization.")
   
   # Keep only non-duplicated thresholds
   # (e.g. only "extended" regulons if there is not a regulon based on direct annotation)

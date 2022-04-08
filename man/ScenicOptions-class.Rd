@@ -73,12 +73,13 @@ initializeScenic(
   dbDir = "databases",
   dbs = NULL,
   datasetTitle = "",
-  nCores = 4
+  nCores = 4,
+  dbIndexCol = "features"
 )
 
 dbVersion(dbs)
 
-dbLoadingAttempt(dbFilePath)
+dbLoadingAttempt(dbFilePath, indexCol = "features")
 
 checkAnnots(object, motifAnnot)
 }

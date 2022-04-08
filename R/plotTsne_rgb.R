@@ -1,5 +1,5 @@
 # ## Has been added  to AUCell, update to just wrapper
-# setwd("/ddn1/vol1/staging/leuven/stg_00002/lcb/saibar/Projects/packages/SCENIC_MouseBrain_2020/SCENIC_mouseBrain")
+# setwd("SCENIC_mouseBrain")
 # aucMat <- readRDS("int/3.4_regulonAUC.Rds")
 # aucMat <- aucMat[SCENIC::onlyNonDuplicatedExtended(rownames(aucMat)),,drop=FALSE]
 # emb <- readRDS("int/tSNE_AUC_05pcs_05perpl.Rds")$Y
@@ -15,7 +15,7 @@
 #                       green=getSetNames(aucMat, c("Irf1")),
 #                       blue=getSetNames(aucMat, c("Dlx5")))
 # cellCol <- plotEmb_rgb(aucMat, emb, geneSetsByCol, aucType="Binary")
-# 
+
 
 
 #' @title plotEmb_rgb
