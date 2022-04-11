@@ -2,8 +2,8 @@
 *Frequently asked questions (FAQ):*
 
   *Interpretation of results:*
-   - Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
    - Missing relevant TFs / Known motifs are not annotated to the TF
+   - Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
    - [R] What is the meaning of the sufix '_extended' and the number in parenthesis in the regulon name?
    
   *Modifying the pipeline:*
@@ -20,14 +20,14 @@
 
 ## Interpretation of results
 
+### Missing relevant TFs / Known motifs are not annotated to the TF
+
+This thread might be related to your question: https://github.com/aertslab/SCENIC/issues/14#issuecomment-357009514
+
 ### Is it possible to use pseudotime/trajectory inference methods on the output of SCENIC? (e.g. to explore how TF activity changes over time)
 Yes, the regulon activity matrix can be used as input for other methods, such as dimensionality reduction (e.g. t-SNE/UMAP, difussion maps) or pseudotime/trajectory analysis. 
 
 However, you should check the assumptions/requirements of the input data of the specific tool (e.g. branches, expectations in regards to distribution and continuous/discrete values, etc...).
-
-### Missing relevant TFs / Known motifs are not annotated to the TF
-
-This thread might be related to your question: https://github.com/aertslab/SCENIC/issues/14#issuecomment-357009514
 
 ### [R] What is the meaning of the sufix '_extended' and the number in parenthesis in the regulon name?
 
