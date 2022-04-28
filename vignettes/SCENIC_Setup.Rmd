@@ -177,7 +177,7 @@ If you prefer to download directly from R, you can try the following code:*
 options(timeout = max(300, getOption("timeout")))
 for(featherURL in dbFiles)
 {
-  download.file(featherURL, destfile=basename(featherURL)) # saved in current dir
+  download.file(featherURL, destfile=basename(featherURL), mode = "wb") # saved in current dir
 }
 ```
 
