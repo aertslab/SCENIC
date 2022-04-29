@@ -12,7 +12,7 @@ URL: http://scenic.aertslab.org
 Imports:
   data.table, 
   GENIE3 (>= 1.10.0), 
-  RcisTarget (>= 1.8.0), 
+  RcisTarget (>= 1.16.0), 
   AUCell (>= 1.10.0), 
   NMF, 
   dynamicTreeCut,
