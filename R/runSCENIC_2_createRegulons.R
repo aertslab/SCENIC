@@ -46,7 +46,10 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
   if(nrow(tfModules_asDF)==0) stop("The co-expression modules are empty.")
   
   # Set cores for RcisTarget::addMotifAnnotation(). The other functions use foreach package.
-  if("BiocParallel" %in% installed.packages()) library(BiocParallel); register(MulticoreParam(nCores), default=TRUE) 
+  if("BiocParallel" %in% installed.packages() && (nCores>1)) {
+    library(BiocParallel)
+    register(MulticoreParam(nCores), default=TRUE) 
+  }
   
   msg <- paste0(format(Sys.time(), "%H:%M"), "\tStep 2. Identifying regulons")
   if(getSettings(scenicOptions, "verbose")) message(msg)
@@ -63,7 +66,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
     if(all(lengths(tmp)>0)) names(scenicOptions@settings$"dbs") <- tmp
   }
   
-  loadAttempt <- sapply(getDatabases(scenicOptions), dbLoadingAttempt, dbIndexCol=indexCol)
+  loadAttempt <- sapply(getDatabases(scenicOptions), dbLoadingAttempt, indexCol=dbIndexCol)
   if(any(!loadAttempt)) stop("It is not possible to load the following databses: \n",
                                 paste(dbs[which(!loadAttempt)], collapse="\n"))
   
