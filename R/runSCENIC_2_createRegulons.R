@@ -79,7 +79,7 @@ runSCENIC_2_createRegulons <- function(scenicOptions,
 	})))
   
   ## Check if annotation and rankings (potentially) match:
-  featuresWithAnnot <- checkAnnots(scenicOptions, motifAnnot)
+  featuresWithAnnot <- checkAnnots(scenicOptions, motifAnnot, col = dbIndexCol)
   if(any(featuresWithAnnot == 0)) warning("Missing annotations\n", names(which(rankingsInDb==0)))
   
   ### Filter & format co-expression modules
