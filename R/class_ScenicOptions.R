@@ -452,7 +452,7 @@ initializeScenic <- function(org=NULL, dbDir="databases", dbs=NULL, datasetTitle
   
   ## Check if motif annotation and rankings potentially match
   motifAnnot <- getDbAnnotations(object)
-  featuresWithAnnot <- checkAnnots(object, motifAnnot)
+  featuresWithAnnot <- checkAnnots(object, motifAnnot, col = dbIndexCol)
   if(any(featuresWithAnnot == 0)) message("Missing annotations for: \n", paste("\t", names(which(featuresWithAnnot==0))))
   
   ## Return
@@ -494,12 +494,12 @@ dbLoadingAttempt <- function(dbFilePath, indexCol='features'){
 
 #' @rdname ScenicOptions-class
 #' @export 
-checkAnnots <- function(object, motifAnnot)
+checkAnnots <- function(object, motifAnnot, col)
 {
   allFeaturesInAnnot <- unlist(motifAnnot[,1]) # motif or track
   featuresWithAnnot <-  lapply(getDatabases(object), function(dbFile) 
   {
-    rnktype = "features"	#TODO: add as option for custom dbs
+    rnktype = col	#TODO: add as option for custom dbs
     nRnks <- getRanking(RcisTarget::importRankings(dbFile, columns = rnktype))
     nRnks <- dplyr::pull(nRnks, rnktype)
 
