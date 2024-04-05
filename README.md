@@ -1,3 +1,6 @@
+| :warning: WARNING           |
+|:----------------------------|
+| [SCENIC](https://github.com/aertslab/SCENIC) is deprecated, use [pySCENIC](https://github.com/aertslab/pySCENIC) instead. |
 
 # SCENIC
 
